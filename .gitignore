@@ -7,6 +7,11 @@
 *.suo
 *.sln.docstates
 .vs/
+.idea
+*.cache
+*.info
+*.config
+
 
 # Настройки Rider
 .idea/
