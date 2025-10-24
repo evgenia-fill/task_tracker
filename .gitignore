@@ -1,8 +1,6 @@
-# Папки с результатами сборки
 **/bin/
 **/obj/
 
-# Пользовательские файлы и настройки IDE
 *.user
 *.suo
 *.sln.docstates
@@ -13,12 +11,10 @@
 *.config
 
 
-# Настройки Rider
 .idea/
 *.sln.iml
 *.rider.project.model.nuget.info
 rider.module.iml
 
-# Другие служебные файлы
 project.lock.json
 project.assets.json
