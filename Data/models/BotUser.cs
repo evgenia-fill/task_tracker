@@ -1,4 +1,4 @@
-namespace Tg_Bot.models;
+namespace Data.models;
 
 public class BotUser
 {

@@ -1,15 +1,17 @@
 using Microsoft.Data.Sqlite;
-using Tg_Bot.models;
+using Data.models; // Убедитесь, что для модели BotUser используется этот namespace
 
-namespace Tg_Bot;
+namespace Data;
 
 public class UserManager
 {
     private readonly string connectionString;
 
-    public UserManager(string dbPath)
+    // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+    // Конструктор теперь принимает готовую строку подключения, а не путь к файлу.
+    public UserManager(string connectionString)
     {
-        connectionString = $"Data Source={dbPath}";
+        this.connectionString = connectionString;
     }
 
     public void AddUser(long tgId, string fullname)
@@ -17,7 +19,7 @@ public class UserManager
         var existingUser = GetUserByTgId(tgId);
         if (existingUser != null)
         {
-            Console.WriteLine($"Ты, {fullname}, уже есть в базе");
+            Console.WriteLine($"Пользователь {fullname} (ID: {tgId}) уже существует в базе.");
             return;
         }
 
@@ -33,6 +35,7 @@ public class UserManager
         command.Parameters.AddWithValue("@uniquecode", code);
 
         command.ExecuteNonQuery();
+        Console.WriteLine($"Пользователь {fullname} (ID: {tgId}) успешно добавлен в базу.");
     }
 
     public BotUser? GetUserByTgId(long tgId)
