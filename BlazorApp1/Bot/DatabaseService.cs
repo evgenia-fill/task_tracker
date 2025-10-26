@@ -1,5 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
-using System.IO;
+
 namespace BlazorApp1.Bot;
 
 public class DatabaseService
@@ -18,9 +18,9 @@ public class DatabaseService
     {
         using var connection = new SqliteConnection(connectionString);
         connection.Open();
-        
+
         var command = connection.CreateCommand();
-        command.CommandText = 
+        command.CommandText =
             """
             CREATE TABLE IF NOT EXISTS Users (
                 TelegramId INTEGER PRIMARY KEY,
@@ -30,5 +30,4 @@ public class DatabaseService
             """;
         command.ExecuteNonQuery();
     }
-    
 }
