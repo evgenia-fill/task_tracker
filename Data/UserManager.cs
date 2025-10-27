@@ -1,5 +1,5 @@
 using Microsoft.Data.Sqlite;
-using Data.models; // Убедитесь, что для модели BotUser используется этот namespace
+using Data.models; 
 
 namespace Data;
 
@@ -7,8 +7,6 @@ public class UserManager
 {
     private readonly string connectionString;
 
-    // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
-    // Конструктор теперь принимает готовую строку подключения, а не путь к файлу.
     public UserManager(string connectionString)
     {
         this.connectionString = connectionString;
@@ -38,7 +36,7 @@ public class UserManager
         Console.WriteLine($"Пользователь {fullname} (ID: {tgId}) успешно добавлен в базу.");
     }
 
-    public BotUser? GetUserByTgId(long tgId)
+    private BotUser? GetUserByTgId(long tgId)
     {
         using var connection = new SqliteConnection(connectionString);
         connection.Open();
@@ -47,6 +45,29 @@ public class UserManager
             "SELECT TelegramId, FullName, UniqueCode FROM Users WHERE TelegramId = @tgId;";
         command.Parameters.AddWithValue("@tgId", tgId);
 
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
+        {
+            return new BotUser
+            {
+                TelegramId = Convert.ToInt64(reader["TelegramId"]),
+                UserName = reader["FullName"].ToString(),
+                UniqueCode = Convert.ToInt64(reader["UniqueCode"])
+            };
+        }
+
+        return null;
+    }
+
+    public BotUser? GetUserByUniqueCode(long uniqueCode)
+    {
+        using var connection = new SqliteConnection(connectionString);
+        connection.Open();
+        var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT TelegramId, FullName, UniqueCode FROM Users WHERE UniqueCode = @code;";
+        command.Parameters.AddWithValue("@code", uniqueCode);
+        
         using var reader = command.ExecuteReader();
         if (reader.Read())
         {
