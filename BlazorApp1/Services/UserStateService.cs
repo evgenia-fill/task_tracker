@@ -4,19 +4,23 @@ namespace BlazorApp1.Services;
 
 public class UserStateService
 {
-    private BotUser? CurrentUser { get; set; }
-    private bool IsLoggedIn => CurrentUser != null;
-    public event Action? OnChange;
+    private BotUser? _currentUser;
 
-    public void LogIn(BotUser user)
+    public BotUser? CurrentUser => _currentUser;
+
+    public void SetUser(BotUser user)
     {
-        CurrentUser = user;
+        _currentUser = user;
+        NotifyStateChanged();
     }
 
     public void LogOut()
     {
-        CurrentUser = null;
+        _currentUser = null;
+        NotifyStateChanged();
     }
 
-    private void NotifyStateChanged() => OnChange?.Invoke();
+    public event Action? OnStateChange;
+
+    private void NotifyStateChanged() => OnStateChange?.Invoke();
 }
