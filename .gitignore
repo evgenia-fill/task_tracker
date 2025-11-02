@@ -4,8 +4,8 @@
 *.userosscache
 *.sln.docstates
 
-**/bin/
-**/obj/
+[Bb]in/
+[Oo]bj/
 
 .vs/
 .idea/
@@ -17,7 +17,6 @@ rider.module.iml
 *.cache
 *.info
 *.config
-
 project.lock.json
 project.assets.json
 *.nupkg
