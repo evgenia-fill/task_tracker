@@ -33,7 +33,9 @@ public class TelegramBotService
         }
         else
         {
-            userManager.AddUser(tgID, text);
+            // userManager.AddUserAsync(tgID, text);
+            var username = update.Message.From?.Username;
+            var appUser = await userManager.FindOrCreateUserAsync(tgID, text, username);
             await botClient.SendMessage(tgID, $"Спасибо! Вот твоя персональная ссылка: {reference}",
                 cancellationToken: cancellationToken);
         }

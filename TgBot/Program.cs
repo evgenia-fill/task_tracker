@@ -40,24 +40,27 @@
 //         return string.Join("\n", list);
 //     }
 // }
-using Data; 
+
+using Data;
 using Microsoft.Data.Sqlite;
-using Tg_Bot; 
+using Tg_Bot;
 
 class Program
 {
     const string token = "8450218559:AAGCQdk6hnrtP8aFZpZM-bCc7tCWeKNWaIE";
-    
+
     public static async Task Main()
     {
-        var dbPath = Path.Combine(AppContext.BaseDirectory, "DataBase.db");
+        // var dbPath = Path.Combine(AppContext.BaseDirectory, "DataBase.db");
+        var dbPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+            @"../../../../SharedDatabase/DataBase.db"));
         var connectionString = $"Data Source={dbPath}";
-        
+
         var dbService = new DatabaseService(connectionString);
-        dbService.Initialize(); 
-        
+        dbService.Initialize();
+
         var userManager = new UserManager(connectionString);
-        
+
         var bot = new TelegramBotService(token, userManager);
         await bot.StartAsync(CancellationToken.None);
 
@@ -65,9 +68,9 @@ class Program
         Console.ReadKey();
 
         Console.WriteLine("\nСодержимое базы данных:");
-        Console.WriteLine(ShowBd(connectionString)); 
+        Console.WriteLine(ShowBd(connectionString));
     }
-    
+
     private static string ShowBd(string connectionString)
     {
         var list = new List<string>();
@@ -80,9 +83,9 @@ class Program
 
         if (!reader.HasRows)
         {
-            return "База данных пуста.";
+            return "База данных пуста";
         }
-        
+
         while (reader.Read())
         {
             list.Add($"ID: {reader["TelegramId"]}, Имя: {reader["FullName"]}, Код: {reader["UniqueCode"]}");
