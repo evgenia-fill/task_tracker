@@ -55,8 +55,9 @@ class Program
     {
         var dbPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
             @"../../../../SharedDatabase/DataBase.db"));
+        var connectionString = $"Data Source={dbPath}";
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlite(dbPath)
+            .UseSqlite(connectionString)
             .Options;
         
         var context = new ApplicationDbContext(options);
