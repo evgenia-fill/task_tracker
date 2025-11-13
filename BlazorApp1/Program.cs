@@ -8,7 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-// var dbPath = Path.Combine(AppContext.BaseDirectory, "DataBase.db");
 var dbPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
     @"../../../../SharedDatabase/DataBase.db"));
 var connectionString = $"Data Source={dbPath}";
@@ -18,9 +17,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
         b => b.MigrationsAssembly("Data")));
 builder.Services.AddScoped<UserManager>();
 builder.Services.AddScoped<UserStateService>();
-
-// builder.Services.AddSingleton(new UserManager(connectionString));
-// builder.Services.AddScoped<UserStateService>();
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())

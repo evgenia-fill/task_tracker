@@ -4,11 +4,11 @@ namespace BlazorApp1.Services;
 
 public class UserStateService
 {
-    private BotUser? _currentUser;
+    private User? _currentUser;
 
-    public BotUser? CurrentUser => _currentUser;
+    public User? CurrentUser => _currentUser;
 
-    public void SetUser(BotUser user)
+    public void SetUser(User user)
     {
         _currentUser = user;
         NotifyStateChanged();

@@ -3,6 +3,7 @@
 @using System.Security.Cryptography;
 @using System.Text;
 @using Data.models;
+@using Task = System.Threading.Tasks.Task
 
 
 @* // Для вызова JavaScript *@
@@ -62,9 +63,9 @@
                 return;
             }
 
-            var appUser = await UserManager.FindOrCreateUserAsync(user.id, user.first_name, user.username);
+            var appUser = await UserManager.FindOrCreateUserAsync(user);
             UserStateService.SetUser(appUser);
-            NavigationManager.NavigateTo("/"); // перенаправляем на главную страницу
+            NavigationManager.NavigateTo("/"); 
         }
         catch (Exception e)
         {
