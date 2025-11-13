@@ -13,5 +13,4 @@ public class UserTask
     public int TaskId { get; set; }
     public Task Task { get; set; }
     public TaskRole Role { get; set; }
-    
 }

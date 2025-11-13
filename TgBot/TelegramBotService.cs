@@ -56,6 +56,5 @@ public class TelegramBotService
             receiverOptions,
             cancellationToken);
         var me = await client.GetMe();
-        //Console.WriteLine($"Бот запущен: @{me.Username}");
     }
 }
