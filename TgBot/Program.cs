@@ -42,7 +42,9 @@
 // }
 
 using Data;
+using Data.DataContext;
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Tg_Bot;
 
 class Program
@@ -51,15 +53,20 @@ class Program
 
     public static async Task Main()
     {
-        // var dbPath = Path.Combine(AppContext.BaseDirectory, "DataBase.db");
         var dbPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
             @"../../../../SharedDatabase/DataBase.db"));
-        var connectionString = $"Data Source={dbPath}";
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseSqlite(dbPath)
+            .Options;
+        
+        var context = new ApplicationDbContext(options);
+        await context.Database.MigrateAsync();
+        //var connectionString = $"Data Source={dbPath}";
 
-        var dbService = new DatabaseService(connectionString);
-        dbService.Initialize();
+        // var dbService = new DatabaseService(connectionString);
+        // dbService.Initialize();
 
-        var userManager = new UserManager(connectionString);
+        var userManager = new UserManager(context);
 
         var bot = new TelegramBotService(token, userManager);
         await bot.StartAsync(CancellationToken.None);
@@ -68,28 +75,18 @@ class Program
         Console.ReadKey();
 
         Console.WriteLine("\nСодержимое базы данных:");
-        Console.WriteLine(ShowBd(connectionString));
+        Console.WriteLine(await ShowDbAsync(context));
     }
 
-    private static string ShowBd(string connectionString)
+    private static async Task<string> ShowDbAsync(ApplicationDbContext context)
     {
-        var list = new List<string>();
-        using var connection = new SqliteConnection(connectionString);
-        connection.Open();
-
-        var command = connection.CreateCommand();
-        command.CommandText = "SELECT * FROM Users";
-        using var reader = command.ExecuteReader();
-
-        if (!reader.HasRows)
-        {
+        var users = await context.Users.ToListAsync();
+        if (!users.Any())
             return "База данных пуста";
-        }
 
-        while (reader.Read())
-        {
-            list.Add($"ID: {reader["TelegramId"]}, Имя: {reader["FullName"]}, Код: {reader["UniqueCode"]}");
-        }
+        var list = users.Select(u =>
+            $"ID: {u.Id}, TelegramId: {u.TelegramId}, Имя: {u.FirstName}, Фамилия: {u.LastName}, Username: {u.UserName}"
+        );
 
         return string.Join("\n", list);
     }
