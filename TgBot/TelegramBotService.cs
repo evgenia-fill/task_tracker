@@ -2,6 +2,8 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Polling;
 using Data;
+using Data.models;
+using Task = System.Threading.Tasks.Task;
 
 namespace Tg_Bot;
 
@@ -21,24 +23,21 @@ public class TelegramBotService
     {
         if (update.Message == null)
             return;
-        var tgID = update.Message.Chat.Id;
-        var text = update.Message.Text;
-        var reference =
-            "https://tr.pinterest.com/pin/35888128284853267/";
+        var tgId = update.Message.Chat.Id;
+        var tgUser = new TelegramUser
+        {
+            id = tgId,
+            first_name = update.Message.From?.FirstName,
+            last_name = update.Message.From?.LastName,
+            username = update.Message.From?.Username
+        };
 
-        if (text.StartsWith("/start"))
-        {
-            await botClient.SendMessage(tgID, "Привет! Введи свое имя и фамилию.",
-                cancellationToken: cancellationToken);
-        }
-        else
-        {
-            // userManager.AddUserAsync(tgID, text);
-            var username = update.Message.From?.Username;
-            var appUser = await userManager.FindOrCreateUserAsync(tgID, text, username);
-            await botClient.SendMessage(tgID, $"Спасибо! Вот твоя персональная ссылка: {reference}",
-                cancellationToken: cancellationToken);
-        }
+        await userManager.FindOrCreateUserAsync(tgUser);    
+        await botClient.SendMessage(
+            chatId: tgId,
+            text: "Вы успешно авторизованы!",
+            cancellationToken: cancellationToken
+        );
     }
 
     private Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
@@ -57,6 +56,6 @@ public class TelegramBotService
             receiverOptions,
             cancellationToken);
         var me = await client.GetMe();
-        Console.WriteLine($"Бот запущен: @{me.Username}");
+        //Console.WriteLine($"Бот запущен: @{me.Username}");
     }
 }
