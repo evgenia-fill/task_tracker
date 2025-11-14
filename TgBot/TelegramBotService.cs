@@ -4,6 +4,7 @@ using Telegram.Bot.Polling;
 using Data;
 using Data.models;
 using Task = System.Threading.Tasks.Task;
+using User = Data.models.User;
 
 namespace Tg_Bot;
 
@@ -24,12 +25,14 @@ public class TelegramBotService
         if (update.Message == null)
             return;
         var tgId = update.Message.Chat.Id;
-        var tgUser = new TelegramUser
+        var tgUser = new User
         {
-            id = tgId,
-            first_name = update.Message.From?.FirstName,
-            last_name = update.Message.From?.LastName,
-            username = update.Message.From?.Username
+            TelegramId = tgId,
+            FirstName = update.Message.From?.FirstName ?? "Unknown",
+            LastName = update.Message.From?.LastName ?? "",
+            UserName = update.Message.From?.Username 
+                       ?? update.Message.From?.FirstName 
+                       ?? "user_" + tgId
         };
 
         await userManager.FindOrCreateUserAsync(tgUser);    

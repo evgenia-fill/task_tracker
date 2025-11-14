@@ -15,20 +15,12 @@ public class UserManager
         this.context = context;
     }
 
-    public async Task<User> FindOrCreateUserAsync(TelegramUser tgUser)
+    public async Task<User> FindOrCreateUserAsync(User tgUser)
     {
         ArgumentNullException.ThrowIfNull(tgUser);
-        var user = await FindUserByTgIdAsync(tgUser.id);
+        var user = await FindUserByTgIdAsync(tgUser.TelegramId);
         if (user != null) return user;
-
-        user = new User
-        {
-            TelegramId = tgUser.id,
-            FirstName = tgUser.first_name,
-            LastName = tgUser.last_name,
-            UserName = !string.IsNullOrEmpty(tgUser.username) ? tgUser.username : tgUser.first_name
-        };
-        await context.Users.AddAsync(user);
+        await context.Users.AddAsync(tgUser);
         await context.SaveChangesAsync();
         return user;
     }
@@ -37,5 +29,4 @@ public class UserManager
     {
         return await context.Users.FirstOrDefaultAsync(x => x.TelegramId == telegramId);
     }
-
 }

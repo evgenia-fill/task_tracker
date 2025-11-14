@@ -9,6 +9,7 @@ public class User
     public string LastName { get; set; }
     public string? PhotoUrl { get; set; }
     public string? Bio { get; set; }
+    public string Hash { get; set; }
     
     public ICollection<Invitation> Invitations { get; set; }
     public ICollection<UserTeam> Teams { get; set; }

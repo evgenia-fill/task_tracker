@@ -2,9 +2,11 @@
 
 @using System.Security.Cryptography;
 @using System.Text;
-@using Data.models;
+@using Data.models
+@using Microsoft.AspNetCore.Identity
+@using static Data.models.User
 @using Task = System.Threading.Tasks.Task
-
+@using User = Telegram.Bot.Types.User
 
 @* // Для вызова JavaScript *@
 @inject IJSRuntime JSRuntime
@@ -51,7 +53,7 @@
     private string? errorMessage;
 
     [JSInvokable]
-    public async Task ProcessTelegramAuth(TelegramUser user)
+    public async Task ProcessTelegramAuth(Data.models.User user)
     {
         errorMessage = null;
         try
@@ -75,7 +77,7 @@
         }
     }
 
-    private bool IsTelegramDataValid(TelegramUser user)
+    private bool IsTelegramDataValid(Data.models.User user)
     {
         var botToken = Configuration["TelegramBotToken"];
         if (string.IsNullOrEmpty(botToken))
@@ -101,6 +103,6 @@
         var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(userDataString));
         var computedHashString = BitConverter.ToString(computedHash).Replace("-", "").ToLower();
 
-        return user.hash == computedHashString;
+        return user.Hash == computedHashString;
     }
 }
