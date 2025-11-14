@@ -22,7 +22,7 @@ public class UserManager
         if (user != null) return user;
         await context.Users.AddAsync(tgUser);
         await context.SaveChangesAsync();
-        return user;
+        return tgUser;
     }
 
     public async Task<User?> FindUserByTgIdAsync(long telegramId)

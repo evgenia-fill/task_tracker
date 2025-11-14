@@ -10,13 +10,26 @@ class Program
 
     public static async Task Main()
     {
-        var dbPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
-            @"../../../../SharedDatabase/DataBase.db"));
+        var solutionDir = Directory.GetParent(AppContext.BaseDirectory)
+            .Parent.Parent.Parent.Parent.FullName;
+        
+        var dbPath = Path.Combine(solutionDir, "SharedDatabase", "DataBase.db");
+
+        Console.WriteLine("DB Path: " + dbPath);
+        var dir = Path.GetDirectoryName(dbPath);
+        Console.WriteLine("Folder exists: " + Directory.Exists(dir));
+
+        if (!Directory.Exists(dir))
+        {
+            Console.WriteLine("Creating directory manually...");
+            Directory.CreateDirectory(dir);
+        }
         var connectionString = $"Data Source={dbPath}";
+
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseSqlite(connectionString)
             .Options;
-        
+
         var context = new ApplicationDbContext(options);
         await context.Database.MigrateAsync();
 
@@ -31,6 +44,7 @@ class Program
         Console.WriteLine("\nСодержимое базы данных:");
         Console.WriteLine(await ShowDbAsync(context));
     }
+
 
     private static async Task<string> ShowDbAsync(ApplicationDbContext context)
     {

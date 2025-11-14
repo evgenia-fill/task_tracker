@@ -32,7 +32,8 @@ public class TelegramBotService
             LastName = update.Message.From?.LastName ?? "",
             UserName = update.Message.From?.Username 
                        ?? update.Message.From?.FirstName 
-                       ?? "user_" + tgId
+                       ?? "user_" + tgId,
+            Hash = Guid.NewGuid().ToString()
         };
 
         await userManager.FindOrCreateUserAsync(tgUser);    
