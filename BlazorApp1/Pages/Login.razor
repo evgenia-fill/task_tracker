@@ -58,24 +58,46 @@
         errorMessage = null;
         try
         {
-            if (!IsTelegramDataValid(user))
+            using var http = new HttpClient();
+            http.BaseAddress = new Uri(NavigationManager.BaseUri);
+            
+            var response = await http.PostAsJsonAsync("api/auth/telegram", new
             {
-                errorMessage = "Ошибка проверки данных. Пожалуйста, попробуйте войти снова";
-                StateHasChanged(); // чтобы показать страницу с ошибкой
+                Id = user.TelegramId,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Username = user.UserName,
+                AuthDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                Hash = user.Hash
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = "Ошибка при авторизации на сервере.";
+                StateHasChanged();
                 return;
             }
 
-            var appUser = await UserManager.FindOrCreateUserAsync(user);
+            var appUser = await response.Content.ReadFromJsonAsync<Data.models.User>();
+            if (appUser == null)
+            {
+                errorMessage = "Не удалось получить данные пользователя с сервера.";
+                StateHasChanged();
+                return;
+            }
+            
             UserStateService.SetUser(appUser);
-            NavigationManager.NavigateTo("/"); 
+            
+            NavigationManager.NavigateTo("/");
         }
         catch (Exception e)
         {
-            Console.WriteLine(e); 
-            errorMessage = "Произошла непредвиденная ошибка на сервере. Попробуйте позже.";
+            Console.WriteLine(e);
+            errorMessage = "Произошла непредвиденная ошибка. Попробуйте позже.";
             StateHasChanged();
         }
     }
+
 
     private bool IsTelegramDataValid(Data.models.User user)
     {
