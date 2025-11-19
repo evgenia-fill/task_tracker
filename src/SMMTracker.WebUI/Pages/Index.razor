@@ -1,0 +1,102 @@
+﻿@* @page "/" *@
+@* @using BlazorApp1.Services *@
+@* @inject UserStateService UserStateService *@
+@* @inject NavigationManager NavigationManager *@
+@* *@
+@* <PageTitle>Главная страница</PageTitle> *@
+@* *@
+@* @if (UserStateService.CurrentUser != null) *@
+@* { *@
+@*     $1$ показывается, если пользователь вошел в систему #1# *@
+@*     <div class="card" style="width: 24rem;"> *@
+@*         <div class="card-header"> *@
+@*             <h3>Добро пожаловать, @UserStateService.CurrentUser.UserName!</h3> *@
+@*         </div> *@
+@*         <div class="card-body"> *@
+@*             <p>Вы успешно вошли в систему.</p> *@
+@*             <ul class="list-group list-group-flush"> *@
+@*                 <li class="list-group-item"> *@
+@*                     <strong>Ваш Telegram ID:</strong> @UserStateService.CurrentUser.TelegramId *@
+@*                 </li> *@
+@*                 <li class="list-group-item"> *@
+@*                     <strong>Ваш уникальный код:</strong> @UserStateService.CurrentUser.UniqueCode *@
+@*                 </li> *@
+@*             </ul> *@
+@*         </div> *@
+@*         <div class="card-footer"> *@
+@*             <button class="btn btn-danger" @onclick="Logout">Выйти</button> *@
+@*         </div> *@
+@*     </div> *@
+@* } *@
+@* else *@
+@* { *@
+@*     $1$ показывается, если пользователь не вошел в систему #1# *@
+@*     <div class="alert alert-info" role="alert"> *@
+@*         <h4>Вы не вошли в систему.</h4> *@
+@*         <p>Пожалуйста, перейдите на страницу входа, чтобы продолжить.</p> *@
+@*         <a href="/login" class="btn btn-primary">Перейти ко входу</a> *@
+@*     </div> *@
+@* } *@
+@* *@
+@* @code { *@
+@*     // при нажатии на выйти *@
+@*     private void Logout() *@
+@*     { *@
+@*         UserStateService.LogOut();  *@
+@*         NavigationManager.NavigateTo("/login"); *@
+@*     } *@
+@* } *@
+
+@page "/"
+@using SMMTracker.Infrastructure.Services
+@inject UserStateService UserStateService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Главная страница</PageTitle>
+
+@if (UserStateService.CurrentUser != null)
+{
+    @* показывается, если пользователь вошел в систему *@
+    <div class="card" style="width: 24rem;">
+        <div class="card-header">
+            <h3>Добро пожаловать, @UserStateService.CurrentUser.TelegramUsername!</h3>
+        </div>
+        <div class="card-body">
+            <p>Вы успешно вошли в систему.</p>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <strong>ID пользователя:</strong> @UserStateService.CurrentUser.Id
+                </li>
+                <li class="list-group-item">
+                    <strong>Telegram ID:</strong> @UserStateService.CurrentUser.TelegramId
+                </li>
+                <li class="list-group-item">
+                    <strong>Имя:</strong> @UserStateService.CurrentUser.FirstName
+                </li>
+                <li class="list-group-item">
+                    <strong>Фамилия:</strong> @UserStateService.CurrentUser.LastName
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer">
+            <button class="btn btn-danger" @onclick="Logout">Выйти</button>
+        </div>
+    </div>
+}
+else
+{
+    @* показывается, если пользователь не вошел в систему *@
+    <div class="alert alert-info" role="alert">
+        <h4>Вы не вошли в систему.</h4>
+        <p>Пожалуйста, перейдите на страницу входа, чтобы продолжить.</p>
+        <a href="/login" class="btn btn-primary">Перейти ко входу</a>
+    </div>
+}
+
+@code {
+    private void Logout()
+    {
+        UserStateService.LogOut(); 
+        NavigationManager.NavigateTo("/login");
+    }
+}

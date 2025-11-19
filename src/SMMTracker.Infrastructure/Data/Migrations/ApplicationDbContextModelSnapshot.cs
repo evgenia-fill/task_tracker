@@ -1,0 +1,361 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using SMMTracker.Infrastructure.Data.DataContext;
+
+#nullable disable
+
+namespace Data.Migrations
+{
+    [DbContext(typeof(ApplicationDbContext))]
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    {
+        protected override void BuildModel(ModelBuilder modelBuilder)
+        {
+#pragma warning disable 612, 618
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
+
+            modelBuilder.Entity("Data.models.Calendar", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId")
+                        .IsUnique();
+
+                    b.ToTable("Calendars");
+                });
+
+            modelBuilder.Entity("Data.models.Event", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CalendarId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("TeamId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CalendarId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("Events");
+                });
+
+            modelBuilder.Entity("Data.models.Invitation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Invitations");
+                });
+
+            modelBuilder.Entity("Data.models.Task", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("CalendarId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Deadline")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CalendarId");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("Tasks");
+                });
+
+            modelBuilder.Entity("Data.models.Team", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Teams");
+                });
+
+            modelBuilder.Entity("Data.models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Bio")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Hash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("TelegramId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Data.models.UserTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserTasks");
+                });
+
+            modelBuilder.Entity("Data.models.UserTeam", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserTeams");
+                });
+
+            modelBuilder.Entity("Data.models.Calendar", b =>
+                {
+                    b.HasOne("Data.models.Team", "Team")
+                        .WithOne("Calendar")
+                        .HasForeignKey("Data.models.Calendar", "TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("Data.models.Event", b =>
+                {
+                    b.HasOne("Data.models.Calendar", "Calendar")
+                        .WithMany("Events")
+                        .HasForeignKey("CalendarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Data.models.Team", null)
+                        .WithMany("Events")
+                        .HasForeignKey("TeamId");
+
+                    b.Navigation("Calendar");
+                });
+
+            modelBuilder.Entity("Data.models.Invitation", b =>
+                {
+                    b.HasOne("Data.models.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Data.models.User", "User")
+                        .WithMany("Invitations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Data.models.Task", b =>
+                {
+                    b.HasOne("Data.models.Calendar", null)
+                        .WithMany("Tasks")
+                        .HasForeignKey("CalendarId");
+
+                    b.HasOne("Data.models.Event", "Event")
+                        .WithMany("Tasks")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+                });
+
+            modelBuilder.Entity("Data.models.UserTask", b =>
+                {
+                    b.HasOne("Data.models.Task", "Task")
+                        .WithMany()
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Data.models.User", "User")
+                        .WithMany("Tasks")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Task");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Data.models.UserTeam", b =>
+                {
+                    b.HasOne("Data.models.Team", "Team")
+                        .WithMany("UserTeams")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Data.models.User", "User")
+                        .WithMany("Teams")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Data.models.Calendar", b =>
+                {
+                    b.Navigation("Events");
+
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("Data.models.Event", b =>
+                {
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("Data.models.Team", b =>
+                {
+                    b.Navigation("Calendar")
+                        .IsRequired();
+
+                    b.Navigation("Events");
+
+                    b.Navigation("UserTeams");
+                });
+
+            modelBuilder.Entity("Data.models.User", b =>
+                {
+                    b.Navigation("Invitations");
+
+                    b.Navigation("Tasks");
+
+                    b.Navigation("Teams");
+                });
+#pragma warning restore 612, 618
+        }
+    }
+}
