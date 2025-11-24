@@ -1,29 +1,46 @@
 ﻿using Data;
 using Data.DataContext;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Tg_Bot;
 
 class Program
 {
-    const string token = "8450218559:AAGCQdk6hnrtP8aFZpZM-bCc7tCWeKNWaIE";
-
     public static async Task Main()
     {
         var solutionDir = Directory.GetParent(AppContext.BaseDirectory)
-            .Parent.Parent.Parent.Parent.FullName; // корень решения
-        var dataProjectDir = Path.Combine(solutionDir, "Data"); // проект Data
+                              ?.Parent?.Parent?.Parent?.Parent?.FullName
+                          ?? throw new InvalidOperationException("Не удалось найти папку решения");
 
+        var dataProjectDir = Path.Combine(solutionDir, "Data");
         var dbPath = Path.Combine(dataProjectDir, "DataBase.db");
-        Console.WriteLine("DB Path: " + dbPath);
-
-        if (!Directory.Exists(dataProjectDir))
-        {
-            Console.WriteLine("Creating directory manually...");
-            Directory.CreateDirectory(dataProjectDir);
-        }
 
         var connectionString = $"Data Source={dbPath}";
+
+        Console.WriteLine($"Бот будет использовать базу данных по пути: {dbPath}");
+
+        var builder = new ConfigurationBuilder();
+        var configPath =
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../BlazorApp1/appsettings.json"));
+
+        if (!File.Exists(configPath))
+        {
+            Console.WriteLine($"Критическая ошибка: Файл конфигурации не найден по пути: {configPath}");
+            Console.ReadKey();
+            return;
+        }
+
+        builder.AddJsonFile(configPath, optional: false);
+        IConfiguration configuration = builder.Build();
+        var token = configuration.GetValue<string>("TelegramBotToken");
+
+        if (string.IsNullOrEmpty(token))
+        {
+            Console.WriteLine("Токен бота (TelegramBotToken) не найден в файле appsettings.json!");
+            Console.ReadKey();
+            return;
+        }
+
 
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseSqlite(connectionString)
@@ -39,21 +56,5 @@ class Program
 
         Console.WriteLine("Бот запущен. Нажмите любую клавишу для выхода...");
         Console.ReadKey();
-
-        Console.WriteLine("\nСодержимое базы данных:");
-        Console.WriteLine(await ShowDbAsync(context));
-    }
-
-    private static async Task<string> ShowDbAsync(ApplicationDbContext context)
-    {
-        var users = await context.Users.ToListAsync();
-        if (!users.Any())
-            return "База данных пуста";
-
-        var list = users.Select(u =>
-            $"ID: {u.Id}, TelegramId: {u.TelegramId}, Имя: {u.FirstName}, Фамилия: {u.LastName}, Username: {u.UserName}"
-        );
-
-        return string.Join("\n", list);
     }
 }

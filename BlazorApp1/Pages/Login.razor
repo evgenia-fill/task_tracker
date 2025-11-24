@@ -7,6 +7,7 @@
 @using static Data.models.User
 @using Task = System.Threading.Tasks.Task
 @using User = Telegram.Bot.Types.User
+@using BlazorApp1.DTOs;
 
 @* // Для вызова JavaScript *@
 @inject IJSRuntime JSRuntime
@@ -52,7 +53,7 @@
     private string? errorMessage;
 
     [JSInvokable]
-    public async Task ProcessTelegramAuth(AuthController.TelegramLoginData data)
+    public async Task ProcessTelegramAuth(TelegramLoginData data)
     {
         using var http = new HttpClient { BaseAddress = new Uri(NavigationManager.BaseUri) };
         var response = await http.PostAsJsonAsync("api/auth/telegram", data);

@@ -1,73 +1,54 @@
+using Data;
 using Data.DataContext;
 using Data.models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using BlazorApp1.DTOs;
 
-namespace BlazorApp1
+namespace BlazorApp1;
+
+[ApiController]
+public class AuthController : ControllerBase
 {
-    [ApiController]
-    public class AuthController : ControllerBase
+    private readonly UserManager _userManager;
+    private readonly ApplicationDbContext _context;
+
+    public AuthController(UserManager userManager, ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext _context;
+        _userManager = userManager;
+        _context = context;
+    }
 
-        public AuthController(ApplicationDbContext context)
+    [HttpPost("api/auth/telegram")]
+    public async Task<IActionResult> LoginWithTelegram([FromBody] TelegramLoginData data)
+    {
+        var connection = (SqliteConnection)_context.Database.GetDbConnection();
+        Console.WriteLine($"[AUTH_CONTROLLER_DEBUG] Сайт использует базу данных: {connection.DataSource}");
+
+        if (data == null)
         {
-            _context = context;
+            return BadRequest("No data received");
         }
 
-        public class TelegramLoginData
+        var user = new User
         {
-            public long Id { get; set; }
-            public string FirstName { get; set; } = "";
-            public string LastName { get; set; } = "";
-            public string Username { get; set; } = "";
-            public long AuthDate { get; set; }
-            public string Hash { get; set; } = "";
+            TelegramId = data.Id,
+            FirstName = data.FirstName,
+            LastName = data.LastName,
+            UserName = string.IsNullOrWhiteSpace(data.Username) ? $"user_{data.Id}" : data.Username,
+            Hash = Guid.NewGuid().ToString()
+        };
+
+        try
+        {
+            var appUser = await _userManager.FindOrCreateUserAsync(user);
+            return Ok(appUser);
         }
-
-        [HttpPost("api/auth/telegram")]
-        public async Task<IActionResult> LoginWithTelegram([FromBody] TelegramLoginData data)
+        catch (Exception ex)
         {
-            if (data == null)
-            {
-                Console.WriteLine("No data received from Telegram!");
-                return BadRequest("No data received");
-            }
-
-            Console.WriteLine($"Received TelegramId: {data.Id}, Username: {data.Username}");
-
-            var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.TelegramId == data.Id);
-
-            if (existingUser != null)
-            {
-                Console.WriteLine($"User found: {existingUser.Id}");
-                return Ok(existingUser);
-            }
-
-            var user = new User
-            {
-                TelegramId = data.Id,
-                FirstName = data.FirstName,
-                LastName = data.LastName,
-                UserName = string.IsNullOrWhiteSpace(data.Username) ? $"user_{data.Id}" : data.Username,
-                Hash = Guid.NewGuid().ToString()
-            };
-
-            _context.Users.Add(user);
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                Console.WriteLine($"New user created: {user.Id}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error saving user: {ex}");
-                return StatusCode(500, "Error saving user");
-            }
-
-            return Ok(user);
+            Console.WriteLine($"[AUTH_CONTROLLER_ERROR] Ошибка при сохранении пользователя: {ex.Message}");
+            return StatusCode(500, "Internal server error");
         }
     }
 }
