@@ -38,7 +38,6 @@
 {
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // если первый раз запускаем
         if (firstRender)
         {
             var reference = DotNetObjectReference.Create(this);
@@ -53,52 +52,23 @@
     private string? errorMessage;
 
     [JSInvokable]
-    public async Task ProcessTelegramAuth(Data.models.User user)
+    public async Task ProcessTelegramAuth(AuthController.TelegramLoginData data)
     {
-        errorMessage = null;
-        try
-        {
-            using var http = new HttpClient();
-            http.BaseAddress = new Uri(NavigationManager.BaseUri);
-            
-            var response = await http.PostAsJsonAsync("api/auth/telegram", new
-            {
-                Id = user.TelegramId,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Username = user.UserName,
-                AuthDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                Hash = user.Hash
-            });
+        using var http = new HttpClient { BaseAddress = new Uri(NavigationManager.BaseUri) };
+        var response = await http.PostAsJsonAsync("api/auth/telegram", data);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                errorMessage = "Ошибка при авторизации на сервере.";
-                StateHasChanged();
-                return;
-            }
-
-            var appUser = await response.Content.ReadFromJsonAsync<Data.models.User>();
-            if (appUser == null)
-            {
-                errorMessage = "Не удалось получить данные пользователя с сервера.";
-                StateHasChanged();
-                return;
-            }
-            
-            UserStateService.SetUser(appUser);
-            
-            NavigationManager.NavigateTo("/");
-        }
-        catch (Exception e)
+        if (!response.IsSuccessStatusCode)
         {
-            Console.WriteLine(e);
-            errorMessage = "Произошла непредвиденная ошибка. Попробуйте позже.";
+            errorMessage = "Ошибка при авторизации на сервере.";
             StateHasChanged();
+            return;
         }
+
+        var appUser = await response.Content.ReadFromJsonAsync<Data.models.User>();
+        UserStateService.SetUser(appUser);
+        NavigationManager.NavigateTo("/");
     }
-
-
+    
     private bool IsTelegramDataValid(Data.models.User user)
     {
         var botToken = Configuration["TelegramBotToken"];

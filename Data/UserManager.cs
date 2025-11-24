@@ -3,6 +3,7 @@ using Data.models;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Data.DataContext;
+using Task = System.Threading.Tasks.Task;
 
 namespace Data;
 
@@ -25,8 +26,18 @@ public class UserManager
         return tgUser;
     }
 
-    public async Task<User?> FindUserByTgIdAsync(long telegramId)
+    private async Task<User?> FindUserByTgIdAsync(long telegramId)
     {
         return await context.Users.FirstOrDefaultAsync(x => x.TelegramId == telegramId);
+    }
+    
+    public async Task DeleteUserAsync(long telegramId)
+    {
+        var user = await FindUserByTgIdAsync(telegramId);
+        if (user != null)
+        {
+            context.Users.Remove(user);
+            await context.SaveChangesAsync();
+        }
     }
 }

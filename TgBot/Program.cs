@@ -11,19 +11,18 @@ class Program
     public static async Task Main()
     {
         var solutionDir = Directory.GetParent(AppContext.BaseDirectory)
-            .Parent.Parent.Parent.Parent.FullName;
-        
-        var dbPath = Path.Combine(solutionDir, "SharedDatabase", "DataBase.db");
+            .Parent.Parent.Parent.Parent.FullName; // корень решения
+        var dataProjectDir = Path.Combine(solutionDir, "Data"); // проект Data
 
+        var dbPath = Path.Combine(dataProjectDir, "DataBase.db");
         Console.WriteLine("DB Path: " + dbPath);
-        var dir = Path.GetDirectoryName(dbPath);
-        Console.WriteLine("Folder exists: " + Directory.Exists(dir));
 
-        if (!Directory.Exists(dir))
+        if (!Directory.Exists(dataProjectDir))
         {
             Console.WriteLine("Creating directory manually...");
-            Directory.CreateDirectory(dir);
+            Directory.CreateDirectory(dataProjectDir);
         }
+
         var connectionString = $"Data Source={dbPath}";
 
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -44,7 +43,6 @@ class Program
         Console.WriteLine("\nСодержимое базы данных:");
         Console.WriteLine(await ShowDbAsync(context));
     }
-
 
     private static async Task<string> ShowDbAsync(ApplicationDbContext context)
     {

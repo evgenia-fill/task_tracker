@@ -3,53 +3,71 @@ using Data.models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace BlazorApp1;
-
-public class AuthController: ControllerBase
+namespace BlazorApp1
 {
-    private readonly ApplicationDbContext context;
-
-    public AuthController(ApplicationDbContext context)
+    [ApiController]
+    public class AuthController : ControllerBase
     {
-        this.context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    public class TelegramLoginData
-    {
-        public long Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Username { get; set; }
-        public long AuthDate { get; set; }
-        public string Hash { get; set; }
-    }
-
-    [HttpPost("api/auth/telegram")]
-    public async Task<IActionResult> LoginWithTelegram([FromBody] TelegramLoginData data)
-    {
-        if (data == null)
-            return BadRequest("No data received");
-        
-        var existing = await context.Users
-            .FirstOrDefaultAsync(u => u.TelegramId == data.Id);
-
-        if (existing != null)
+        public AuthController(ApplicationDbContext context)
         {
-            return Ok(existing);
+            _context = context;
         }
-        
-        var user = new User
+
+        public class TelegramLoginData
         {
-            TelegramId = data.Id,
-            FirstName = data.FirstName,
-            LastName = data.LastName,
-            UserName = data.Username ?? ("user_" + data.Id),
-            Hash = Guid.NewGuid().ToString()
-        };
+            public long Id { get; set; }
+            public string FirstName { get; set; } = "";
+            public string LastName { get; set; } = "";
+            public string Username { get; set; } = "";
+            public long AuthDate { get; set; }
+            public string Hash { get; set; } = "";
+        }
 
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
+        [HttpPost("api/auth/telegram")]
+        public async Task<IActionResult> LoginWithTelegram([FromBody] TelegramLoginData data)
+        {
+            if (data == null)
+            {
+                Console.WriteLine("No data received from Telegram!");
+                return BadRequest("No data received");
+            }
 
-        return Ok(user);
+            Console.WriteLine($"Received TelegramId: {data.Id}, Username: {data.Username}");
+
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.TelegramId == data.Id);
+
+            if (existingUser != null)
+            {
+                Console.WriteLine($"User found: {existingUser.Id}");
+                return Ok(existingUser);
+            }
+
+            var user = new User
+            {
+                TelegramId = data.Id,
+                FirstName = data.FirstName,
+                LastName = data.LastName,
+                UserName = string.IsNullOrWhiteSpace(data.Username) ? $"user_{data.Id}" : data.Username,
+                Hash = Guid.NewGuid().ToString()
+            };
+
+            _context.Users.Add(user);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                Console.WriteLine($"New user created: {user.Id}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving user: {ex}");
+                return StatusCode(500, "Error saving user");
+            }
+
+            return Ok(user);
+        }
     }
 }
