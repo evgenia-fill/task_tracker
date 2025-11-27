@@ -10,10 +10,9 @@ RUN dotnet restore BlazorApp1.sln
 
 COPY . .
 
-WORKDIR /src/BlazorApp1
-RUN dotnet publish "BlazorApp1.csproj" -c Release -o /app/publish
+RUN dotnet publish BlazorApp1/BlazorApp1.csproj
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-COPY --from=build /src/BlazorApp1/app/publish .
+COPY --from=build /src/BlazorApp1/bin/Release/net8.0/publish/ .
 ENTRYPOINT ["dotnet", "BlazorApp1.dll"]
