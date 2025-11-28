@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var solutionDir = Directory.GetParent(AppContext.BaseDirectory)
+/*var solutionDir = Directory.GetParent(AppContext.BaseDirectory)
                       ?.Parent?.Parent?.Parent?.Parent?.FullName 
-                  ?? throw new InvalidOperationException("Cannot find solution directory");
+                  ?? throw new InvalidOperationException("Cannot find solution directory");*/
 
-var dataProjectDir = Path.Combine(solutionDir, "Data");
+var dataProjectDir = Path.Combine(AppContext.BaseDirectory, "Data");
 if (!Directory.Exists(dataProjectDir))
     Directory.CreateDirectory(dataProjectDir);
 

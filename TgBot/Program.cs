@@ -8,11 +8,11 @@ class Program
 {
     public static async Task Main()
     {
-        var solutionDir = Directory.GetParent(AppContext.BaseDirectory)
+        /*var solutionDir = Directory.GetParent(AppContext.BaseDirectory)
                               ?.Parent?.Parent?.Parent?.Parent?.FullName
-                          ?? throw new InvalidOperationException("Не удалось найти папку решения");
+                          ?? throw new InvalidOperationException("Не удалось найти папку решения");*/
 
-        var dataProjectDir = Path.Combine(solutionDir, "Data");
+        var dataProjectDir = Path.Combine(AppContext.BaseDirectory, "Data");
         var dbPath = Path.Combine(dataProjectDir, "DataBase.db");
 
         var connectionString = $"Data Source={dbPath}";
@@ -20,27 +20,25 @@ class Program
         Console.WriteLine($"Бот будет использовать базу данных по пути: {dbPath}");
 
         var builder = new ConfigurationBuilder();
-        var configPath =
-            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../BlazorApp1/appsettings.json"));
-
-        if (!File.Exists(configPath))
+        
+        builder.SetBasePath(Directory.GetCurrentDirectory())
+               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+        
+        IConfiguration configuration = builder.Build();
+        
+        if (!File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json")))
         {
-            Console.WriteLine($"Критическая ошибка: Файл конфигурации не найден по пути: {configPath}");
-            Console.ReadKey();
+            Console.WriteLine($"Критическая ошибка: Файл конфигурации не найден по пути: {Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json")}");
             return;
         }
 
-        builder.AddJsonFile(configPath, optional: false);
-        IConfiguration configuration = builder.Build();
         var token = configuration.GetValue<string>("TelegramBotToken");
 
         if (string.IsNullOrEmpty(token))
         {
-            Console.WriteLine("Токен бота (TelegramBotToken) не найден в файле appsettings.json!");
-            Console.ReadKey();
+            Console.WriteLine("Критическая ошибка: Токен бота (TelegramBotToken) не найден в файле appsettings.json!");
             return;
         }
-
 
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseSqlite(connectionString)
@@ -54,7 +52,8 @@ class Program
         var bot = new TelegramBotService(token, userManager);
         await bot.StartAsync(CancellationToken.None);
 
-        Console.WriteLine("Бот запущен. Нажмите любую клавишу для выхода...");
-        Console.ReadKey();
+        Console.WriteLine("Бот запущен. Ожидание завершения...");
+        
+        await Task.Delay(Timeout.Infinite);
     }
 }
