@@ -8,11 +8,11 @@ class Program
 {
     public static async Task Main()
     {
-        var solutionDir = Directory.GetParent(AppContext.BaseDirectory)
+        /*var solutionDir = Directory.GetParent(AppContext.BaseDirectory)
                               ?.Parent?.Parent?.Parent?.Parent?.FullName
-                          ?? throw new InvalidOperationException("Не удалось найти папку решения");
+                          ?? throw new InvalidOperationException("Не удалось найти папку решения");*/
 
-        var dataProjectDir = Path.Combine(solutionDir, "Data");
+        var dataProjectDir = Path.Combine(AppContext.BaseDirectory, "Data");
         var dbPath = Path.Combine(dataProjectDir, "DataBase.db");
 
         var connectionString = $"Data Source={dbPath}";
