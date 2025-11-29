@@ -5,33 +5,34 @@ namespace SMMTracker.Domain.Entities;
 
 public class User : Entity
 {
-    public long TelegramId { get; private set; }
-    public string TelegramUsername { get; private set; }
-    public string FirstName { get; private set; }
-    public string LastName { get; private set; }
-    public string ProfileDescription { get; private set; }
-    public string Hash { get; private set; }
+    public long TelegramId { get; set; }
+    public string TelegramUsername { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string UserName { get; set; }
+    public string ProfileDescription { get; set; }
+    public string Hash { get; set; }
 
 
     private readonly List<Invitation> invitations = new();
     private readonly List<UserTeam> userTeams = new();
     private readonly List<UserTask> userTasks = new();
-    
-    private User() {}
 
-    public static User Create(long telegramId, string firstName, string lastName, string username)
+    public User() {}
+
+    public static User Create(User otherUser)
     {
-        if (string.IsNullOrWhiteSpace(firstName))
+        if (string.IsNullOrWhiteSpace(otherUser.FirstName))
             throw new Exception();
-        if (string.IsNullOrWhiteSpace(lastName))
+        if (string.IsNullOrWhiteSpace(otherUser.LastName))
             throw new Exception();
 
         var user = new User
         {
-            TelegramId = telegramId,
-            FirstName = firstName.Trim(),
-            LastName = lastName.Trim(),
-            TelegramUsername = username,
+            TelegramId = otherUser.TelegramId,
+            FirstName = otherUser.FirstName.Trim(),
+            LastName = otherUser.LastName.Trim(),
+            TelegramUsername = otherUser.UserName.Trim(),
         };
         return user;
     }

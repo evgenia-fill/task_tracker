@@ -1,9 +1,10 @@
 using SMMTracker.Application.Dtos;
+using SMMTracker.Domain.Entities;
 
 namespace SMMTracker.Application.Interfaces;
 
 public interface IUserManager
 {
-   Task<UserDto> FindOrCreateUserAsync(long telegramId, string firstName, string lastName, string username);
+   Task<UserDto> FindOrCreateUserAsync(User user);
    
 }

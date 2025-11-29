@@ -2,7 +2,9 @@ using SMMTracker.Application.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
-
+using SMMTracker.Domain.Entities;
+using Task = System.Threading.Tasks.Task;
+using User = SMMTracker.Domain.Entities.User;
 
 namespace SMMTracker.TgBot;
 
@@ -24,13 +26,15 @@ public class TelegramBotService
         
         var chatId = update.Message.Chat.Id;
         var tgUser = update.Message.From;
-        
-        var userDto = await _userManager.FindOrCreateUserAsync(
-            telegramId: tgUser.Id,
-            firstName: tgUser.FirstName ?? "Unknown",
-            lastName: tgUser.LastName ?? "",
-            username: tgUser.Username ?? "");
-        
+        var user = new User
+        {
+            TelegramId = tgUser.Id,
+            FirstName = tgUser.FirstName ?? "Unknown",
+            LastName = tgUser.LastName ?? "",
+            UserName = tgUser.Username ?? ""
+        };
+        var userDto = await _userManager.FindOrCreateUserAsync(user);
+
         await botClient.SendMessage(
             chatId: chatId,
             text: $"Добро пожаловать, {userDto.FirstName}! Вы успешно авторизованы.",

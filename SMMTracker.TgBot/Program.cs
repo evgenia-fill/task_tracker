@@ -4,6 +4,7 @@ using SMMTracker.Infrastructure.Data.DataContext;
 using SMMTracker.Infrastructure.Services;
 using SMMTracker.TgBot;
 
+namespace SMMTracker.TgBot;
 class Program
 {
     const string token = "8450218559:AAGCQdk6hnrtP8aFZpZM-bCc7tCWeKNWaIE";

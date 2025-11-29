@@ -8,6 +8,6 @@ public class UserTask : Entity
     public int TaskId { get; set; }
     public UserTaskRole Role { get; set; }
 
-    public User User { get; set; }
-    public Task Task { get; set; }
+    public User? User { get; set; }
+    public Task? Task { get; set; }
 }

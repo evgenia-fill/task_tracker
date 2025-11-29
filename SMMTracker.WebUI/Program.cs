@@ -12,7 +12,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddControllers();
 
-// Бд
+// База данных
 var dbDir = Path.Combine(AppContext.BaseDirectory, "SharedDatabase");
 Directory.CreateDirectory(dbDir);
 var dbPath = Path.Combine(dbDir, "DataBase.db");
@@ -21,19 +21,20 @@ var connectionString = $"Data Source={dbPath}";
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
     opt.UseSqlite(connectionString));
 
-// Сервисы
+// Сервисы приложения
 builder.Services.AddScoped<UserManager>();
 builder.Services.AddScoped<UserStateService>();
 
 var app = builder.Build();
 
-// Миграции
+// Применяем миграции
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await context.Database.MigrateAsync();
 }
 
+// Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -46,10 +47,11 @@ else
 
 app.UseStaticFiles();
 app.UseRouting();
+
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 app.MapControllers();
 
-Console.WriteLine("Web application started: http://localhost:5000");
+Console.WriteLine("Web application started: [http://localhost:5000](http://localhost:5000)");
 
 app.Run();

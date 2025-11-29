@@ -15,14 +15,14 @@ public class UserManager : IUserManager
         _context = context;
     }
 
-    public async Task<UserDto> FindOrCreateUserAsync(long telegramId, string firstName, string lastName, string username)
+    public async Task<UserDto> FindOrCreateUserAsync(User otherUser)
     {
         var user = await _context.Users
-            .FirstOrDefaultAsync(x => x.TelegramId == telegramId);
+            .FirstOrDefaultAsync(x => x.TelegramId == otherUser.TelegramId);
         
         if (user == null)
         {
-            user = User.Create(telegramId, firstName, lastName, username);
+            user = User.Create(user);
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
         }

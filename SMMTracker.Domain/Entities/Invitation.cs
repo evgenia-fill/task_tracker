@@ -10,6 +10,6 @@ public class Invitation : Entity
     public InvitationStatus Status { get; set; }
     
     // связи (в бд не идут)
-    public Team Team { get; set; }
-    public User User { get; set; }
+    public Team? Team { get; set; }
+    public User? User { get; set; }
 }

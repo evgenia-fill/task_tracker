@@ -8,6 +8,6 @@ public class UserTeam : Entity
     public int TeamId { get; set; }
     public TeamRole Role { get; set; }
 
-    public User User { get; set; }
-    public Team Team { get; set; }
+    public User? User { get; set; }
+    public Team? Team { get; set; }
 }
