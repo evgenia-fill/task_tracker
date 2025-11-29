@@ -12,8 +12,7 @@ class Program
                               ?.Parent?.Parent?.Parent?.Parent?.FullName
                           ?? throw new InvalidOperationException("Не удалось найти папку решения");*/
 
-        var dataProjectDir = Path.Combine(AppContext.BaseDirectory, "Data");
-        var dbPath = Path.Combine(dataProjectDir, "DataBase.db");
+        var dbPath = Path.Combine(AppContext.BaseDirectory, "DataBase.db");
 
         var connectionString = $"Data Source={dbPath}";
 
