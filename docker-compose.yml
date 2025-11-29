@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  service-one:
+  webapp:
     build:
       context: .
       dockerfile: ./BlazorApp1/Dockerfile
@@ -9,10 +9,8 @@ services:
       - "5001:8080"
     restart: always
 
-  service-three:
+  tgbot:
     build:
       context: .
       dockerfile: ./TgBot/Dockerfile
-    ports:
-      - "5003:8080"
     restart: always
