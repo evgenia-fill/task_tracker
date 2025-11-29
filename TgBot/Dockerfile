@@ -17,6 +17,6 @@ WORKDIR /app
 
 COPY --from=build /app/publish/ .
 
-COPY ["TgBot/appsettings.json", "./"]
+COPY ["BlazorApp1/appsettings.json", "./"]
 
 ENTRYPOINT ["dotnet", "TgBot.dll"]
