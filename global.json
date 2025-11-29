@@ -1,6 +1,10 @@
 {
   "sdk": {
+<<<<<<< HEAD
     "version": "8.0.412",
+=======
+    "version": "8.0.0",
+>>>>>>> masha
     "rollForward": "latestMinor",
     "allowPrerelease": false
   }
