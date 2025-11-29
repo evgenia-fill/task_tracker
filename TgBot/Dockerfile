@@ -10,9 +10,13 @@ RUN dotnet restore BlazorApp1.sln
 
 COPY . .
 
-RUN dotnet publish TgBot/TgBot.csproj
+RUN dotnet publish TgBot/TgBot.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-COPY --from=build /src/TgBot/bin/Release/net8.0/publish/ .
+
+COPY --from=build /app/publish/ .
+
+COPY ["TgBot/appsettings.json", "./"]
+
 ENTRYPOINT ["dotnet", "TgBot.dll"]
