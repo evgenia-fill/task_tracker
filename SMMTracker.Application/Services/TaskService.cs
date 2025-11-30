@@ -31,4 +31,24 @@ public class TaskService
         task.MoveToReview();
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async System.Threading.Tasks.Task MoveTaskToDoneAsync(int taskId,
+        CancellationToken cancellationToken = default)
+    {
+        var task = await _context.Tasks.FindAsync([taskId], cancellationToken);
+        if (task == null)
+            throw new Exception("Task not found");
+        task.MoveToDone();
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async System.Threading.Tasks.Task RemoveTaskAsync(int taskId,
+        CancellationToken cancellationToken = default)
+    {
+        var task = await _context.Tasks.FindAsync([taskId], cancellationToken);
+        if (task == null)
+            throw new Exception("Task not found");
+        _context.Tasks.Remove(task);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

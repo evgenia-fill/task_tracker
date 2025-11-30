@@ -42,7 +42,7 @@ public class Task : Entity
     {
         if (Status == TaskStatus.InProgress)
             Status = TaskStatus.Review;
-        throw new Exception("Cannot move task to review from this status");
+        throw new Exception("Cannot move task to Review from this status");
     }
 
     public void MoveToDone()
