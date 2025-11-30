@@ -19,10 +19,11 @@ public class Task : Entity
     public Calendar? Calendar { get; private set; }
     public List<UserTask>? UserTasks { get; private set; } = new();
 
-    public Task(string title, string description)
+    public Task(string title, string description, int calendarId)
     {
         Title = title;
         Description = description;
+        CalendarId = calendarId;
         Status = TaskStatus.InProgress;
         CreatedAt = DateTime.UtcNow;
     }
