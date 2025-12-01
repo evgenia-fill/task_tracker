@@ -1,4 +1,4 @@
-namespace BlazorApp1.DTOs;
+namespace SMMTracker.WebUI.DTOs;
 
 public class TelegramLoginData
 {

@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Interfaces;

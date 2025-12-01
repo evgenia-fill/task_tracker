@@ -15,13 +15,6 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddControllers();
 
 // База данных
-// var dbDir = Path.Combine(AppContext.BaseDirectory, "SharedDatabase");
-// Directory.CreateDirectory(dbDir);
-// var dbPath = Path.Combine(dbDir, "DataBase.db");
-// var connectionString = $"Data Source={dbPath}";
-
-// builder.Services.AddDbContext<ApplicationDbContext>(opt =>
-//     opt.UseSqlite(connectionString));
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>

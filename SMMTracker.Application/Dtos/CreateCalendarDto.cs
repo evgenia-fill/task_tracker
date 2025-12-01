@@ -1,5 +1,3 @@
-using SMMTracker.Domain.Entities;
-
 namespace SMMTracker.Application.Dtos;
 
 public class CreateCalendarDto
