@@ -16,7 +16,12 @@ public class TaskService
     public async Task<int> CreateTaskAsync(CreateTaskDto taskDto,
         CancellationToken cancellationToken = default)
     {
-        var task = new Task(taskDto.Title, taskDto.Description, taskDto.CalendarId);
+        var task = new Task(
+            taskDto.Name,
+            taskDto.Description,
+            taskDto.EventId,
+            taskDto.CalendarId
+        );
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync(cancellationToken);
         return task.Id;
