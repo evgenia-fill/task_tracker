@@ -1,0 +1,136 @@
+@page "/login"
+
+@using System.Security.Cryptography;
+@using System.Text;
+@using SMMTracker.Domain.Entities
+@using Microsoft.AspNetCore.Identity
+@using Task = System.Threading.Tasks.Task
+@using User = Telegram.Bot.Types.User
+@using BlazorApp1.DTOs;
+@using SMMTracker.Application.Dtos
+
+@* // Для вызова JavaScript *@
+@inject IJSRuntime JSRuntime
+@* // Для работы с пользователями в БД *@
+@inject SMMTracker.Infrastructure.Services.UserManager UserManager
+@* // Для сохранения состояния пользователя *@
+@inject SMMTracker.Infrastructure.Services.UserStateService UserStateService
+@* // Для перенаправления на другие страницы *@
+@inject NavigationManager NavigationManager
+@* // Для чтения настроек (например, токена) *@
+@inject IConfiguration Configuration
+
+@* // метод для отрисовки кнопки для входа через тг *@
+
+<h3>Вход в систему</h3>
+<p>Пожалуйста, войдите, используя ваш аккаунт Telegram.</p>
+
+@* встраиваем кнопку для тг *@
+<div id="telegram-login-widget"></div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3" role="alert">
+        @errorMessage
+    </div>
+}
+
+@code
+{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var reference = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("telegramLogin.renderWidget", 
+                "telegram-login-widget", reference);
+        }
+    }
+}
+
+@code
+{
+    private string? errorMessage;
+
+    [JSInvokable]
+//<<<<<<< HEAD:BlazorApp1/Pages/Login.razor
+    public async Task ProcessTelegramAuth(TelegramLoginData data)
+    {
+        using var http = new HttpClient { BaseAddress = new Uri(NavigationManager.BaseUri) };
+        var response = await http.PostAsJsonAsync("api/auth/telegram", data);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            errorMessage = "Ошибка при авторизации на сервере.";
+            StateHasChanged();
+            return;
+        }
+
+        var appUserEntity = await response.Content.ReadFromJsonAsync<SMMTracker.Domain.Entities.User>();
+        var appUserDto = new UserDto
+        {
+            Id = appUserEntity.Id,
+            FirstName = appUserEntity.FirstName,
+            LastName = appUserEntity.LastName,
+            TelegramId = appUserEntity.TelegramId,
+            TelegramUsername = appUserEntity.TelegramUsername
+        };
+        UserStateService.SetUser(appUserDto);
+        NavigationManager.NavigateTo("/");
+    }
+//     
+//     private bool IsTelegramDataValid(Data.models.User user)
+// =======
+//     public async Task ProcessTelegramAuth(Domain.Entities.User user)
+//     {
+//         errorMessage = null;
+//         try
+//         {
+//             if (!IsTelegramDataValid(user))
+//             {
+//                 errorMessage = "Ошибка проверки данных. Пожалуйста, попробуйте войти снова";
+//                 StateHasChanged(); // чтобы показать страницу с ошибкой
+//                 return;
+//             }
+//
+//             var appUser = await UserManager.FindOrCreateUserAsync(user.TelegramId, user.FirstName, user.LastName,user.TelegramUsername);
+//             UserStateService.SetUser(appUser);
+//             NavigationManager.NavigateTo("/"); 
+//         }
+//         catch (Exception e)
+//         {
+//             Console.WriteLine(e); 
+//             errorMessage = "Произошла непредвиденная ошибка на сервере. Попробуйте позже.";
+//             StateHasChanged();
+//         }
+//     }
+
+    private bool IsTelegramDataValid(Domain.Entities.User user)
+    {
+        var botToken = Configuration["TelegramBotToken"];
+        if (string.IsNullOrEmpty(botToken))
+            throw new InvalidOperationException("Bot not founded!");
+
+        var userData = new List<string>();
+        var allProperties = user.GetType().GetProperties();
+        foreach (var property in allProperties)
+        {
+            if (property.Name == "hash") continue;
+            var value = property.GetValue(user);
+            if (value != null)
+                userData.Add($"{property.Name}={value}");
+        }
+
+        userData.Sort();
+        var userDataString = string.Join("\n", userData);
+
+        using var sha256 = SHA256.Create();
+        var tokenBytes = Encoding.UTF8.GetBytes(botToken);
+        var secretKey = SHA256.HashData(tokenBytes);
+        using var hmac = new HMACSHA256(secretKey);
+        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(userDataString));
+        var computedHashString = BitConverter.ToString(computedHash).Replace("-", "").ToLower();
+
+        return user.Hash == computedHashString;
+    }
+}
