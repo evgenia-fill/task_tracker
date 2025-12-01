@@ -1,5 +1,6 @@
 using SMMTracker.Domain.Entities;
-namespace BlazorApp1.Services;
+
+namespace SMMTracker.WebUI.Services;
 
 public class UserStateService
 {

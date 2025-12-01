@@ -1,10 +1,8 @@
-using Microsoft.AspNetCore.Http.HttpResults;
-using SMMTracker.Application.Dtos;
-using SMMTracker.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Services;
 
-namespace BlazorApp1.API;
+namespace SMMTracker.WebUI.API;
 
 [ApiController]
 [Route("api/[controller]")]

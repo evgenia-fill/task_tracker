@@ -1,13 +1,12 @@
-using Data;
-using SMMTracker.Infrastructure.Data.DataContext;
-using SMMTracker.Domain.Entities;
-using SMMTracker.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using BlazorApp1.DTOs;
+using SMMTracker.Domain.Entities;
+using SMMTracker.Infrastructure.Data.DataContext;
+using SMMTracker.Infrastructure.Services;
+using SMMTracker.WebUI.DTOs;
 
-namespace BlazorApp1;
+namespace SMMTracker.WebUI;
 
 [ApiController]
 public class AuthController : ControllerBase

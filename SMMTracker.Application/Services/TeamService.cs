@@ -1,9 +1,8 @@
 using SMMTracker.Domain.Entities;
-
-namespace SMMTracker.Application.Services;
-
 using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Interfaces;
+
+namespace SMMTracker.Application.Services;
 
 public class TeamService
 {
