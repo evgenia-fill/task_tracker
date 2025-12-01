@@ -1,36 +1,20 @@
-*.sln.DotSettings.user
-*.suo
+**/bin/
+**/obj/
+
 *.user
-*.userosscache
+*.suo
 *.sln.docstates
-
-[Bb]in/
-[Oo]bj/
-
 .vs/
-.idea/
-
-<<<<<<< HEAD
-=======
-*/appsettings.Development.json
-
->>>>>>> masha
-*.rider.project.model.nuget.info
-*.sln.iml
-rider.module.iml
-
+.idea
 *.cache
 *.info
 *.config
+
+
+.idea/
+*.sln.iml
+*.rider.project.model.nuget.info
+rider.module.iml
+
 project.lock.json
 project.assets.json
-*.nupkg
-
-*.db
-<<<<<<< HEAD
-*.db-journal
-*.db-shm
-*.db-wal
-=======
-*.db-journal
->>>>>>> masha
