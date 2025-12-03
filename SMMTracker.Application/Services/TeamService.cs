@@ -20,4 +20,14 @@ public class TeamService
         await _context.SaveChangesAsync(cancellationToken);
         return team.Id;
     }
+
+    public string GenerateTeamCode()
+    {
+        const string symbols = "ABCDEFGHIGKLMNOPQRSTUVWXYZ012345678";
+        var random = new Random();
+        return new string(Enumerable
+            .Repeat(symbols, 5)
+            .Select(s => s[random.Next(s.Length)])
+            .ToArray());
+    }
 }

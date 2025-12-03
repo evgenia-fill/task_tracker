@@ -1,7 +1,6 @@
 using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Interfaces;
 using Task = SMMTracker.Domain.Entities.Task;
-
 namespace SMMTracker.Application.Services;
 
 public class TaskService
