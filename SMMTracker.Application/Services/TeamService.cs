@@ -15,7 +15,7 @@ public class TeamService
         _context = context;
     }
 
-    public async Task<int> CreateTeamAsync(CreateTeamDto dto, CancellationToken cancellationToken = default)
+    public async Task<int> CreateTeamAsync(CreateTeamDto dto, int creatorId, CancellationToken cancellationToken = default)
     {
         var code = GenerateTeamCode();
         while (await _context.Teams.AnyAsync(t => t.Code == code, cancellationToken))
@@ -24,6 +24,15 @@ public class TeamService
         }
         var team = new Team(dto.Name, code);
         _context.Teams.Add(team);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var userTeam = new UserTeam
+        {
+            TeamId = team.Id,
+            UserId = creatorId,
+            Role = TeamRole.Admin,
+        };
+        _context.UserTeams.Add(userTeam);
         await _context.SaveChangesAsync(cancellationToken);
         return team.Id;
     }
@@ -55,6 +64,7 @@ public class TeamService
         
         _context.UserTeams.Add(userTeam);
         await _context.SaveChangesAsync(cancellationToken);
+        
         return true;
     }
     

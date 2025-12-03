@@ -13,13 +13,20 @@ public class TeamsController : ControllerBase
     public TeamsController(TeamService teamService)
     {
         _teamService = teamService; 
-        
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateTeam([FromBody] CreateTeamDto dto)
     {
-        var teamId = await _teamService.CreateTeamAsync(dto);
+        var creatorId = int.Parse(User.FindFirst("Id")?.Value ?? throw new Exception("User not found"));
+        var teamId = await _teamService.CreateTeamAsync(dto, creatorId);
         return Ok(new { TeamId = teamId });
+    }
+    
+    [HttpPost("join")]
+    public async Task<IActionResult> JoinTeam([FromBody] JoinTeamDto dto)
+    {
+        var ok = await _teamService.JoinTeamAsync(dto);
+        return ok ? Ok() : BadRequest("Invalid team code");
     }
 }
