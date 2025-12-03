@@ -11,5 +11,7 @@ public interface IApplicationDbContext
     DbSet<Team> Teams { get; set; }
     DbSet<Calendar> Calendars { get; set; }
     DbSet<Event> Events { get; set; }
+    DbSet<UserTeam> UserTeams { get; set; }
+    DbSet<UserTask> UserTasks { get; set; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
