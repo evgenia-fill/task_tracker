@@ -13,6 +13,7 @@ public class Event : Entity
 
     public Calendar Calendar { get; private set; } = null!;
     public List<Task> Tasks { get; private set; } = new();
+    public Team Team { get; private set; } = null!;
 
     public Event(string? name, string? description, DateTime date, int calendarId)
     {
