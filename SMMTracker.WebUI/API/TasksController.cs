@@ -63,4 +63,22 @@ public class TasksController : ControllerBase
             return NotFound(new { message = ex.Message });
         }
     }
+
+    [HttpPost("{taskId}/assign")]
+    public async Task<IActionResult> AssignUserToTask(int taskId, [FromBody] AssignUserDto dto)
+    {
+        try
+        {
+            await _taskService.AssignUserToTaskAsync(taskId, dto.UserId, dto.AdminId);
+            return Ok();
+        }
+        catch (UnauthorizedAccessException e)
+        {
+            return Forbid(e.Message);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }
