@@ -47,4 +47,21 @@ public class TeamsController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpPost("{teamId}/leave")]
+    public async Task<IActionResult> LeaveTeam(int teamId, [FromBody] LeaveTeamDto dto)
+    {
+        try
+        {
+            var result = await _teamService.LeaveTeamAsync(teamId, dto.UserId);
+            if (!result)
+                return BadRequest("User is not in the team.");
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+    
 }

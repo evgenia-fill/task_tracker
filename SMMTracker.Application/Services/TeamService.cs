@@ -95,4 +95,20 @@ public class TeamService
         _context.UserTeams.Remove(userTeam);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<bool> LeaveTeamAsync(int teamId, int userId, CancellationToken cancellationToken = default)
+    {
+        var userTeam = await _context.UserTeams
+            .FirstOrDefaultAsync(ut => ut.TeamId == teamId && ut.UserId == userId, cancellationToken);
+        
+        if (userTeam == null)
+            return false;
+        
+        if (userTeam.Role == TeamRole.Admin)
+            throw new Exception("Admin cannot leave team");
+        
+        _context.UserTeams.Remove(userTeam);
+        await _context.SaveChangesAsync(cancellationToken);
+        return true;
+    }
 }
