@@ -29,4 +29,22 @@ public class TeamsController : ControllerBase
         var ok = await _teamService.JoinTeamAsync(dto);
         return ok ? Ok() : BadRequest("Invalid team code");
     }
+
+    [HttpPost("{teamId}/remove-user")]
+    public async Task<IActionResult> RemoveUser(int teamId, [FromBody] RemoveUserDto dto)
+    {
+        try
+        {
+            await _teamService.RemoveUserFromTeamAsync(teamId, dto.UserId, dto.AdminId);
+            return Ok();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }

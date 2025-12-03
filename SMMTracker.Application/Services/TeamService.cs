@@ -3,6 +3,7 @@ using SMMTracker.Domain.Entities;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Interfaces;
 using SMMTracker.Domain.Enums;
+using Task = System.Threading.Tasks.Task;
 
 namespace SMMTracker.Application.Services;
 
@@ -15,13 +16,15 @@ public class TeamService
         _context = context;
     }
 
-    public async Task<int> CreateTeamAsync(CreateTeamDto dto, int creatorId, CancellationToken cancellationToken = default)
+    public async Task<int> CreateTeamAsync(CreateTeamDto dto, int creatorId,
+        CancellationToken cancellationToken = default)
     {
         var code = GenerateTeamCode();
         while (await _context.Teams.AnyAsync(t => t.Code == code, cancellationToken))
         {
             code = GenerateTeamCode();
         }
+
         var team = new Team(dto.Name, code);
         _context.Teams.Add(team);
         await _context.SaveChangesAsync(cancellationToken);
@@ -51,7 +54,7 @@ public class TeamService
     {
         var team = await _context.Teams
             .FirstOrDefaultAsync(t => t.Code == dto.Code, cancellationToken);
-        
+
         if (team == null)
             return false;
 
@@ -61,11 +64,35 @@ public class TeamService
             TeamId = team.Id,
             Role = TeamRole.User,
         };
-        
+
         _context.UserTeams.Add(userTeam);
         await _context.SaveChangesAsync(cancellationToken);
-        
+
         return true;
     }
-    
+
+    public async Task RemoveUserFromTeamAsync(int teamId, int userIdToRemove, int adminId,
+        CancellationToken cancellationToken = default)
+    {
+        var team = await _context.Teams
+            .Include(t => t.UserTeams)
+            .FirstOrDefaultAsync(t => t.Id == teamId, cancellationToken);
+        if (team == null)
+            throw new Exception("Team not found");
+
+        var isAdmin = await _context.UserTeams
+            .AnyAsync(ut => ut.TeamId == teamId && ut.UserId == adminId && ut.Role == TeamRole.Admin,
+                cancellationToken);
+        if (!isAdmin)
+            throw new UnauthorizedAccessException("Only admins can remove users from team");
+
+        var userTeam = await _context.UserTeams
+            .FirstOrDefaultAsync(ut => ut.TeamId == teamId && ut.UserId == userIdToRemove, cancellationToken);
+        
+        if (userTeam == null)
+            throw new Exception("User is not in the team");
+        
+        _context.UserTeams.Remove(userTeam);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }
