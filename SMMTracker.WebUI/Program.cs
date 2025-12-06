@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using SMMTracker.Infrastructure.Data.DataContext;
 using SMMTracker.Infrastructure.Services;
@@ -82,6 +81,7 @@ app.UseAuthorization();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+app.MapRazorPages();  
 app.MapControllers();
 
 Console.WriteLine("Web application started: [http://localhost:5002](http://localhost:5002)");
