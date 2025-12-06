@@ -1,0 +1,422 @@
+@page
+@model SMMTracker.WebUI.ViewModels.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_Layout";
+}
+
+<style>
+    .dashboard-container {
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .sidebar {
+        background: white;
+        border-right: 1px solid #dee2e6;
+        min-height: 100vh;
+        padding: 20px;
+        position: sticky;
+        top: 0;
+    }
+
+    .main-content {
+        padding: 30px;
+    }
+
+    .avatar-circle {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        color: white;
+    }
+
+    .team-card {
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .team-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .team-card .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 15px 20px;
+    }
+
+    .team-card .card-body {
+        padding: 20px;
+    }
+
+    .team-info {
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+        margin-top: 15px;
+        font-size: 0.9rem;
+    }
+
+    .sidebar-heading {
+        color: #6c757d;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .sidebar-text {
+        font-size: 0.9rem;
+        color: #495057;
+        line-height: 1.5;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        margin-top: 0.25rem;
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Сообщения -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+    <div class="container-fluid">
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+    <div class="container-fluid">
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+    }
+
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Левая панель - информация о пользователе -->
+            <div class="col-md-3 col-lg-2 sidebar">
+                <div class="d-flex flex-column h-100">
+                    <!-- Аватар и основная информация -->
+                    <div class="text-center mb-4">
+                        <div class="avatar-circle">
+                            <i class="bi bi-person-fill" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <h5 class="mt-3 mb-1">@Model.ViewModel.UserInfo.FirstName @Model.ViewModel.UserInfo.LastName</h5>
+                        <p class="text-muted mb-2">@@@Model.ViewModel.UserInfo.TelegramUsername</p>
+                        <small class="text-muted">ID: @Model.ViewModel.UserInfo.TelegramId</small>
+                    </div>
+
+                    <!-- Описание профиля -->
+                    <div class="mb-4">
+                        <h6 class="sidebar-heading">Описание профиля</h6>
+                        <p class="sidebar-text">
+                            @if (!string.IsNullOrEmpty(Model.ViewModel.UserInfo.ProfileDescription))
+                            {
+                            @Model.ViewModel.UserInfo.ProfileDescription
+                            }
+                            else
+                            {
+                            <span class="text-muted fst-italic">Описание не добавлено</span>
+                            }
+                        </p>
+                    </div>
+
+                    <!-- Кнопка редактирования профиля -->
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="bi bi-pencil me-2"></i>Редактировать профиль
+                        </button>
+                    </div>
+
+                    <!-- Статистика -->
+                    <div class="mb-4">
+                        <h6 class="sidebar-heading">Статистика</h6>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="display-6 text-primary fw-bold">@Model.ViewModel.Teams.Count</div>
+                                <div class="stat-label">Команд</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="display-6 text-success fw-bold">8</div>
+                                <div class="stat-label">Задачи</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Выход -->
+                    <div class="mt-auto">
+                        <a href="/" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-box-arrow-left me-2"></i>Выйти
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Основной контент - команды -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Заголовок и кнопка создания -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-people me-2 text-primary"></i>Мои команды
+                    </h1>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createTeamModal">
+                        <i class="bi bi-plus-circle me-2"></i>Создать команду
+                    </button>
+                </div>
+
+                <!-- Присоединиться к команде -->
+                <div class="card mb-4 border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-link-45deg me-2"></i>Присоединиться к команде</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-page-handler="JoinTeam">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-8">
+                                    <label class="form-label">Код приглашения</label>
+                                    <input type="text"
+                                           class="form-control form-control-lg"
+                                           asp-for="InvitationCodeInput"
+                                           placeholder="Введите код доступа команды"
+                                           required>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="bi bi-door-open me-2"></i>Присоединиться
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Список команд -->
+                <div class="row">
+                    @if (Model.ViewModel.Teams.Any())
+                    {
+                    @foreach (var team in Model.ViewModel.Teams)
+                    {
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card team-card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 text-truncate">@team.Name</h5>
+                                @if (team.IsOwner)
+                                {
+                                <span class="badge bg-success">Владелец</span>
+                                }
+                                else
+                                {
+                                <span class="badge bg-secondary">Участник</span>
+                                }
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">@team.Description</p>
+                                <div class="team-info">
+                                    <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">
+                                                    <i class="bi bi-people me-1"></i>@team.MemberCount участников
+                                                </span>
+                                        <span class="text-muted">
+                                                    <i class="bi bi-calendar me-1"></i>@team.CreatedAt.ToString("dd.MM.yyyy")
+                                                </span>
+                                    </div>
+                                    @if (team.IsOwner)
+                                    {
+                                    <div class="mt-2">
+                                        <small class="text-muted d-block mb-1">
+                                            <i class="bi bi-key me-1"></i>Код приглашения:
+                                        </small>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text"
+                                                   class="form-control font-monospace"
+                                                   value="@team.InvitationCode"
+                                                   readonly>
+                                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('@team.InvitationCode')">
+                                                <i class="bi bi-clipboard"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                <div class="d-grid gap-2">
+                                    <a href="/Team/@team.Id" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-door-open me-1"></i>Перейти в команду
+                                    </a>
+                                    <form method="post" asp-page-handler="LeaveTeam"
+                                          onsubmit="return confirm('Вы уверены, что хотите покинуть команду?');">
+                                        <input type="hidden" name="teamId" value="@team.Id" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                            <i class="bi bi-door-closed me-1"></i>Покинуть команду
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    }
+                    else
+                    {
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="bi bi-info-circle display-6 text-info"></i>
+                                </div>
+                                <div>
+                                    <h5 class="alert-heading">У вас пока нет команд</h5>
+                                    <p class="mb-0">Создайте свою первую команду или присоединитесь к существующей с помощью кода приглашения.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования профиля -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редактирование профиля</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="UpdateProfile">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Имя</label>
+                        <input type="text" class="form-control" asp-for="EditProfile.FirstName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Фамилия</label>
+                        <input type="text" class="form-control" asp-for="EditProfile.LastName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание профиля</label>
+                        <textarea class="form-control" asp-for="EditProfile.ProfileDescription" rows="4"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно создания команды -->
+<div class="modal fade" id="createTeamModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Создание новой команды</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="CreateTeam">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Название команды *</label>
+                        <input type="text" class="form-control" asp-for="NewTeam.Name" placeholder="Например: Маркетинговый отдел" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание команды</label>
+                        <textarea class="form-control" asp-for="NewTeam.Description" rows="4" placeholder="Опишите цели и задачи команды"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success">Создать команду</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Функция для копирования кода приглашения
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            // Показываем уведомление
+            showToast('Код скопирован в буфер обмена!');
+        });
+    }
+
+    // Функция для показа тостов
+    function showToast(message) {
+        // Создаем toast
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-success border-0';
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle me-2"></i>${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+
+        // Добавляем в контейнер
+        const toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        toastContainer.appendChild(toast);
+        document.body.appendChild(toastContainer);
+
+        // Показываем toast
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+
+        // Удаляем после скрытия
+        toast.addEventListener('hidden.bs.toast', function () {
+            toastContainer.remove();
+        });
+    }
+
+    // Автоматически показываем модальные окна при ошибках
+    document.addEventListener('DOMContentLoaded', function() {
+        @if (Model.ShowProfileModal)
+        {
+        <text>
+        var editProfileModal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+        editProfileModal.show();
+        </text>
+        }
+
+        @if (Model.ShowTeamModal)
+        {
+        <text>
+        var createTeamModal = new bootstrap.Modal(document.getElementById('createTeamModal'));
+        createTeamModal.show();
+        </text>
+        }
+    });
+</script>

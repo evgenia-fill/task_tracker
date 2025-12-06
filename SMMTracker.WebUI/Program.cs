@@ -11,7 +11,7 @@ builder.WebHost.UseUrls("http://localhost:5002", "http://0.0.0.0:5002");
 
 // Базовые сервисы ASP.NET Core
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+
 builder.Services.AddControllers();
 
 // База данных
@@ -29,8 +29,8 @@ builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<TeamService>();
 builder.Services.AddScoped<CalendarService>();
 builder.Services.AddScoped<EventService>();
-builder.Services.AddEndpointsApiExplorer(); // Эта строка нужна для Swagger
-builder.Services.AddSwaggerGen();         // А эта его добавляет
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
@@ -51,14 +51,13 @@ else
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI(); // Эта строка добавляет веб-интерфейс
+    app.UseSwaggerUI();
 }
 
 app.UseStaticFiles();
 app.UseRouting();
 
-app.MapBlazorHub();
-app.MapFallbackToPage("/_Host");
+app.MapRazorPages();  
 app.MapControllers();
 
 Console.WriteLine("Web application started: [http://localhost:5002](http://localhost:5002)");

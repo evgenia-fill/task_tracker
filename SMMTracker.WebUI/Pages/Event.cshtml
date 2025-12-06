@@ -1,0 +1,543 @@
+@page "/Event/{teamId}/{eventId}"
+@model SMMTracker.WebUI.ViewModels.EventModel
+@using SMMTracker.WebUI.ViewModels
+@{
+    ViewData["Title"] = Model.Event.Title;
+    Layout = "_Layout";
+}
+
+<style>
+    .event-container {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding-bottom: 50px;
+    }
+    
+    .event-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+    }
+    
+    .navigation-bar {
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 15px 0;
+        margin-bottom: 30px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    
+    .task-column {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        min-height: 400px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-top: 4px solid;
+    }
+    
+    .task-column-inprogress {
+        border-top-color: #0d6efd;
+    }
+    
+    .task-column-review {
+        border-top-color: #ffc107;
+    }
+    
+    .task-column-completed {
+        border-top-color: #198754;
+    }
+    
+    .task-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s;
+    }
+    
+    .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+    
+    .back-to-profile {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+</style>
+
+<div class="event-container">
+    <!-- Шапка мероприятия -->
+    <div class="event-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb bg-transparent p-0 mb-2">
+                            <li class="breadcrumb-item"><a href="/Dashboard" class="text-white">Мои команды</a></li>
+                            <li class="breadcrumb-item"><a href="/Team/@Model.Team.Id" class="text-white">@Model.Team.Name</a></li>
+                            <li class="breadcrumb-item active text-white" aria-current="page">@Model.Event.Title</li>
+                        </ol>
+                    </nav>
+                    <h1 class="display-5 mb-2">@Model.Event.Title</h1>
+                    <p class="lead mb-0">@Model.Event.Description</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="mt-3 mt-md-0">
+                        <span class="badge bg-light text-dark fs-6 p-2">
+                            <i class="bi bi-calendar-event me-2"></i>@Model.Event.EventDate.ToString("dd.MM.yyyy HH:mm")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Панель навигации -->
+    <div class="navigation-bar">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="/Dashboard" class="btn btn-outline-primary me-2">
+                        <i class="bi bi-house me-1"></i>В профиль
+                    </a>
+                    <a href="/Team/@Model.Team.Id" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Назад в команду
+                    </a>
+                </div>
+                <div>
+                    @if (Model.IsTeamMember)
+                    {
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                            <i class="bi bi-plus-circle me-1"></i>Добавить задачу
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Сообщения -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="container">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="container">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    }
+
+    <!-- Основной контент - ТОЛЬКО ТАБЛИЦА ЗАДАЧ -->
+    <div class="container">
+        <!-- Таблица задач -->
+        <div class="row mb-5">
+            <div class="col-md-4 mb-4">
+                <div class="task-column task-column-inprogress h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">
+                            <span class="badge bg-primary me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InProgress)</span>
+                            В разработке
+                        </h4>
+                        <small class="text-muted">Добавляют все</small>
+                    </div>
+                    
+                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InProgress))
+                    {
+                        <div class="task-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">@task.Title</h6>
+                                <span class="status-badge bg-primary text-white">В работе</span>
+                            </div>
+                            <p class="small text-muted mb-2">@task.Description</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-person me-1"></i>@task.Assignee
+                                </small>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar me-1"></i>@task.CreatedAt.ToString("dd.MM")
+                                </small>
+                            </div>
+                            <div class="d-grid">
+                                <form method="post" asp-page-handler="MoveToReview">
+                                    <input type="hidden" name="teamId" value="@Model.Team.Id" />
+                                    <input type="hidden" name="eventId" value="@Model.Event.Id" />
+                                    <input type="hidden" name="taskId" value="@task.Id" />
+                                    <button type="submit" class="btn btn-warning btn-sm w-100">
+                                        <i class="bi bi-send me-1"></i>Отправить на ревью
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (Model.Tasks.All(t => t.Status != SMMTracker.WebUI.ViewModels.TaskStatus.InProgress))
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox display-4 text-muted mb-3"></i>
+                            <p class="text-muted">Нет задач в разработке</p>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="task-column task-column-review h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">
+                            <span class="badge bg-warning me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview)</span>
+                            На ревью
+                        </h4>
+                        @if (Model.IsOwner)
+                        {
+                            <small class="text-success">
+                                <i class="bi bi-star-fill me-1"></i>Только владелец
+                            </small>
+                        }
+                    </div>
+                    
+                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview))
+                    {
+                        <div class="task-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">@task.Title</h6>
+                                <span class="status-badge bg-warning text-dark">На проверке</span>
+                            </div>
+                            <p class="small text-muted mb-2">@task.Description</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-person me-1"></i>@task.Assignee
+                                </small>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>@task.MovedToReviewAt?.ToString("dd.MM HH:mm")
+                                </small>
+                            </div>
+                            @if (Model.IsOwner)
+                            {
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <form method="post" asp-page-handler="ApproveTask">
+                                            <input type="hidden" name="teamId" value="@Model.Team.Id" />
+                                            <input type="hidden" name="eventId" value="@Model.Event.Id" />
+                                            <input type="hidden" name="taskId" value="@task.Id" />
+                                            <button type="submit" class="btn btn-success btn-sm w-100">
+                                                <i class="bi bi-check-lg me-1"></i>Одобрить
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div class="col-6">
+                                        <form method="post" asp-page-handler="RejectTask">
+                                            <input type="hidden" name="teamId" value="@Model.Team.Id" />
+                                            <input type="hidden" name="eventId" value="@Model.Event.Id" />
+                                            <input type="hidden" name="taskId" value="@task.Id" />
+                                            <button type="submit" class="btn btn-danger btn-sm w-100">
+                                                <i class="bi bi-arrow-return-left me-1"></i>Вернуть
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning p-2 mb-0 text-center">
+                                    <small><i class="bi bi-clock me-1"></i>Ожидает проверки владельцем</small>
+                                </div>
+                            }
+                        </div>
+                    }
+                    
+                    @if (!Model.Tasks.Any(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview))
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-hourglass-split display-4 text-muted mb-3"></i>
+                            <p class="text-muted">Нет задач на ревью</p>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="task-column task-column-completed h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">
+                            <span class="badge bg-success me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed)</span>
+                            Выполнено
+                        </h4>
+                        <small class="text-muted">Одобренные задачи</small>
+                    </div>
+                    
+                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed))
+                    {
+                        <div class="task-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">@task.Title</h6>
+                                <span class="status-badge bg-success text-white">Выполнено</span>
+                            </div>
+                            <p class="small text-muted mb-2">@task.Description</p>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-person me-1"></i>@task.Assignee
+                                </small>
+                                <small class="text-muted">
+                                    <i class="bi bi-check-circle me-1"></i>@task.CompletedAt?.ToString("dd.MM HH:mm")
+                                </small>
+                            </div>
+                            @if (Model.IsOwner)
+                            {
+                                <form method="post" asp-page-handler="DeleteTask" class="mt-2">
+                                    <input type="hidden" name="teamId" value="@Model.Team.Id" />
+                                    <input type="hidden" name="eventId" value="@Model.Event.Id" />
+                                    <input type="hidden" name="taskId" value="@task.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100"
+                                            onclick="return confirm('Удалить задачу?')">
+                                        <i class="bi bi-trash me-1"></i>Удалить
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    }
+                    
+                    @if (!Model.Tasks.Any(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed))
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-check-circle display-4 text-muted mb-3"></i>
+                            <p class="text-muted">Нет выполненных задач</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка возврата в профиль -->
+    <div class="back-to-profile">
+        <a href="/Dashboard" class="btn btn-primary btn-lg shadow">
+            <i class="bi bi-person-circle me-2"></i>В профиль
+        </a>
+    </div>
+</div>
+
+<!-- Модальное окно добавления задачи -->
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить задачу</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="AddTask">
+                <input type="hidden" name="teamId" value="@Model.Team.Id" />
+                <input type="hidden" name="eventId" value="@Model.Event.Id" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Название задачи *</label>
+                        <input type="text" 
+                               class="form-control" 
+                               asp-for="NewTask.Title"
+                               placeholder="Например: Подготовить контент-план"
+                               required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea class="form-control" 
+                                  asp-for="NewTask.Description"
+                                  rows="3"
+                                  placeholder="Опишите детали задачи..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Исполнитель</label>
+                        <input type="text" 
+                               class="form-control" 
+                               asp-for="NewTask.Assignee"
+                               placeholder="На кого назначить задачу">
+                        <div class="form-text">Если не указано, задача будет назначена на вас</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success">Добавить задачу</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Автоматическое отображение модального окна при ошибке
+    document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем, есть ли сообщение об ошибке
+        const errorAlerts = document.querySelectorAll('.alert-danger');
+        const hasError = errorAlerts.length > 0;
+        
+        // Если есть ошибка и есть модальное окно добавления задачи - показываем его
+        if (hasError) {
+            const addTaskModal = document.getElementById('addTaskModal');
+            if (addTaskModal) {
+                const modal = new bootstrap.Modal(addTaskModal);
+                modal.show();
+            }
+        }
+        
+        // Инициализация тултипов Bootstrap
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Анимация для карточек задач
+        const taskCards = document.querySelectorAll('.task-card');
+        taskCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.cursor = 'grab';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.cursor = 'default';
+            });
+        });
+        
+        // Функция для обновления статистики
+        function updateTaskStats() {
+            const inProgressCount = document.querySelectorAll('.task-column-inprogress .task-card').length;
+            const inReviewCount = document.querySelectorAll('.task-column-review .task-card').length;
+            const completedCount = document.querySelectorAll('.task-column-completed .task-card').length;
+            
+            // Обновляем бейджи с количеством задач
+            const inProgressBadge = document.querySelector('.task-column-inprogress h4 .badge');
+            const inReviewBadge = document.querySelector('.task-column-review h4 .badge');
+            const completedBadge = document.querySelector('.task-column-completed h4 .badge');
+            
+            if (inProgressBadge) inProgressBadge.textContent = inProgressCount;
+            if (inReviewBadge) inReviewBadge.textContent = inReviewCount;
+            if (completedBadge) completedBadge.textContent = completedCount;
+        }
+        
+        // Вызываем обновление статистики при загрузке
+        updateTaskStats();
+        
+        // Функция для подтверждения действий
+        function setupConfirmations() {
+            const rejectButtons = document.querySelectorAll('form[asp-page-handler="RejectTask"] button[type="submit"]');
+            const deleteButtons = document.querySelectorAll('form[asp-page-handler="DeleteTask"] button[type="submit"]');
+            
+            const allButtons = [...rejectButtons, ...deleteButtons];
+            
+            allButtons.forEach(button => {
+                const originalClick = button.onclick;
+                button.onclick = function(e) {
+                    const message = this.getAttribute('data-confirm-message') || 
+                                   'Вы уверены, что хотите выполнить это действие?';
+                    
+                    if (!confirm(message)) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    if (originalClick) {
+                        return originalClick.call(this, e);
+                    }
+                };
+            });
+        }
+        
+        setupConfirmations();
+        
+        // Автоматическое скрытие алертов через 5 секунд
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+        
+        // Редактирование задач по двойному клику
+        document.querySelectorAll('.task-card h6').forEach(title => {
+            title.addEventListener('dblclick', function() {
+                if (!confirm('Хотите редактировать задачу?')) return;
+                
+                const currentText = this.textContent;
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = currentText;
+                input.className = 'form-control form-control-sm';
+                
+                this.textContent = '';
+                this.appendChild(input);
+                input.focus();
+                
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() !== '' && this.value !== currentText) {
+                        title.textContent = this.value;
+                        showToast('Название задачи обновлено');
+                    } else {
+                        title.textContent = currentText;
+                    }
+                });
+                
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        this.blur();
+                    }
+                });
+            });
+        });
+        
+        // Функция для показа тостов (уведомлений)
+        window.showToast = function(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            const icon = type === 'success' ? 'check-circle' : 
+                        type === 'warning' ? 'exclamation-triangle' : 
+                        type === 'error' ? 'x-circle' : 'info-circle';
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-${icon} me-2"></i>${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            const toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            toastContainer.appendChild(toast);
+            document.body.appendChild(toastContainer);
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', function() {
+                toastContainer.remove();
+            });
+        };
+    });
+</script>
