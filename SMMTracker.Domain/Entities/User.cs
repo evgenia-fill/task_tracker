@@ -6,11 +6,10 @@ namespace SMMTracker.Domain.Entities;
 public class User : Entity
 {
     public long TelegramId { get; set; }
-    public string TelegramUsername { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string UserName { get; set; }
-    public string ProfileDescription { get; set; }
+    public string? ProfileDescription { get; set; }
     public string Hash { get; set; }
 
 
@@ -27,12 +26,22 @@ public class User : Entity
         if (string.IsNullOrWhiteSpace(otherUser.LastName))
             throw new Exception();
 
+        // var user = new User
+        // {
+        //     TelegramId = otherUser.TelegramId,
+        //     FirstName = otherUser.FirstName.Trim(),
+        //     LastName = otherUser.LastName.Trim(),
+        //     TelegramUsername = otherUser.UserName.Trim(),
+        //     Hash = Guid.NewGuid().ToString()
+        // };
         var user = new User
         {
             TelegramId = otherUser.TelegramId,
             FirstName = otherUser.FirstName.Trim(),
             LastName = otherUser.LastName.Trim(),
-            TelegramUsername = otherUser.UserName.Trim(),
+            Hash = Guid.NewGuid().ToString(),
+            ProfileDescription = "",
+            UserName = otherUser.UserName 
         };
         return user;
     }

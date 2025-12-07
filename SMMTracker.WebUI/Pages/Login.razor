@@ -73,7 +73,7 @@
             FirstName = appUserEntity.FirstName,
             LastName = appUserEntity.LastName,
             TelegramId = appUserEntity.TelegramId,
-            TelegramUsername = appUserEntity.TelegramUsername
+            Username = appUserEntity.UserName
         };
         UserStateService.SetUser(appUserDto);
         NavigationManager.NavigateTo("/");
