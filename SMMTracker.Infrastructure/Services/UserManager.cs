@@ -19,21 +19,27 @@ public class UserManager : IUserManager
     {
         var user = await _context.Users
             .FirstOrDefaultAsync(x => x.TelegramId == otherUser.TelegramId);
-        
-        if (user == null)
-        {
-            user = User.Create(user);
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-        }
-        
+
+        if (user != null)
+            return new UserDto
+            {
+                Id = user.Id,
+                TelegramId = user.TelegramId,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Username = user.UserName
+            };
+        user = User.Create(otherUser);
+        await _context.Users.AddAsync(user);
+        await _context.SaveChangesAsync();
+
         return new UserDto
         {
             Id = user.Id, 
             TelegramId = user.TelegramId,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Username = user.TelegramUsername
+            Username = user.UserName
         };
     }
 }

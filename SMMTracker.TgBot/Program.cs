@@ -53,7 +53,7 @@ class Program
             return "База данных пуста";
 
         var list = users.Select(u =>
-            $"ID: {u.Id}, TelegramId: {u.TelegramId}, Имя: {u.FirstName}, Фамилия: {u.LastName}, Username: {u.TelegramUsername}" 
+            $"ID: {u.Id}, TelegramId: {u.TelegramId}, Имя: {u.FirstName}, Фамилия: {u.LastName}, Username: {u.UserName}" 
         );
 
         return string.Join("\n", list);
