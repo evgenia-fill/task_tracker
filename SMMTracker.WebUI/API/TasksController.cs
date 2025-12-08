@@ -64,6 +64,48 @@ public class TasksController : ControllerBase
         }
     }
 
+    [HttpPost("{taskId}/change_name")]
+    public async Task<IActionResult> ChangeTaskName(int taskId, [FromBody] ChangeTaskNameDto dto)
+    {
+        try
+        {
+            await _taskService.ChangeTaskNameAsync(taskId, dto.Name);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("{taskId}/change_description")]
+    public async Task<IActionResult> ChangeTaskDescription(int taskId, [FromBody] ChangeTaskDescriptionDto dto)
+    {
+        try
+        {
+            await _taskService.ChangeTaskDescriptionAsync(taskId, dto.Description);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("{taskId}/set_deadline")]
+    public async Task<IActionResult> SetTaskDeadline(int taskId, [FromBody] SetTaskDeadlineDto dto)
+    {
+        try
+        {
+            await _taskService.SetTaskDeadlineAsync(taskId, dto.Deadline);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
     [HttpPost("{taskId}/assign")]
     public async Task<IActionResult> AssignUserToTask(int taskId, [FromBody] AssignUserDto dto)
     {
