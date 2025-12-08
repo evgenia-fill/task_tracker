@@ -7,7 +7,7 @@ using SMMTracker.Infrastructure.Data.DataContext;
 
 #nullable disable
 
-namespace Data.Migrations
+namespace SMMTracker.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -52,7 +52,7 @@ namespace Data.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("TeamId")
+                    b.Property<int?>("TeamId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -162,15 +162,10 @@ namespace Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProfileDescription")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<long>("TelegramId")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("TelegramUsername")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -249,10 +244,8 @@ namespace Data.Migrations
                         .IsRequired();
 
                     b.HasOne("SMMTracker.Domain.Entities.Team", "Team")
-                        .WithMany("Events")
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("TeamId");
 
                     b.Navigation("Calendar");
 
@@ -353,8 +346,6 @@ namespace Data.Migrations
             modelBuilder.Entity("SMMTracker.Domain.Entities.Team", b =>
                 {
                     b.Navigation("Calendar");
-
-                    b.Navigation("Events");
 
                     b.Navigation("UserTeams");
                 });
