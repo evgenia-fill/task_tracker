@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using SMMTracker.Application.Dtos;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Infrastructure.Data.DataContext;
 using SMMTracker.Infrastructure.Services;
-using SMMTracker.WebUI.DTOs;
 
 namespace SMMTracker.WebUI.API;
 

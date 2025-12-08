@@ -1,6 +1,6 @@
-namespace SMMTracker.WebUI.DTOs;
+namespace SMMTracker.Application.Dtos;
 
-public class TelegramLoginData
+public class TelegramLoginDto
 {
     public long Id { get; set; }
     public string FirstName { get; set; } = "";
