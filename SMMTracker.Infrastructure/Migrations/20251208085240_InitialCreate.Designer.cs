@@ -8,11 +8,11 @@ using SMMTracker.Infrastructure.Data.DataContext;
 
 #nullable disable
 
-namespace Data.Migrations
+namespace SMMTracker.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251201174538_RemoveStatusFromEvent")]
-    partial class RemoveStatusFromEvent
+    [Migration("20251208085240_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -134,6 +134,10 @@ namespace Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
@@ -161,15 +165,10 @@ namespace Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProfileDescription")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<long>("TelegramId")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("TelegramUsername")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -247,11 +246,13 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SMMTracker.Domain.Entities.Team", null)
-                        .WithMany("Events")
+                    b.HasOne("SMMTracker.Domain.Entities.Team", "Team")
+                        .WithMany()
                         .HasForeignKey("TeamId");
 
                     b.Navigation("Calendar");
+
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.Invitation", b =>
@@ -348,8 +349,6 @@ namespace Data.Migrations
             modelBuilder.Entity("SMMTracker.Domain.Entities.Team", b =>
                 {
                     b.Navigation("Calendar");
-
-                    b.Navigation("Events");
 
                     b.Navigation("UserTeams");
                 });
