@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +9,7 @@ using SMMTracker.Infrastructure.Data.DataContext;
 using SMMTracker.Infrastructure.Services;
 using SMMTracker.WebUI.DTOs;
 
-namespace SMMTracker.WebUI;
+namespace SMMTracker.WebUI.API;
 
 [ApiController]
 public class AuthController : ControllerBase
@@ -43,6 +46,25 @@ public class AuthController : ControllerBase
         try
         {
             var appUser = await _userManager.FindOrCreateUserAsync(user);
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, appUser.Id.ToString()),
+                new Claim(ClaimTypes.Name, appUser.Username)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
+            };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+
             return Ok(appUser);
         }
         catch (Exception ex)
