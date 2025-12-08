@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Data.Migrations
+namespace SMMTracker.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -17,7 +17,8 @@ namespace Data.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    Code = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,11 +32,11 @@ namespace Data.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     TelegramId = table.Column<long>(type: "INTEGER", nullable: false),
-                    UserName = table.Column<string>(type: "TEXT", nullable: false),
                     FirstName = table.Column<string>(type: "TEXT", nullable: false),
                     LastName = table.Column<string>(type: "TEXT", nullable: false),
-                    PhotoUrl = table.Column<string>(type: "TEXT", nullable: true),
-                    Bio = table.Column<string>(type: "TEXT", nullable: true)
+                    UserName = table.Column<string>(type: "TEXT", nullable: false),
+                    ProfileDescription = table.Column<string>(type: "TEXT", nullable: true),
+                    Hash = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -121,9 +122,8 @@ namespace Data.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
                     Date = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CalendarId = table.Column<int>(type: "INTEGER", nullable: false),
                     TeamId = table.Column<int>(type: "INTEGER", nullable: true)
