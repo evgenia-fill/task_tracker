@@ -40,19 +40,19 @@ public class Task : Entity
 
     public void MoveToReview()
     {
-        if (Status == TaskStatus.InProgress)
-            Status = TaskStatus.Review;
-        throw new Exception("Cannot move task to Review from this status");
+        if (Status != TaskStatus.InProgress) throw new Exception("Cannot move task to Review from this status");
+        Status = TaskStatus.Review;
+        return;
     }
 
     public void MoveToDone()
     {
-        if (Status == TaskStatus.Review)
-            Status = TaskStatus.Done;
-        throw new Exception("Cannot move task to Done from this status");
+        if (Status != TaskStatus.Review) throw new Exception("Cannot move task to Done from this status");
+        Status = TaskStatus.Done;
+        return;
     }
 
-    public void ChangeTitle(string name)
+    public void ChangeName(string name)
     {
         Name = name;
     }
