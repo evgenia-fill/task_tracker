@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using SMMTracker.Infrastructure.Data.DataContext;
 using SMMTracker.Infrastructure.Services;
@@ -23,14 +24,33 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 // Сервисы приложения
 builder.Services.AddScoped<UserManager>();
 builder.Services.AddScoped<UserStateService>();
-builder.Services.AddScoped<IApplicationDbContext>(provider => 
+builder.Services.AddScoped<IApplicationDbContext>(provider =>
     provider.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<TeamService>();
 builder.Services.AddScoped<CalendarService>();
 builder.Services.AddScoped<EventService>();
 builder.Services.AddEndpointsApiExplorer(); // Эта строка нужна для Swagger
-builder.Services.AddSwaggerGen();         // А эта его добавляет
+builder.Services.AddSwaggerGen(); // А эта его добавляет
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+        options.SlidingExpiration = true;
+        options.Events.OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = 401;
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = 403;
+            return Task.CompletedTask;
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -56,6 +76,9 @@ else
 
 app.UseStaticFiles();
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

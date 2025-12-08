@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Services;
@@ -6,23 +8,29 @@ namespace SMMTracker.WebUI.API;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class TeamsController : ControllerBase
 {
     private readonly TeamService _teamService;
 
     public TeamsController(TeamService teamService)
     {
-        _teamService = teamService; 
+        _teamService = teamService;
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateTeam([FromBody] CreateTeamDto dto)
     {
-        var creatorId = int.Parse(User.FindFirst("Id")?.Value ?? throw new Exception("User not found"));
+        var creatorIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(creatorIdString) || !int.TryParse(creatorIdString, out var creatorId))
+        {
+            return Unauthorized("Invalid user identifier");
+        }
+
         var teamId = await _teamService.CreateTeamAsync(dto, creatorId);
         return Ok(new { TeamId = teamId });
     }
-    
+
     [HttpPost("join")]
     public async Task<IActionResult> JoinTeam([FromBody] JoinTeamDto dto)
     {
@@ -55,7 +63,7 @@ public class TeamsController : ControllerBase
         {
             var result = await _teamService.LeaveTeamAsync(teamId, dto.UserId);
             if (!result)
-                return BadRequest("User is not in the team.");
+                return BadRequest("User is not in the team");
             return Ok();
         }
         catch (Exception ex)
@@ -63,5 +71,4 @@ public class TeamsController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
-    
 }
