@@ -21,4 +21,12 @@ public class EventsController : ControllerBase
         var eventId = await _eventService.CreateEventAsync(dto);
         return Ok(new { EventId = eventId });
     }
+
+    [HttpGet("{eventId}")]
+    public async Task<IActionResult> GetEventDetails(int eventId)
+    {
+        var eventDetails = await _eventService.GetEventDetailsAsync(eventId);
+        if (eventDetails == null) return NotFound("Event not found");
+        return Ok(eventDetails);
+    }
 }
