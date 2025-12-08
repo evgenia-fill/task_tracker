@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Interfaces;
 using SMMTracker.Domain.Entities;
@@ -62,6 +61,36 @@ public class TaskService
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async System.Threading.Tasks.Task ChangeTaskNameAsync(int taskId, string name,
+        CancellationToken cancellationToken = default)
+    {
+        var task = await _context.Tasks.FindAsync([taskId], cancellationToken);
+        if (task == null)
+            throw new Exception("Task not found");
+        task.ChangeName(name);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async System.Threading.Tasks.Task ChangeTaskDescriptionAsync(int taskId, string description,
+        CancellationToken cancellationToken = default)
+    {
+        var task = await _context.Tasks.FindAsync([taskId], cancellationToken);
+        if (task == null)
+            throw new Exception("Task not found");
+        task.ChangeDescription(description);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+    
+    public async System.Threading.Tasks.Task SetTaskDeadlineAsync(int taskId, DateTime deadline,
+        CancellationToken cancellationToken = default)
+    {
+        var task = await _context.Tasks.FindAsync([taskId], cancellationToken);
+        if (task == null)
+            throw new Exception("Task not found");
+        task.SetDeadline(deadline);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async System.Threading.Tasks.Task AssignUserToTaskAsync(int taskId, int userIdToAssign, int adminId,
         CancellationToken cancellationToken = default)
     {
@@ -86,6 +115,6 @@ public class TaskService
             UserId = userIdToAssign,
         };
         _context.UserTasks.Add(userTask);
-        await _context.SaveChangesAsync(cancellationToken); 
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }
