@@ -13,7 +13,7 @@ public class Task : Entity
     public int EventId { get; private set; }
     public int? CalendarId { get; private set; }
 
-    public Event Event { get; private set; } = null!;
+    public Event Event { get; set; } = null!;
     public Calendar? Calendar { get; private set; }
     public List<UserTask> UserTasks { get; private set; } = new();
 
