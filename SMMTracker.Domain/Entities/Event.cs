@@ -14,7 +14,7 @@ public class Event : Entity
     public Calendar Calendar { get; private set; } = null!;
     public List<Task> Tasks { get; private set; } = new();
     public int? TeamId { get; private set; }
-    public Team? Team { get; private set; } = null!;
+    public Team? Team { get; set; } = null!;
 
     public Event(string? name, string? description, DateTime date, int calendarId)
     {
