@@ -24,7 +24,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("api/auth/telegram")]
-    public async Task<IActionResult> LoginWithTelegram([FromBody] TelegramLoginData dto)
+    public async Task<IActionResult> LoginWithTelegram([FromBody] TelegramLoginDto dto)
     {
         var connection = (SqliteConnection)_context.Database.GetDbConnection();
         Console.WriteLine($"[AUTH_CONTROLLER_DEBUG] Сайт использует базу данных: {connection.DataSource}");

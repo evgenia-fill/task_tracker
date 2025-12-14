@@ -2,30 +2,29 @@ using Microsoft.EntityFrameworkCore;
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Domain.Entities;
+using SMMTracker.Domain.IRepositoryes;
 using Task = System.Threading.Tasks.Task;
 
 namespace SMMTracker.Application.Services;
 
 public class UserService : IUserService
 {
-    private readonly IApplicationDbContext _context;
+    private readonly IUserRepository _userRepository;
 
-    public UserService(IApplicationDbContext context)
+    public UserService(IUserRepository userRepository)
     {
-        _context = context;
+        _userRepository = userRepository;
     }
 
-    public async Task<UserDto> FindOrCreateUserAsync(User otherUser)
+    public async Task<UserDto> FindOrCreateUserAsync(User userClaim)
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(x => x.TelegramId == otherUser.TelegramId);
+        var user = await _userRepository.GetByTelegramIdAsync(userClaim.TelegramId);
 
         if (user != null)
             return GetUserDto(user);
 
-        user = User.Create(otherUser);
-        await _context.Users.AddAsync(user);
-        await _context.SaveChangesAsync(default);
+        user = User.Create(userClaim);
+        await _userRepository.AddAsync(user);
 
         return GetUserDto(user);
     }
@@ -43,9 +42,11 @@ public class UserService : IUserService
 
     public async Task<UserProfileDto> GetUserProfileAsync(int userId)
     {
-        var user = await _context.Users.FindAsync(userId);
+        var user = await _userRepository.GetByIdAsync(userId);
+        
         if (user == null)
             throw new KeyNotFoundException($"Пользователь Id{userId} не найден");
+        
         return new UserProfileDto()
         {
             FirstName = user.FirstName,
@@ -57,12 +58,13 @@ public class UserService : IUserService
 
     public async Task UpdateUserProfileAsync(int userId, string firstName, string lastName, string description)
     {
-        var user = await _context.Users.FindAsync(userId);
+        var user = await _userRepository.GetByIdAsync(userId);
+        
         if (user == null)
             throw new KeyNotFoundException($"Пользователь Id{userId} не найден");
-
+        
         user.UpdateUserProfile(firstName, lastName, description);
-
-        await _context.SaveChangesAsync(default);
+        
+        await _userRepository.UpdateAsync(user);
     }
 }

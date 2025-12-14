@@ -2,9 +2,11 @@
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Services;
 using SMMTracker.Infrastructure.Data.DataContext;
-using SMMTracker.TgBot;
+using SMMTracker.Infrastructure.Repositories;
+using SMMTracker.Domain.IRepositoryes;
 
 namespace SMMTracker.TgBot;
+
 class Program
 {
     const string token = "8450218559:AAGCQdk6hnrtP8aFZpZM-bCc7tCWeKNWaIE";
@@ -13,7 +15,7 @@ class Program
     {
         var solutionDir = Directory.GetParent(AppContext.BaseDirectory)
             .Parent.Parent.Parent.Parent.FullName;
-        
+
         var dbPath = Path.Combine(solutionDir, "SharedDatabase", "DataBase.db");
 
         Console.WriteLine("DB Path: " + dbPath);
@@ -25,6 +27,7 @@ class Program
             Console.WriteLine("Creating directory manually...");
             Directory.CreateDirectory(dir);
         }
+
         var connectionString = $"Data Source={dbPath}";
 
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -34,9 +37,10 @@ class Program
         var context = new ApplicationDbContext(options);
         await context.Database.MigrateAsync();
 
-        IUserService userService = new UserService(context); 
+        IUserRepository userRepository = new UserRepository(context);
+        IUserService userService = new UserService(userRepository);
 
-        var bot = new TelegramBotService(token, userService); 
+        var bot = new TelegramBotService(token, userService);
         await bot.StartAsync(CancellationToken.None);
 
         Console.WriteLine("Бот запущен. Нажмите любую клавишу для выхода...");
@@ -53,7 +57,7 @@ class Program
             return "База данных пуста";
 
         var list = users.Select(u =>
-            $"ID: {u.Id}, TelegramId: {u.TelegramId}, Имя: {u.FirstName}, Фамилия: {u.LastName}, Username: {u.UserName}" 
+            $"ID: {u.Id}, TelegramId: {u.TelegramId}, Имя: {u.FirstName}, Фамилия: {u.LastName}, Username: {u.UserName}"
         );
 
         return string.Join("\n", list);

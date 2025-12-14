@@ -1,33 +1,33 @@
-using Microsoft.EntityFrameworkCore;
-using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Domain.Enums;
+using SMMTracker.Domain.IRepositories;
 using Task = System.Threading.Tasks.Task;
 
 namespace SMMTracker.Application.Services;
 
 public class TeamService
 {
-    private readonly IApplicationDbContext _context;
+    private readonly ITeamRepository _teamRepository;
+    private readonly IUserTeamRepository _userTeamRepository;
 
-    public TeamService(IApplicationDbContext context)
+    public TeamService(ITeamRepository teamRepository, IUserTeamRepository userTeamRepository)
     {
-        _context = context;
+        _teamRepository = teamRepository;
+        _userTeamRepository = userTeamRepository;
     }
 
     public async Task<int> CreateTeamAsync(CreateTeamDto dto, int creatorId,
         CancellationToken cancellationToken = default)
     {
         var code = GenerateTeamCode();
-        while (await _context.Teams.AnyAsync(t => t.Code == code, cancellationToken))
+        while (await _teamRepository.ExistsByCodeAsync(code))
         {
             code = GenerateTeamCode();
         }
 
         var team = new Team(dto.Name, code);
-        _context.Teams.Add(team);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _teamRepository.AddAsync(team);
 
         var userTeam = new UserTeam
         {
@@ -35,12 +35,12 @@ public class TeamService
             UserId = creatorId,
             Role = TeamRole.Admin,
         };
-        _context.UserTeams.Add(userTeam);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _userTeamRepository.AddAsync(userTeam);
+        
         return team.Id;
     }
 
-    private string GenerateTeamCode()
+    private static string GenerateTeamCode()
     {
         const string symbols = "ABCDEFGHIGKLMNOPQRSTUVWXYZ012345678";
         var random = new Random();
@@ -52,8 +52,7 @@ public class TeamService
 
     public async Task<bool> JoinTeamAsync(JoinTeamDto dto, CancellationToken cancellationToken = default)
     {
-        var team = await _context.Teams
-            .FirstOrDefaultAsync(t => t.Code == dto.Code, cancellationToken);
+        var team = await _teamRepository.GetByCodeAsync(dto.Code);
 
         if (team == null)
             return false;
@@ -65,8 +64,7 @@ public class TeamService
             Role = TeamRole.User,
         };
 
-        _context.UserTeams.Add(userTeam);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _userTeamRepository.AddAsync(userTeam);
 
         return true;
     }
@@ -74,41 +72,31 @@ public class TeamService
     public async Task RemoveUserFromTeamAsync(int teamId, int userIdToRemove, int adminId,
         CancellationToken cancellationToken = default)
     {
-        var team = await _context.Teams
-            .Include(t => t.UserTeams)
-            .FirstOrDefaultAsync(t => t.Id == teamId, cancellationToken);
-        if (team == null)
+        if (!await _teamRepository.ExistsAsync(teamId))
             throw new Exception("Team not found");
-
-        var isAdmin = await _context.UserTeams
-            .AnyAsync(ut => ut.TeamId == teamId && ut.UserId == adminId && ut.Role == TeamRole.Admin,
-                cancellationToken);
-        if (!isAdmin)
+        
+        if (!await _userTeamRepository.IsUserAdminAsync(teamId, adminId))
             throw new UnauthorizedAccessException("Only admins can remove users from team");
 
-        var userTeam = await _context.UserTeams
-            .FirstOrDefaultAsync(ut => ut.TeamId == teamId && ut.UserId == userIdToRemove, cancellationToken);
-        
+        var userTeam = await _userTeamRepository.GetUserTeamAsync(teamId, userIdToRemove);
+            
         if (userTeam == null)
             throw new Exception("User is not in the team");
         
-        _context.UserTeams.Remove(userTeam);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _userTeamRepository.DeleteAsync(userTeam.Id);
     }
 
     public async Task<bool> LeaveTeamAsync(int teamId, int userId, CancellationToken cancellationToken = default)
     {
-        var userTeam = await _context.UserTeams
-            .FirstOrDefaultAsync(ut => ut.TeamId == teamId && ut.UserId == userId, cancellationToken);
+        var userTeam = await _userTeamRepository.GetUserTeamAsync(teamId, userId);
         
         if (userTeam == null)
             return false;
         
         if (userTeam.Role == TeamRole.Admin)
             throw new Exception("Admin cannot leave team");
-        
-        _context.UserTeams.Remove(userTeam);
-        await _context.SaveChangesAsync(cancellationToken);
+
+        await _userTeamRepository.DeleteAsync(userTeam.Id);
         return true;
     }
 }
