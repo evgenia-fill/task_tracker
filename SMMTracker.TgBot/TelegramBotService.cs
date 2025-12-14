@@ -1,4 +1,4 @@
-using SMMTracker.Application.Interfaces;
+using SMMTracker.Application.Abstractions;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
@@ -11,12 +11,12 @@ namespace SMMTracker.TgBot;
 public class TelegramBotService
 {
     private readonly TelegramBotClient _client;
-    private readonly IUserManager _userManager;
+    private readonly IUserService _userService;
 
-    public TelegramBotService(string token, IUserManager userManager)
+    public TelegramBotService(string token, IUserService userService)
     {
         _client = new TelegramBotClient(token);
-        _userManager = userManager;
+        _userService = userService;
     }
 
     private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -33,7 +33,7 @@ public class TelegramBotService
             LastName = tgUser.LastName ?? "",
             UserName = tgUser.Username ?? ""
         };
-        var userDto = await _userManager.FindOrCreateUserAsync(user);
+        var userDto = await _userService.FindOrCreateUserAsync(user);
 
         await botClient.SendMessage(
             chatId: chatId,

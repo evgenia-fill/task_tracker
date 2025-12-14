@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SMMTracker.Application.Interfaces; 
+using SMMTracker.Application.Abstractions;
+using SMMTracker.Application.Services;
 using SMMTracker.Infrastructure.Data.DataContext;
-using SMMTracker.Infrastructure.Services;
 using SMMTracker.TgBot;
 
 namespace SMMTracker.TgBot;
@@ -34,9 +34,9 @@ class Program
         var context = new ApplicationDbContext(options);
         await context.Database.MigrateAsync();
 
-        IUserManager userManager = new UserManager(context); 
+        IUserService userService = new UserService(context); 
 
-        var bot = new TelegramBotService(token, userManager); 
+        var bot = new TelegramBotService(token, userService); 
         await bot.StartAsync(CancellationToken.None);
 
         Console.WriteLine("Бот запущен. Нажмите любую клавишу для выхода...");

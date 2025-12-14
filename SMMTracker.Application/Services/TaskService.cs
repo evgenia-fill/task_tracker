@@ -1,5 +1,5 @@
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
-using SMMTracker.Application.Interfaces;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Domain.Enums;
 using Task = SMMTracker.Domain.Entities.Task;

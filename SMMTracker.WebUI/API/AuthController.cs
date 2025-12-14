@@ -5,21 +5,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using SMMTracker.Application.Dtos;
+using SMMTracker.Application.Services;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Infrastructure.Data.DataContext;
-using SMMTracker.Infrastructure.Services;
 
 namespace SMMTracker.WebUI.API;
 
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager _userManager;
+    private readonly UserService _userService;
     private readonly ApplicationDbContext _context;
 
-    public AuthController(UserManager userManager, ApplicationDbContext context)
+    public AuthController(UserService userService, ApplicationDbContext context)
     {
-        _userManager = userManager;
+        _userService = userService;
         _context = context;
     }
 
@@ -45,7 +45,7 @@ public class AuthController : ControllerBase
 
         try
         {
-            var appUser = await _userManager.FindOrCreateUserAsync(user);
+            var appUser = await _userService.FindOrCreateUserAsync(user);
 
             var claims = new List<Claim>
             {

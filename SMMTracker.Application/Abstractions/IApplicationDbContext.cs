@@ -1,8 +1,8 @@
-using SMMTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using SMMTracker.Domain.Entities;
 using Task = SMMTracker.Domain.Entities.Task;
 
-namespace SMMTracker.Application.Interfaces;
+namespace SMMTracker.Application.Abstractions;
 
 public interface IApplicationDbContext
 {

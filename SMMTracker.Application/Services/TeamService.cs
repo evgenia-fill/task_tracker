@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Application.Dtos;
-using SMMTracker.Application.Interfaces;
 using SMMTracker.Domain.Enums;
 using Task = System.Threading.Tasks.Task;
 

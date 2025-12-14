@@ -1,7 +1,7 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Infrastructure.Data.DataContext;
-using SMMTracker.Infrastructure.Services;
-using SMMTracker.Application.Interfaces;
 using SMMTracker.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,10 +21,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
     opt.UseSqlite(connectionString));
 
 // Сервисы приложения
-builder.Services.AddScoped<UserManager>();
-builder.Services.AddScoped<UserStateService>();
-builder.Services.AddScoped<IApplicationDbContext>(provider =>
-    provider.GetRequiredService<ApplicationDbContext>());
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<TeamService>();
 builder.Services.AddScoped<CalendarService>();
@@ -79,9 +77,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapBlazorHub();
-app.MapFallbackToPage("/_Host");
-app.MapRazorPages();  
+app.MapRazorPages();
 app.MapControllers();
 
 Console.WriteLine("Web application started: [http://localhost:5002](http://localhost:5002)");

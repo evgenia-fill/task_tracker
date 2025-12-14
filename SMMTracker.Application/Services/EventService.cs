@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Application.Dtos;
-using SMMTracker.Application.Interfaces;
 
 namespace SMMTracker.Application.Services;
 

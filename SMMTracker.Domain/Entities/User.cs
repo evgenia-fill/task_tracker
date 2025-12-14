@@ -25,15 +25,7 @@ public class User : Entity
             throw new Exception();
         if (string.IsNullOrWhiteSpace(otherUser.LastName))
             throw new Exception();
-
-        // var user = new User
-        // {
-        //     TelegramId = otherUser.TelegramId,
-        //     FirstName = otherUser.FirstName.Trim(),
-        //     LastName = otherUser.LastName.Trim(),
-        //     TelegramUsername = otherUser.UserName.Trim(),
-        //     Hash = Guid.NewGuid().ToString()
-        // };
+        
         var user = new User
         {
             TelegramId = otherUser.TelegramId,
@@ -58,13 +50,5 @@ public class User : Entity
         ProfileDescription = description.Trim();
     }
 
-    public void AcceptInvitation(Invitation invitation)
-    {
-        
-    }
-
-    public void DeclineInvitation(Invitation invitation)
-    {
-        
-    }
+    
 }
