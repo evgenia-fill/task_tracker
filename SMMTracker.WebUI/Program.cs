@@ -26,13 +26,20 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 // Сервисы приложения
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<ICalendarRepository, CalendarRepository>();
 builder.Services.AddScoped<IUserTeamRepository, UserTeamRepository>();
+builder.Services.AddScoped<IUserTaskRepository, UserTaskRepository>();
+
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<ICalendarService, CalendarService>();
+builder.Services.AddScoped<IEventService, EventService>();
+
 builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
-builder.Services.AddScoped<TaskService>();
-builder.Services.AddScoped<TeamService>();
-builder.Services.AddScoped<CalendarService>();
-builder.Services.AddScoped<EventService>();
+
 builder.Services.AddEndpointsApiExplorer(); // Эта строка нужна для Swagger
 builder.Services.AddSwaggerGen(); // А эта его добавляет
 

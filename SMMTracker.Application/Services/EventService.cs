@@ -1,17 +1,16 @@
-using Microsoft.EntityFrameworkCore;
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Application.Dtos;
+using SMMTracker.Domain.IRepositories;
 
 namespace SMMTracker.Application.Services;
 
-public class EventService
+public class EventService : IEventService
 {
-    private readonly IApplicationDbContext _context;
-
-    public EventService(IApplicationDbContext context)
+    private readonly IEventRepository _eventRepository;
+    public EventService(IEventRepository eventRepository)
     {
-        _context = context;
+        _eventRepository = eventRepository;
     }
 
     public async Task<int> CreateEventAsync(CreateEventDto dto,
@@ -23,45 +22,45 @@ public class EventService
             dto.Date,
             dto.CalendarId
         );
-        _context.Events.Add(eventAs);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _eventRepository.AddAsync(eventAs);
         return eventAs.Id;
     }
 
     public async Task<List<EventSummaryDto>> GetEventsForMonthAsync(int calendarId, int month, int year,
         CancellationToken cancellationToken = default)
     {
-        return await _context.Events
-            .Where(e => e.CalendarId == calendarId && e.Date.Year == year && e.Date.Month == month)
+        var events = await _eventRepository.GetEventsForMonthAsync(calendarId, month, year);
+        
+        return events
             .Select(e => new EventSummaryDto
             {
                 Id = e.Id,
                 Name = e.Name,
                 Date = e.Date
             })
-            .ToListAsync(cancellationToken: cancellationToken);
+            .ToList();
     }
 
     public async Task<EventDetailsDto?> GetEventDetailsAsync(int eventId, CancellationToken cancellationToken = default)
     {
-        return await _context.Events
-            .Where(e => e.Id == eventId)
-            .Include(e => e.Tasks)
-            .Select(e =>
-                new EventDetailsDto
+        var eventEntity = await _eventRepository.GetByIdAsync(eventId);
+        
+        if (eventEntity == null)
+            return null;
+            
+        return new EventDetailsDto
+        {
+            Id = eventEntity.Id,
+            Name = eventEntity.Name,
+            Description = eventEntity.Description,
+            Date = eventEntity.Date,
+            Tasks = eventEntity.Tasks
+                .Select(t => new TaskSummaryDto
                 {
-                    Id = e.Id,
-                    Name = e.Name,
-                    Description = e.Description,
-                    Date = e.Date,
-                    Tasks = e.Tasks
-                        .Select(t => new TaskSummaryDto
-                        {
-                            Id = t.Id,
-                            Name = t.Name,
-                            Status = (TaskStatus)t.Status
-                        }).ToList()
-                })
-            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+                    Id = t.Id,
+                    Name = t.Name,
+                    Status = (TaskStatus)t.Status
+                }).ToList()
+        };
     }
 }

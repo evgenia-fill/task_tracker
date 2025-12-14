@@ -3,7 +3,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace SMMTracker.Domain.IRepositories;
 
-public interface IUserTeamRepository
+public interface IUserTeamRepository 
 {
     Task<UserTeam?> GetUserTeamAsync(int teamId, int userId);
     Task<bool> ExistsAsync(int userTeamId);

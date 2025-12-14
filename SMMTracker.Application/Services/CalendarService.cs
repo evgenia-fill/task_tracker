@@ -2,30 +2,30 @@ using Microsoft.EntityFrameworkCore;
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Application.Dtos;
+using SMMTracker.Domain.IRepositories;
 
 namespace SMMTracker.Application.Services;
 
-public class CalendarService
+public class CalendarService : ICalendarService
 {
-    private readonly IApplicationDbContext _context;
+    private readonly ICalendarRepository _calendarRepository;
+    private readonly ITeamRepository _teamRepository;
 
-    public CalendarService(IApplicationDbContext context)
+    public CalendarService(ICalendarRepository calendarRepository, ITeamRepository teamRepository)
     {
-        _context = context;
+        _calendarRepository = calendarRepository;
+        _teamRepository = teamRepository;
     }
 
     public async Task<int> CreateCalendarAsync(CreateCalendarDto dto,
         CancellationToken cancellationToken = default)
     {
-        var teamExists = await _context.Teams.AnyAsync(t => t.Id == dto.TeamId, cancellationToken);
+        var teamExists = await _teamRepository.ExistsAsync(dto.TeamId);
         if (!teamExists)
-        {
             throw new Exception($"Команда с Id={dto.TeamId} не найдена.");
-        }
 
         var calendar = new Calendar(dto.TeamId);
-        _context.Calendars.Add(calendar);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _calendarRepository.AddAsync(calendar);
         return calendar.Id;
     }
 }

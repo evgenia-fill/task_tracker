@@ -13,7 +13,7 @@ public class Task : Entity
     public int EventId { get; private set; }
     public int? CalendarId { get; private set; }
 
-    public Event Event { get; private set; } = null!;
+    public Event Event { get;  set; } = null!;
     public Calendar? Calendar { get; private set; }
     public List<UserTask> UserTasks { get; private set; } = new();
 
@@ -33,11 +33,6 @@ public class Task : Entity
     {
     }
 
-    public void SetDeadline(DateTime deadline)
-    {
-        Deadline = deadline;
-    }
-
     public void MoveToReview()
     {
         if (Status != TaskStatus.InProgress) throw new Exception("Cannot move task to Review from this status");
@@ -52,18 +47,14 @@ public class Task : Entity
         return;
     }
 
-    public void ChangeName(string name)
+    public void MoveToInProgress()
     {
-        Name = name;
+        if (Status != TaskStatus.Review)
+            throw new Exception("Cannot move task to InProgress from this status");
+        Status = TaskStatus.InProgress;
     }
 
-    public void ChangeDescription(string description)
-    {
-        Description = description;
-    }
-
-    // public void SetPrioritized(bool isPrioritized)
-    // {
-    //     IsPrioritized = isPrioritized;
-    // }
+    public void ChangeName(string name) => Name = name;
+    public void ChangeDescription(string description) => Description = description;
+    public void SetDeadline(DateTime deadline) => Deadline = deadline;
 }

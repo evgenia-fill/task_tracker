@@ -1,3 +1,4 @@
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Domain.Enums;
@@ -6,7 +7,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace SMMTracker.Application.Services;
 
-public class TeamService
+public class TeamService : ITeamService
 {
     private readonly ITeamRepository _teamRepository;
     private readonly IUserTeamRepository _userTeamRepository;
