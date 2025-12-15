@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using SMMTracker.Infrastructure.Data.DataContext;
 
 namespace SMMTracker.Tests;

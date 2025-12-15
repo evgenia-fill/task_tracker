@@ -1,24 +1,62 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SMMTracker.Infrastructure.Data.DataContext;
+using SMMTracker.Application.Abstractions;
+using SMMTracker.Application.Dtos;
 
 namespace SMMTracker.WebUI.API;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class UserController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IUserService _userService;
 
-    public UserController(ApplicationDbContext context)
+    public UserController(IUserService userService)
     {
-        _context = context;
+        _userService = userService;
     }
-    
-    [HttpGet]
-    public IActionResult GetHello()
+
+    [HttpGet("{userId:int}")]
+    public async Task<IActionResult> GetUserProfile(int userId)
     {
-        return Ok("GET");
+        try
+        {
+            var profile = await _userService.GetUserProfileAsync(userId);
+            return Ok(profile);
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new { e.Message });
+        }
     }
-    
-    
+
+    [HttpPut("me")]
+    public async Task<IActionResult> UpdateMyProfile([FromBody] UserProfileDto request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            await _userService.UpdateUserProfileAsync(
+                userId,
+                request.FirstName,
+                request.LastName,
+                request.Description);
+
+            return Ok(new { Message = "Профиль успешно обновлен" });
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new { e.Message });
+        }
+    }
+
+    private int GetUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            throw new UnauthorizedAccessException("Пользователь не авторизован");
+        return userId;
+    }
 }

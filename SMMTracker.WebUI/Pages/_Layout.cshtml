@@ -1,36 +1,53 @@
-﻿@using Microsoft.AspNetCore.Components.Web
-@namespace SMMTracker.WebUI.Pages  
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-
-<!DOCTYPE html>
-<html lang="ru"> 
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <base href="~/"/>
-    <title>SMMTracker</title> 
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SMM Tracker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        /* Базовые стили для всех страниц */
+        .main-container {
+            min-height: 100vh;
+        }
+
+        /* Стили для главной страницы и логина */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        
+        /* Стили для тостов */
+        .toast-container {
+            z-index: 9999;
+        }
+    </style>
     
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css"/>
-    <link href="css/site.css" rel="stylesheet" />
-    <link href="SMMTracker.WebUI.styles.css" rel="stylesheet" />  
-    
-    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered"/>
+    @* ЗАКОММЕНТИРОВАТЬ если файлов нет *@
+    @* <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /> *@
 </head>
 <body>
-@RenderBody()
-
-<div id="blazor-error-ui">
-    <environment include="Staging,Production">
-        Произошла ошибка. Приложение может не отвечать до перезагрузки.
-    </environment>
-    <environment include="Development">
-        Произошла необработанная ошибка. Подробности в инструментах разработчика.
-    </environment>
-    <a href="" class="reload">Перезагрузить</a>
-    <a class="dismiss">🗙</a>
+@{
+    // УПРОЩЁННАЯ ЛОГИКА - без проверки ViewContext
+    string containerClass = "gradient-bg";
+    
+    // Или вообще убрать логику и делать фон через CSS классов в страницах
+}
+<div class="main-container @containerClass">
+    @RenderBody()
 </div>
 
-<script src="_framework/blazor.server.js"></script>
-<script src="js/telegramLogin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+@* ЗАКОММЕНТИРОВАТЬ если файла нет *@
+@* <script src="~/js/site.js" asp-append-version="true"></script> *@
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

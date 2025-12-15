@@ -1,0 +1,15 @@
+using SMMTracker.Domain.Entities;
+using Task = System.Threading.Tasks.Task;
+
+namespace SMMTracker.Domain.IRepositoryes;
+
+public interface IUserRepository
+{
+    Task<User?> GetByIdAsync(int userId);
+    Task<User?> GetByTelegramIdAsync(long telegramId);
+    Task AddAsync(User user);
+    Task UpdateAsync(User user);
+    Task DeleteAsync(int userId);
+    Task<bool> ExistsAsync(int userId);
+
+}

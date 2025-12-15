@@ -1,134 +1,269 @@
-﻿using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
+﻿using System;
+using FluentAssertions;
+using Moq;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Services;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Domain.Enums;
+using SMMTracker.Domain.IRepositories;
 using Xunit;
+using Task = System.Threading.Tasks.Task;
 
 namespace SMMTracker.Tests;
 
-public class TeamServiceTests : TestBase
+public class TeamServiceTests
 {
-    [Fact]
-    public async void CreateTeamAsync_ShouldCreateTeamAndAdmin()
+    private readonly Mock<ITeamRepository> _teamRepositoryMock;
+    private readonly Mock<IUserTeamRepository> _userTeamRepositoryMock;
+    private readonly TeamService _teamService;
+
+    public TeamServiceTests()
     {
-        await using var context = CreateContext();
-        var service = new TeamService(context);
-        const int creatorId = 1;
-        var dto = new CreateTeamDto { Name = "Alpha" };
-
-        var teamId = await service.CreateTeamAsync(dto, creatorId);
-
-        var team = await context.Teams.FindAsync(teamId);
-        team.Should().NotBeNull();
-        team!.Code.Should().HaveLength(5);
-
-        var userTeam = await context.UserTeams.FirstOrDefaultAsync(ut => ut.TeamId == teamId && ut.UserId == creatorId);
-        userTeam.Should().NotBeNull();
-        userTeam!.Role.Should().Be(TeamRole.Admin);
+        _teamRepositoryMock = new Mock<ITeamRepository>();
+        _userTeamRepositoryMock = new Mock<IUserTeamRepository>();
+        _teamService = new TeamService(_teamRepositoryMock.Object, _userTeamRepositoryMock.Object);
     }
 
     [Fact]
-    public async void JoinTeamAsync_ShouldAddUser_WhenCodeValid()
+    public async Task CreateTeamAsync_ReturnsTeamId()
     {
-        await using var context = CreateContext();
-        var service = new TeamService(context);
-        var team = new Team("Alpha", "XYZ12");
-        context.Teams.Add(team);
-        await context.SaveChangesAsync();
+        // Arrange
+        var creatorId = 1;
+        var dto = new CreateTeamDto { Name = "Тестовая команда" };
+        var teamId = 5;
 
-        var dto = new JoinTeamDto { Code = "XYZ12", UserId = 2 };
+        _teamRepositoryMock
+            .SetupSequence(r => r.ExistsByCodeAsync(It.IsAny<string>()))
+            .ReturnsAsync(false);
 
-        var result = await service.JoinTeamAsync(dto);
+        _teamRepositoryMock
+            .Setup(r => r.AddAsync(It.IsAny<Team>()))
+            .Callback<Team>(team => team.Id = teamId)
+            .Returns(Task.CompletedTask);
 
+        _userTeamRepositoryMock
+            .Setup(r => r.AddAsync(It.IsAny<UserTeam>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _teamService.CreateTeamAsync(dto, creatorId);
+
+        // Assert
+        result.Should().Be(teamId);
+        _teamRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Team>()), Times.Once);
+        _userTeamRepositoryMock.Verify(r => r.AddAsync(It.IsAny<UserTeam>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateTeamAsync_GeneratesUniqueCode()
+    {
+        // Arrange
+        var creatorId = 1;
+        var dto = new CreateTeamDto { Name = "Команда" };
+
+        _teamRepositoryMock
+            .SetupSequence(r => r.ExistsByCodeAsync(It.IsAny<string>()))
+            .ReturnsAsync(true)   // Первый код занят
+            .ReturnsAsync(false); // Второй код свободен
+
+        _teamRepositoryMock
+            .Setup(r => r.AddAsync(It.IsAny<Team>()))
+            .Returns(Task.CompletedTask);
+
+        _userTeamRepositoryMock
+            .Setup(r => r.AddAsync(It.IsAny<UserTeam>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _teamService.CreateTeamAsync(dto, creatorId);
+
+        // Assert
+        _teamRepositoryMock.Verify(r => r.ExistsByCodeAsync(It.IsAny<string>()), Times.AtLeast(2));
+    }
+
+    [Fact]
+    public async Task JoinTeamAsync_TeamExists_ReturnsTrue()
+    {
+        // Arrange
+        var dto = new JoinTeamDto { Code = "ABC123", UserId = 2 };
+        var team = new Team("Тестовая", "ABC123");
+        team.Id = 1;
+
+        _teamRepositoryMock
+            .Setup(r => r.GetByCodeAsync("ABC123"))
+            .ReturnsAsync(team);
+
+        _userTeamRepositoryMock
+            .Setup(r => r.AddAsync(It.IsAny<UserTeam>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _teamService.JoinTeamAsync(dto);
+
+        // Assert
         result.Should().BeTrue();
-        var userTeam = await context.UserTeams.FirstOrDefaultAsync(ut => ut.TeamId == team.Id && ut.UserId == 2);
-        userTeam.Should().NotBeNull();
-        userTeam.Role.Should().Be(TeamRole.User);
+        _userTeamRepositoryMock.Verify(r => r.AddAsync(It.Is<UserTeam>(ut => 
+            ut.TeamId == 1 && 
+            ut.UserId == 2 && 
+            ut.Role == TeamRole.User)), Times.Once);
     }
 
     [Fact]
-    public async void JoinTeamAsync_ShouldReturnFalse_WhenCodeInvalid()
+    public async Task JoinTeamAsync_TeamNotExists_ReturnsFalse()
     {
-        await using var context = CreateContext();
-        var service = new TeamService(context);
-        var dto = new JoinTeamDto { Code = "WRONG", UserId = 2 };
+        // Arrange
+        var dto = new JoinTeamDto { Code = "INVALID", UserId = 2 };
 
-        var result = await service.JoinTeamAsync(dto);
+        _teamRepositoryMock
+            .Setup(r => r.GetByCodeAsync("INVALID"))
+            .ReturnsAsync((Team?)null);
 
+        // Act
+        var result = await _teamService.JoinTeamAsync(dto);
+
+        // Assert
+        result.Should().BeFalse();
+        _userTeamRepositoryMock.Verify(r => r.AddAsync(It.IsAny<UserTeam>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RemoveUserFromTeamAsync_AdminRemovesUser_Success()
+    {
+        // Arrange
+        var teamId = 1;
+        var userIdToRemove = 2;
+        var adminId = 3;
+    
+        // Создаем userTeam для пользователя, которого удаляем (userIdToRemove = 2)
+        var userTeamToRemove = new UserTeam { 
+            Id = 10, 
+            TeamId = teamId, 
+            UserId = userIdToRemove  
+        };
+
+        _teamRepositoryMock
+            .Setup(r => r.ExistsAsync(teamId))
+            .ReturnsAsync(true);
+
+        // Админ имеет права
+        _userTeamRepositoryMock
+            .Setup(r => r.IsUserAdminAsync(teamId, adminId))
+            .ReturnsAsync(true);
+
+        // Настраиваем возврат userTeam для пользователя, которого удаляем
+        _userTeamRepositoryMock
+            .Setup(r => r.GetUserTeamAsync(teamId, userIdToRemove))  //  userIdToRemove
+            .ReturnsAsync(userTeamToRemove);
+
+        // Act
+        await _teamService.RemoveUserFromTeamAsync(teamId, userIdToRemove, adminId);
+
+        // Assert
+        _userTeamRepositoryMock.Verify(r => r.DeleteAsync(10), Times.Once);
+    }
+
+    [Fact]
+    public async Task RemoveUserFromTeamAsync_NotAdmin_ThrowsUnauthorizedAccessException()
+    {
+        // Arrange
+        var teamId = 1;
+        var userIdToRemove = 2;
+        var adminId = 3;
+
+        _teamRepositoryMock
+            .Setup(r => r.ExistsAsync(teamId))
+            .ReturnsAsync(true);
+
+        _userTeamRepositoryMock
+            .Setup(r => r.IsUserAdminAsync(teamId, adminId))
+            .ReturnsAsync(false);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            async () => await _teamService.RemoveUserFromTeamAsync(teamId, userIdToRemove, adminId));
+    }
+
+    [Fact]
+    public async Task RemoveUserFromTeamAsync_UserNotInTeam_ThrowsException()
+    {
+        // Arrange
+        var teamId = 1;
+        var userIdToRemove = 2;
+        var adminId = 3;
+
+        _teamRepositoryMock
+            .Setup(r => r.ExistsAsync(teamId))
+            .ReturnsAsync(true);
+
+        _userTeamRepositoryMock
+            .Setup(r => r.IsUserAdminAsync(teamId, adminId))
+            .ReturnsAsync(true);
+
+        _userTeamRepositoryMock
+            .Setup(r => r.GetUserTeamAsync(teamId, userIdToRemove))
+            .ReturnsAsync((UserTeam?)null);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<Exception>(
+            async () => await _teamService.RemoveUserFromTeamAsync(teamId, userIdToRemove, adminId));
+        
+        exception.Message.Should().Be("User is not in the team");
+    }
+
+    [Fact]
+    public async Task LeaveTeamAsync_UserIsAdmin_ThrowsException()
+    {
+        // Arrange
+        var teamId = 1;
+        var userId = 2;
+        var userTeam = new UserTeam { Id = 10, TeamId = teamId, UserId = userId, Role = TeamRole.Admin };
+
+        _userTeamRepositoryMock
+            .Setup(r => r.GetUserTeamAsync(teamId, userId))
+            .ReturnsAsync(userTeam);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<Exception>(
+            async () => await _teamService.LeaveTeamAsync(teamId, userId));
+        
+        exception.Message.Should().Be("Admin cannot leave team");
+    }
+
+    [Fact]
+    public async Task LeaveTeamAsync_UserNotInTeam_ReturnsFalse()
+    {
+        // Arrange
+        var teamId = 1;
+        var userId = 2;
+
+        _userTeamRepositoryMock
+            .Setup(r => r.GetUserTeamAsync(teamId, userId))
+            .ReturnsAsync((UserTeam?)null);
+
+        // Act
+        var result = await _teamService.LeaveTeamAsync(teamId, userId);
+
+        // Assert
         result.Should().BeFalse();
     }
 
     [Fact]
-    public async void RemoveUserFromTeamAsync_ShouldRemove_WhenRequesterIsAdmin()
+    public async Task LeaveTeamAsync_RegularUser_Success()
     {
-        await using var context = CreateContext();
-        var service = new TeamService(context);
+        // Arrange
         var teamId = 1;
-        var adminId = 10;
-        var userId = 20;
+        var userId = 2;
+        var userTeam = new UserTeam { Id = 10, TeamId = teamId, UserId = userId, Role = TeamRole.User };
 
-        context.Teams.Add(new Team("T", "C") { Id = teamId });
-        context.UserTeams.Add(new UserTeam { TeamId = teamId, UserId = adminId, Role = TeamRole.Admin });
-        context.UserTeams.Add(new UserTeam { TeamId = teamId, UserId = userId, Role = TeamRole.User });
-        await context.SaveChangesAsync();
+        _userTeamRepositoryMock
+            .Setup(r => r.GetUserTeamAsync(teamId, userId))
+            .ReturnsAsync(userTeam);
 
-        await service.RemoveUserFromTeamAsync(teamId, userId, adminId);
+        // Act
+        var result = await _teamService.LeaveTeamAsync(teamId, userId);
 
-        var removedUser = await context.UserTeams.FirstOrDefaultAsync(ut => ut.TeamId == teamId && ut.UserId == userId);
-        removedUser.Should().BeNull();
-    }
-
-    [Fact]
-    public async void RemoveUserFromTeamAsync_ShouldThrow_WhenRequesterNotAdmin()
-    {
-        await using var context = CreateContext();
-        var service = new TeamService(context);
-        var teamId = 1;
-        var user1 = 10;
-        var user2 = 20;
-
-        context.Teams.Add(new Team("T", "C") { Id = teamId });
-        context.UserTeams.Add(new UserTeam { TeamId = teamId, UserId = user1, Role = TeamRole.User });
-        await context.SaveChangesAsync();
-
-        var action = async () => await service.RemoveUserFromTeamAsync(teamId, user2, user1);
-
-        await action.Should().ThrowAsync<UnauthorizedAccessException>();
-    }
-
-    [Fact]
-    public async void LeaveTeamAsync_ShouldRemoveUser_WhenNotAdmin()
-    {
-        await using var context = CreateContext();
-        var service = new TeamService(context);
-        var teamId = 1;
-        var userId = 10;
-
-        context.UserTeams.Add(new UserTeam { TeamId = teamId, UserId = userId, Role = TeamRole.User });
-        await context.SaveChangesAsync();
-
-        var result = await service.LeaveTeamAsync(teamId, userId);
-
+        // Assert
         result.Should().BeTrue();
-        var record = await context.UserTeams.FirstOrDefaultAsync(ut => ut.TeamId == teamId && ut.UserId == userId);
-        record.Should().BeNull();
-    }
-
-    [Fact]
-    public async void LeaveTeamAsync_ShouldThrow_WhenUserIsAdmin()
-    {
-        await using var context = CreateContext();
-        var service = new TeamService(context);
-        var teamId = 1;
-        var adminId = 10;
-
-        context.UserTeams.Add(new UserTeam { TeamId = teamId, UserId = adminId, Role = TeamRole.Admin });
-        await context.SaveChangesAsync();
-
-        var action = async () => await service.LeaveTeamAsync(teamId, adminId);
-
-        await action.Should().ThrowAsync<Exception>().WithMessage("Admin cannot leave team");
+        _userTeamRepositoryMock.Verify(r => r.DeleteAsync(10), Times.Once);
     }
 }

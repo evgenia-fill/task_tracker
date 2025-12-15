@@ -4,48 +4,48 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using SMMTracker.Application.Dtos;
+using SMMTracker.Application.Services;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Infrastructure.Data.DataContext;
-using SMMTracker.Infrastructure.Services;
-using SMMTracker.WebUI.DTOs;
 
 namespace SMMTracker.WebUI.API;
 
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager _userManager;
+    private readonly UserService _userService;
     private readonly ApplicationDbContext _context;
 
-    public AuthController(UserManager userManager, ApplicationDbContext context)
+    public AuthController(UserService userService, ApplicationDbContext context)
     {
-        _userManager = userManager;
+        _userService = userService;
         _context = context;
     }
 
     [HttpPost("api/auth/telegram")]
-    public async Task<IActionResult> LoginWithTelegram([FromBody] TelegramLoginData data)
+    public async Task<IActionResult> LoginWithTelegram([FromBody] TelegramLoginDto dto)
     {
         var connection = (SqliteConnection)_context.Database.GetDbConnection();
         Console.WriteLine($"[AUTH_CONTROLLER_DEBUG] Сайт использует базу данных: {connection.DataSource}");
 
-        if (data == null)
+        if (dto == null)
         {
-            return BadRequest("No data received");
+            return BadRequest("No dto received");
         }
 
         var user = new User
         {
-            TelegramId = data.Id,
-            FirstName = data.FirstName,
-            LastName = data.LastName,
-            UserName = string.IsNullOrWhiteSpace(data.Username) ? $"user_{data.Id}" : data.Username,
+            TelegramId = dto.Id,
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            UserName = string.IsNullOrWhiteSpace(dto.Username) ? $"user_{dto.Id}" : dto.Username,
             Hash = Guid.NewGuid().ToString()
         };
 
         try
         {
-            var appUser = await _userManager.FindOrCreateUserAsync(user);
+            var appUser = await _userService.FindOrCreateUserAsync(user);
 
             var claims = new List<Claim>
             {

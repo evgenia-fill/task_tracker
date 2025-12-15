@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SMMTracker.Application.Interfaces; 
+using SMMTracker.Application.Abstractions;
+using SMMTracker.Application.Services;
 using SMMTracker.Infrastructure.Data.DataContext;
-using SMMTracker.Infrastructure.Services;
-using SMMTracker.TgBot;
+using SMMTracker.Infrastructure.Repositories;
+using SMMTracker.Domain.IRepositoryes;
 
 namespace SMMTracker.TgBot;
+
 class Program
 {
     const string token = "8450218559:AAGCQdk6hnrtP8aFZpZM-bCc7tCWeKNWaIE";
@@ -25,6 +27,7 @@ class Program
             Console.WriteLine("Creating directory manually...");
             Directory.CreateDirectory(dir);
         }
+
         var connectionString = $"Data Source={dbPath}";
 
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -34,9 +37,10 @@ class Program
         var context = new ApplicationDbContext(options);
         await context.Database.MigrateAsync();
 
-        IUserManager userManager = new UserManager(context); 
+        IUserRepository userRepository = new UserRepository(context);
+        IUserService userService = new UserService(userRepository);
 
-        var bot = new TelegramBotService(token, userManager); 
+        var bot = new TelegramBotService(token, userService);
         await bot.StartAsync(CancellationToken.None);
 
         Console.WriteLine("Бот запущен. Нажмите любую клавишу для выхода...");

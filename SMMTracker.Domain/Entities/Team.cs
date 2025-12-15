@@ -9,7 +9,6 @@ public class Team : Entity
     
     public Calendar? Calendar { get; set; }
     public List<UserTeam>? UserTeams { get; set; }
-    // public List<Event>? Events { get; set; }
     
     public Team(string name, string code)
     {

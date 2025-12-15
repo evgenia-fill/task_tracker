@@ -1,0 +1,542 @@
+@page "/Team/{id}"
+@model SMMTracker.WebUI.ViewModels.TeamModel
+@{
+    ViewData["Title"] = Model.Team.Name;
+    Layout = "_Layout";
+}
+
+<style>
+    .team-container {
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+    
+    .sidebar {
+        background: white;
+        border-right: 1px solid #dee2e6;
+        min-height: 100vh;
+        padding: 20px;
+        position: sticky;
+        top: 0;
+    }
+    
+    .main-content {
+        padding: 30px;
+    }
+    
+    .nav-link {
+        color: #495057;
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 5px;
+        transition: all 0.2s;
+    }
+    
+    .nav-link:hover {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+    }
+    
+    .nav-link.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .team-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .member-card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        transition: transform 0.2s;
+    }
+    
+    .member-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .event-card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #0c39ef;
+    }
+    
+    .event-card.upcoming {
+        border-left-color: #198754;
+    }
+    
+    .event-card.past {
+        border-left-color: #263d50;
+    }
+    
+    .back-button {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+</style>
+
+<div class="team-container">
+    <!-- Кнопка возврата в главное меню -->
+    <div class="back-button">
+        <a href="/Dashboard" class="btn btn-primary btn-lg shadow">
+            <i class="bi bi-arrow-left me-2"></i>Назад к командам
+        </a>
+    </div>
+
+    <!-- Сообщения -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="container-fluid">
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="container-fluid">
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    }
+
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Левая панель - навигация -->
+            <div class="col-md-3 col-lg-2 sidebar">
+                <div class="d-flex flex-column h-100">
+                    <!-- Информация о команде -->
+                    <div class="mb-4">
+                        <h4 class="mb-3">@Model.Team.Name</h4>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-people me-1"></i>@Model.Team.MemberCount участников
+                        </p>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-calendar me-1"></i>Создана @Model.Team.CreatedAt.ToString("dd.MM.yyyy")
+                        </p>
+                    </div>
+
+                    <!-- Навигация -->
+                    <nav class="nav flex-column mb-4">
+                        <a class="nav-link active" href="#team-info">
+                            <i class="bi bi-info-circle me-2"></i>Информация о команде
+                        </a>
+                        <a class="nav-link" href="#members">
+                            <i class="bi bi-people me-2"></i>Участники
+                        </a>
+                        <a class="nav-link" href="#events">
+                            <i class="bi bi-calendar-event me-2"></i>Мероприятия
+                        </a>
+                        <a class="nav-link" href="#calendar">
+                            <i class="bi bi-calendar-week me-2"></i>Календарь
+                        </a>
+                        @if (Model.IsOwner)
+                        {
+                            <a class="nav-link text-success" href="#settings">
+                                <i class="bi bi-gear me-2"></i>Настройки команды
+                            </a>
+                        }
+                    </nav>
+
+                    <!-- Код приглашения -->
+                    <div class="mt-auto">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white py-2">
+                                <small><i class="bi bi-key me-1"></i>Код приглашения</small>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="input-group input-group-sm">
+                                    <input type="text"
+                                           class="form-control font-monospace"
+                                           value="@Model.Team.InvitationCode"
+                                           readonly>
+                                    <button class="btn btn-outline-primary" type="button" onclick="copyToClipboard('@Model.Team.InvitationCode')">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Основной контент -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Заголовок команды -->
+                <div class="team-header">
+                    <h1 class="display-5 mb-2">@Model.Team.Name</h1>
+                    <p class="lead mb-0">@Model.Team.Description</p>
+                </div>
+
+                <!-- Информация о команде -->
+                <div id="team-info" class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="h4 mb-0">
+                            <i class="bi bi-info-circle text-primary me-2"></i>Информация о команде
+                        </h2>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h5 class="mb-3">Описание команды</h5>
+                        <p class="mb-0">@Model.Team.Description</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h5 class="mb-3">Детали команды</h5>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="mb-2">
+                                            <small class="text-muted d-block">Участников</small>
+                                            <span class="h5">@Model.Team.MemberCount</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="mb-2">
+                                            <small class="text-muted d-block">Дата создания</small>
+                                            <span class="h5">@Model.Team.CreatedAt.ToString("dd.MM.yyyy")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <small class="text-muted d-block">Код приглашения</small>
+                                    <div class="d-flex align-items-center mt-1">
+                                        <code class="bg-light p-2 rounded me-2">@Model.Team.InvitationCode</code>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('@Model.Team.InvitationCode')">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h5 class="mb-3">Быстрые действия</h5>
+                                <div class="d-grid gap-2">
+                                    @if (Model.IsOwner)
+                                    {
+                                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                                            <i class="bi bi-person-plus me-2"></i>Добавить участника
+                                        </button>
+                                    }
+                                    <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addEventModal">
+                                        <i class="bi bi-calendar-plus me-2"></i>Добавить мероприятие
+                                    </button>
+                                    @if (Model.IsOwner)
+                                    {
+                                        <button class="btn btn-outline-warning" disabled>
+                                            <i class="bi bi-gear me-2"></i>Настройки команды
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Участники -->
+                <div id="members" class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="h4 mb-0">
+                            <i class="bi bi-people text-primary me-2"></i>Участники команды
+                        </h2>
+                        <span class="badge bg-primary">@Model.Members.Count участников</span>
+                    </div>
+                    
+                    <div class="row">
+                        @foreach (var member in Model.Members)
+                        {
+                            <div class="col-md-6 col-lg-4">
+                                <div class="member-card">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center" 
+                                                 style="width: 50px; height: 50px; color: white;">
+                                                <i class="bi bi-person-fill" style="font-size: 1.5rem;"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-1">@member.FirstName @member.LastName</h6>
+                                            <p class="text-muted small mb-1">@@@member.TelegramUsername</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-secondary">@member.Role</span>
+                                                <small class="text-muted">@member.JoinedAt.ToString("dd.MM.yyyy")</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (Model.IsOwner && member.Role != "Владелец")
+                                    {
+                                        <form method="post" asp-page-handler="RemoveMember" class="mt-3">
+                                            <input type="hidden" name="id" value="@Model.Team.Id" />
+                                            <input type="hidden" name="memberId" value="@member.Id" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100"
+                                                    onclick="return confirm('Удалить участника из команды?')">
+                                                <i class="bi bi-person-x me-1"></i>Удалить
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Мероприятия -->
+                <div id="events" class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="h4 mb-0">
+                            <i class="bi bi-calendar-event text-primary me-2"></i>Предстоящие мероприятия
+                        </h2>
+                        <span class="badge bg-success">@Model.UpcomingEvents.Count мероприятий</span>
+                    </div>
+                    
+                    <div class="row">
+                        @foreach (var ev in Model.UpcomingEvents.OrderBy(e => e.EventDate))
+                        {
+                            <div class="col-md-6">
+                                <a href="/Event/@Model.Team.Id/@ev.Id" class="text-decoration-none text-dark">
+                                    <div class="event-card @(ev.EventDate.Date == DateTime.Now.Date ? "upcoming" : "")">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="mb-0">@ev.Title</h6>
+                                            <span class="badge @(ev.EventDate.Date == DateTime.Now.Date ? "bg-success" : "bg-primary")">
+                                                @ev.EventDate.ToString("dd.MM.yyyy HH:mm")
+                                            </span>
+                                        </div>
+                                        <p class="small mb-2">@ev.Description</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">Добавил: @ev.CreatedBy</small>
+                                            <small class="text-muted">@ev.CreatedAt.ToString("dd.MM.yyyy")</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                    
+                    @if (!Model.UpcomingEvents.Any())
+                    {
+                        <div class="alert alert-info">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-info-circle display-6 text-info me-3"></i>
+                                <div>
+                                    <h5 class="alert-heading">Нет мероприятий</h5>
+                                    <p class="mb-0">Добавьте первое мероприятие для вашей команды.</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Заглушки для других разделов -->
+                <div id="calendar" class="mb-5">
+                    <div class="alert alert-warning">
+                        <h4 class="alert-heading"><i class="bi bi-calendar-week me-2"></i>Календарь</h4>
+                        <p>Раздел календаря находится в разработке.</p>
+                    </div>
+                </div>
+
+                @if (Model.IsOwner)
+                {
+                    <div id="settings" class="mb-5">
+                        <div class="alert alert-warning">
+                            <h4 class="alert-heading"><i class="bi bi-gear me-2"></i>Настройки команды</h4>
+                            <p>Раздел настроек находится в разработке.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления участника -->
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить участника</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="AddMember">
+                <input type="hidden" name="id" value="@Model.Team.Id" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Telegram username</label>
+                        <div class="input-group">
+                            <span class="input-group-text">@@</span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   asp-for="NewMemberUsername"
+                                   placeholder="username"
+                                   required>
+                        </div>
+                        <div class="form-text">Введите логин пользователя в Telegram</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления мероприятия -->
+<div class="modal fade" id="addEventModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить мероприятие</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="AddEvent">
+                <input type="hidden" name="id" value="@Model.Team.Id" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Название мероприятия *</label>
+                        <input type="text" 
+                               class="form-control" 
+                               asp-for="NewEvent.Title"
+                               placeholder="Например: Планирование на месяц"
+                               required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea class="form-control" 
+                                  asp-for="NewEvent.Description"
+                                  rows="3"
+                                  placeholder="Опишите детали мероприятия"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Дата и время</label>
+                        <input type="datetime-local" 
+                               class="form-control" 
+                               asp-for="NewEvent.EventDate"
+                               required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success">Добавить мероприятие</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Функция для копирования текста в буфер обмена
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            showToast('Скопировано в буфер обмена!');
+        });
+    }
+
+    // Функция для показа уведомлений
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-success border-0';
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle me-2"></i>${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+
+        const toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        toastContainer.appendChild(toast);
+        document.body.appendChild(toastContainer);
+
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+
+        toast.addEventListener('hidden.bs.toast', function() {
+            toastContainer.remove();
+        });
+    }
+
+    // Плавная прокрутка к разделам
+    document.addEventListener('DOMContentLoaded', function() {
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    // Убираем активный класс у всех ссылок
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    // Добавляем активный класс текущей ссылке
+                    this.classList.add('active');
+                    
+                    // Плавная прокрутка
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Автоматическое определение активного раздела при прокрутке
+        const sections = document.querySelectorAll('[id^="team-"], [id="members"], [id="events"], [id="calendar"], [id="settings"]');
+        
+        window.addEventListener('scroll', function() {
+            let current = '';
+            const scrollPosition = window.pageYOffset + 100;
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                
+                if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    });
+</script>

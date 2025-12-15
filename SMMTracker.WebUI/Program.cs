@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Infrastructure.Data.DataContext;
-using SMMTracker.Infrastructure.Services;
-using SMMTracker.Application.Interfaces;
 using SMMTracker.Application.Services;
+using SMMTracker.Domain.IRepositories;
+using SMMTracker.Domain.IRepositoryes;
+using SMMTracker.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,14 +24,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
     opt.UseSqlite(connectionString));
 
 // Сервисы приложения
-builder.Services.AddScoped<UserManager>();
-builder.Services.AddScoped<UserStateService>();
-builder.Services.AddScoped<IApplicationDbContext>(provider =>
-    provider.GetRequiredService<ApplicationDbContext>());
-builder.Services.AddScoped<TaskService>();
-builder.Services.AddScoped<TeamService>();
-builder.Services.AddScoped<CalendarService>();
-builder.Services.AddScoped<EventService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<ICalendarRepository, CalendarRepository>();
+builder.Services.AddScoped<IUserTeamRepository, UserTeamRepository>();
+builder.Services.AddScoped<IUserTaskRepository, UserTaskRepository>();
+
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<ICalendarService, CalendarService>();
+builder.Services.AddScoped<IEventService, EventService>();
+
+builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+
 builder.Services.AddEndpointsApiExplorer(); // Эта строка нужна для Swagger
 builder.Services.AddSwaggerGen(); // А эта его добавляет
 
@@ -80,8 +90,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapBlazorHub();
-app.MapFallbackToPage("/_Host");
+app.MapRazorPages();
 app.MapControllers();
 
 Console.WriteLine("Web application started: [http://localhost:5002](http://localhost:5002)");
