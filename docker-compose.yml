@@ -1,6 +1,8 @@
 services:
   webui:
     image: smmtracker-webui
+    container_name: webui       # Чтобы удобно писать docker logs webui
+    restart: unless-stopped     # Автозапуск при рестарте сервера
     build:
       context: .
       dockerfile: SMMTracker.WebUI/Dockerfile
@@ -8,11 +10,20 @@ services:
       - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/SMMTracker.db
+    volumes:
+      - ./data:/app/data
 
   tgbot:
     image: smmtracker-tgbot
+    container_name: tgbot
+    restart: unless-stopped
     build:
       context: .
       dockerfile: SMMTracker.TgBot/Dockerfile
     environment:
       - DOTNET_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/SMMTracker.db
+    volumes:
+      - ./data:/app/data
