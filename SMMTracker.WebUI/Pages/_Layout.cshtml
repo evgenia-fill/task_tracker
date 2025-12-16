@@ -7,12 +7,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        /* Базовые стили для всех страниц */
         .main-container {
             min-height: 100vh;
         }
 
-        /* Стили для главной страницы и логина */
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
@@ -24,30 +22,117 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             padding: 2rem;
         }
-        
-        /* Стили для тостов */
-        .toast-container {
-            z-index: 9999;
+
+        .content-wrapper {
+            padding-top: 20px;
         }
+        .calendar-grid {
+            display: grid;
+            /* Создает 7 одинаковых колонок для дней недели */
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px; /* Небольшой отступ между ячейками */
+        }
+
+        .day-header, .calendar-day {
+            /* Общие стили для ячеек */
+            padding: 10px 5px;
+            text-align: center;
+            border-radius: 8px;
+            min-height: 80px; /* Чтобы ячейки были видны */
+            position: relative;
+        }
+
+        .day-header {
+            font-weight: bold;
+            background-color: #e0e0e0; /* Светлый фон для заголовков */
+        }
+
+        .calendar-day {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        .calendar-day:hover {
+            background-color: #f0f0f0;
+        }
+
+        .calendar-day.today {
+            border: 2px solid #667eea; /* Выделение текущего дня */
+        }
+
+        .day-number {
+            font-size: 1.2em;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        /* Стили для событий */
+        .event-item {
+            font-size: 0.75rem;
+            padding: 2px 4px;
+            margin-top: 2px;
+            border-radius: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: white;
+            text-align: left;
+        }
+
+        .evt-blue { background-color: #4b89dc; }
+        .evt-green { background-color: #47b864; }
+        .evt-yellow { background-color: #f7b733; }
+        .evt-purple { background-color: #8c56c2; }
+        /* --- Конец стилей для Календаря --- */
     </style>
-    
-    @* ЗАКОММЕНТИРОВАТЬ если файлов нет *@
-    @* <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /> *@
 </head>
 <body>
+
+<header>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <div class="container">
+            <a class="navbar-brand" asp-area="" asp-page="/Index">SMM Tracker</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/Index">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/Calendar">
+                            <i class="bi bi-calendar3"></i> Календарь
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/Dashboard">Дашборд</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
 @{
-    // УПРОЩЁННАЯ ЛОГИКА - без проверки ViewContext
-    string containerClass = "gradient-bg";
-    
-    // Или вообще убрать логику и делать фон через CSS классов в страницах
+    // Лучше задать переменную здесь
+    var containerClass = "gradient-bg";
 }
+
 <div class="main-container @containerClass">
-    @RenderBody()
+    <main role="main" class="container content-wrapper">
+        @RenderBody()
+    </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-@* ЗАКОММЕНТИРОВАТЬ если файла нет *@
-@* <script src="~/js/site.js" asp-append-version="true"></script> *@
+<script src="~/js/site.js" asp-append-version="true"></script>
+
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

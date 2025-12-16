@@ -1,8 +1,9 @@
-using Microsoft.EntityFrameworkCore;
 using SMMTracker.Application.Abstractions;
-using SMMTracker.Domain.Entities;
 using SMMTracker.Application.Dtos;
+using SMMTracker.Domain.Entities;
 using SMMTracker.Domain.IRepositories;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SMMTracker.Application.Services;
 
@@ -17,6 +18,16 @@ public class CalendarService : ICalendarService
         _teamRepository = teamRepository;
     }
 
+    // --- МЕТОД, КОТОРЫЙ ИСПОЛЬЗУЕТ Calendar.cshtml.cs ---
+    public async Task<int> GetCalendarIdByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        // Вызываем новый метод из репозитория
+        var calendar = await _calendarRepository.GetByUserIdAsync(userId, cancellationToken);
+        
+        return calendar?.Id ?? 0;
+    }
+
+    // --- Существующий метод ---
     public async Task<int> CreateCalendarAsync(CreateCalendarDto dto,
         CancellationToken cancellationToken = default)
     {
