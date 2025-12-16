@@ -12,7 +12,7 @@ COPY ["SMMTracker.Infrastructure/SMMTracker.Infrastructure.csproj", "SMMTracker.
 RUN dotnet restore "./SMMTracker.TgBot/SMMTracker.TgBot.csproj"
 COPY . .
 WORKDIR "/src/SMMTracker.TgBot"
-RUN dotnet build "./SMMTracker.TgBot.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./SMMTracker.TgBot.csproj" -c $BUILD_CONFIGURATION -o /app/build --no-restore
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release

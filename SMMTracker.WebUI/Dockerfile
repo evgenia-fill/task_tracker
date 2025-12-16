@@ -14,7 +14,7 @@ COPY ["SMMTracker.Infrastructure/SMMTracker.Infrastructure.csproj", "SMMTracker.
 RUN dotnet restore "./SMMTracker.WebUI/SMMTracker.WebUI.csproj"
 COPY . .
 WORKDIR "/src/SMMTracker.WebUI"
-RUN dotnet build "./SMMTracker.WebUI.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./SMMTracker.WebUI.csproj" -c $BUILD_CONFIGURATION -o /app/build --no-restore
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
