@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SMMTracker.Domain.Entities;
-using SMMTracker.Domain.IRepositoryes;
+using SMMTracker.Domain.IRepositories;
 using SMMTracker.Infrastructure.Data.DataContext;
 using Task = System.Threading.Tasks.Task;
 

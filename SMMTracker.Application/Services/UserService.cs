@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Domain.Entities;
-using SMMTracker.Domain.IRepositoryes;
+using SMMTracker.Domain.IRepositories;
 using Task = System.Threading.Tasks.Task;
 
 namespace SMMTracker.Application.Services;
