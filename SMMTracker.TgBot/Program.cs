@@ -3,7 +3,7 @@ using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Services;
 using SMMTracker.Infrastructure.Data.DataContext;
 using SMMTracker.Infrastructure.Repositories;
-using SMMTracker.Domain.IRepositoryes;
+using SMMTracker.Domain.IRepositories;
 
 namespace SMMTracker.TgBot;
 
@@ -13,22 +13,23 @@ class Program
 
     public static async Task Main()
     {
-        var solutionDir = Directory.GetParent(AppContext.BaseDirectory)
-            .Parent.Parent.Parent.Parent.FullName;
-        
-        var dbPath = Path.Combine(solutionDir, "SharedDatabase", "DataBase.db");
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
-        Console.WriteLine("DB Path: " + dbPath);
-        var dir = Path.GetDirectoryName(dbPath);
-        Console.WriteLine("Folder exists: " + Directory.Exists(dir));
-
-        if (!Directory.Exists(dir))
+        if (string.IsNullOrEmpty(connectionString))
         {
-            Console.WriteLine("Creating directory manually...");
-            Directory.CreateDirectory(dir);
-        }
+            var solutionDir = Directory.GetParent(AppContext.BaseDirectory)!
+                .Parent!.Parent!.Parent!.Parent!.FullName;
+            
+            var dbPath = Path.Combine(solutionDir, "SharedDatabase", "DataBase.db");
+            var dir = Path.GetDirectoryName(dbPath);
 
-        var connectionString = $"Data Source={dbPath}";
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir!);
+            }
+
+            connectionString = $"Data Source={dbPath}";
+        }
 
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseSqlite(connectionString)
@@ -43,23 +44,6 @@ class Program
         var bot = new TelegramBotService(token, userService);
         await bot.StartAsync(CancellationToken.None);
 
-        Console.WriteLine("Бот запущен. Нажмите любую клавишу для выхода...");
-        Console.ReadKey();
-
-        Console.WriteLine("\nСодержимое базы данных:");
-        Console.WriteLine(await ShowDbAsync(context));
-    }
-
-    private static async Task<string> ShowDbAsync(ApplicationDbContext context)
-    {
-        var users = await context.Users.ToListAsync();
-        if (!users.Any())
-            return "База данных пуста";
-
-        var list = users.Select(u =>
-            $"ID: {u.Id}, TelegramId: {u.TelegramId}, Имя: {u.FirstName}, Фамилия: {u.LastName}, Username: {u.UserName}" 
-        );
-
-        return string.Join("\n", list);
+        await Task.Delay(-1);
     }
 }

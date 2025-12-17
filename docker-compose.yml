@@ -1,8 +1,8 @@
 services:
   webui:
     image: smmtracker-webui
-    container_name: webui       # Чтобы удобно писать docker logs webui
-    restart: unless-stopped     # Автозапуск при рестарте сервера
+    container_name: webui
+    restart: unless-stopped
     build:
       context: .
       dockerfile: SMMTracker.WebUI/Dockerfile
@@ -14,6 +14,8 @@ services:
       - ConnectionStrings__DefaultConnection=Data Source=/app/data/SMMTracker.db
     volumes:
       - ./data:/app/data
+    networks:
+      - smm-net
 
   tgbot:
     image: smmtracker-tgbot
@@ -27,3 +29,9 @@ services:
       - ConnectionStrings__DefaultConnection=Data Source=/app/data/SMMTracker.db
     volumes:
       - ./data:/app/data
+    networks:
+      - smm-net
+
+networks:
+  smm-net:
+    driver: bridge

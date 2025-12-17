@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using Moq;
-using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Services;
 using SMMTracker.Domain.Entities;
-using SMMTracker.Domain.IRepositoryes;
+using SMMTracker.Domain.IRepositories;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
