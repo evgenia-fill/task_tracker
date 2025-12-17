@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Infrastructure.Data.DataContext;
@@ -43,6 +44,31 @@ builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequir
 builder.Services.AddEndpointsApiExplorer(); // Эта строка нужна для Swagger
 builder.Services.AddSwaggerGen(); // А эта его добавляет
 
+builder.Services.AddHttpClient();
+
+builder.Services.AddScoped<HttpClient>(s =>
+{
+    var navigationManager = s.GetRequiredService<NavigationManager>();
+    
+    return new HttpClient
+    {
+        BaseAddress = new Uri(navigationManager.BaseUri)
+    };
+});
+
+var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: myAllowSpecificOrigins,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5002") 
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -86,6 +112,8 @@ else
 
 app.UseStaticFiles();
 app.UseRouting();
+
+app.UseCors(myAllowSpecificOrigins);
 
 app.UseAuthentication();
 app.UseAuthorization();
