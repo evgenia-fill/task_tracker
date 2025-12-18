@@ -53,7 +53,17 @@ public class TaskService : ITaskService
         await _taskRepository.UpdateStatusToDoneAsync(task);
     }
 
-    public async System.Threading.Tasks.Task RemoveTaskAsync(int taskId,
+    public async System.Threading.Tasks.Task MoveTaskToProgressAsync(int taskId,
+        CancellationToken cancellationToken = default)
+    {
+        var task = await _taskRepository.GetByIdAsync(taskId);
+        if (task == null)
+            throw new Exception("Task not found");
+
+        await _taskRepository.UpdateStatusToInProgressAsync(task);
+    }
+
+    public async System.Threading.Tasks.Task DeleteTaskAsync(int taskId,
         CancellationToken cancellationToken = default)
     {
         var task = await _taskRepository.GetByIdAsync(taskId);
