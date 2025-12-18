@@ -47,7 +47,7 @@ public class UserServiceTests
         result.FirstName.Should().Be("Иван");
         result.LastName.Should().Be("Иванов");
         result.Description.Should().Be("Тестовый пользователь");
-        
+
         _userRepositoryMock.Verify(r => r.GetByIdAsync(userId), Times.Once);
     }
 
@@ -97,7 +97,7 @@ public class UserServiceTests
         result.Id.Should().Be(1);
         result.FirstName.Should().Be("Существующий");
         result.LastName.Should().Be("Пользователь");
-        
+
         _userRepositoryMock.Verify(r => r.GetByTelegramIdAsync(telegramId), Times.Once);
         _userRepositoryMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);
     }
@@ -129,7 +129,7 @@ public class UserServiceTests
         // Assert
         result.FirstName.Should().Be("Новый");
         result.LastName.Should().Be("Пользователь");
-        
+
         _userRepositoryMock.Verify(r => r.GetByTelegramIdAsync(telegramId), Times.Once);
         _userRepositoryMock.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
     }
@@ -155,15 +155,20 @@ public class UserServiceTests
             .Setup(r => r.UpdateAsync(user))
             .Returns(Task.CompletedTask);
 
-        // Act
-        await _userService.UpdateUserProfileAsync(
-            userId, 
-            "Новое", 
-            "Имя", 
-            "Новое описание");
+        var updateDto = new UserProfileDto
+        {
+            FirstName = "Новое",
+            LastName = "Имя",
+            Description = "Новое описание"
+        };
 
-        // Assert
+        await _userService.UpdateUserProfileAsync(userId, updateDto);
+
         _userRepositoryMock.Verify(r => r.GetByIdAsync(userId), Times.Once);
-        _userRepositoryMock.Verify(r => r.UpdateAsync(user), Times.Once);
+
+        _userRepositoryMock.Verify(r => r.UpdateAsync(It.Is<User>(u =>
+            u.FirstName == "Новое" &&
+            u.ProfileDescription == "Новое описание"
+        )), Times.Once);
     }
 }

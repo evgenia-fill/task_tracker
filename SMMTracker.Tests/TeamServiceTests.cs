@@ -15,13 +15,16 @@ public class TeamServiceTests
 {
     private readonly Mock<ITeamRepository> _teamRepositoryMock;
     private readonly Mock<IUserTeamRepository> _userTeamRepositoryMock;
+    private readonly Mock<ICalendarRepository> _calendarRepositoryMock;
     private readonly TeamService _teamService;
 
     public TeamServiceTests()
     {
+        _calendarRepositoryMock = new Mock<ICalendarRepository>();
         _teamRepositoryMock = new Mock<ITeamRepository>();
         _userTeamRepositoryMock = new Mock<IUserTeamRepository>();
-        _teamService = new TeamService(_teamRepositoryMock.Object, _userTeamRepositoryMock.Object);
+        _teamService = new TeamService(_teamRepositoryMock.Object, _userTeamRepositoryMock.Object,
+            _calendarRepositoryMock.Object);
     }
 
     [Fact]
@@ -63,7 +66,7 @@ public class TeamServiceTests
 
         _teamRepositoryMock
             .SetupSequence(r => r.ExistsByCodeAsync(It.IsAny<string>()))
-            .ReturnsAsync(true)   // Первый код занят
+            .ReturnsAsync(true) // Первый код занят
             .ReturnsAsync(false); // Второй код свободен
 
         _teamRepositoryMock
@@ -102,9 +105,9 @@ public class TeamServiceTests
 
         // Assert
         result.Should().BeTrue();
-        _userTeamRepositoryMock.Verify(r => r.AddAsync(It.Is<UserTeam>(ut => 
-            ut.TeamId == 1 && 
-            ut.UserId == 2 && 
+        _userTeamRepositoryMock.Verify(r => r.AddAsync(It.Is<UserTeam>(ut =>
+            ut.TeamId == 1 &&
+            ut.UserId == 2 &&
             ut.Role == TeamRole.User)), Times.Once);
     }
 
@@ -133,12 +136,13 @@ public class TeamServiceTests
         var teamId = 1;
         var userIdToRemove = 2;
         var adminId = 3;
-    
+
         // Создаем userTeam для пользователя, которого удаляем (userIdToRemove = 2)
-        var userTeamToRemove = new UserTeam { 
-            Id = 10, 
-            TeamId = teamId, 
-            UserId = userIdToRemove  
+        var userTeamToRemove = new UserTeam
+        {
+            Id = 10,
+            TeamId = teamId,
+            UserId = userIdToRemove
         };
 
         _teamRepositoryMock
@@ -152,7 +156,7 @@ public class TeamServiceTests
 
         // Настраиваем возврат userTeam для пользователя, которого удаляем
         _userTeamRepositoryMock
-            .Setup(r => r.GetUserTeamAsync(teamId, userIdToRemove))  //  userIdToRemove
+            .Setup(r => r.GetUserTeamAsync(teamId, userIdToRemove)) //  userIdToRemove
             .ReturnsAsync(userTeamToRemove);
 
         // Act
@@ -206,7 +210,7 @@ public class TeamServiceTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exception>(
             async () => await _teamService.RemoveUserFromTeamAsync(teamId, userIdToRemove, adminId));
-        
+
         exception.Message.Should().Be("User is not in the team");
     }
 
@@ -225,7 +229,7 @@ public class TeamServiceTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exception>(
             async () => await _teamService.LeaveTeamAsync(teamId, userId));
-        
+
         exception.Message.Should().Be("Admin cannot leave team");
     }
 
