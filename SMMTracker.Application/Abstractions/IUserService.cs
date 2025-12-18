@@ -6,7 +6,9 @@ namespace SMMTracker.Application.Abstractions;
 
 public interface IUserService
 {
-   Task<UserDto> FindOrCreateUserAsync(User userClaim);
-   Task<UserProfileDto> GetUserProfileAsync(int userId);
-   Task UpdateUserProfileAsync(int userId, string firstName, string lastName, string description);
+    Task<UserDto> FindOrCreateUserAsync(User userClaim);
+    Task<UserDto?> GetUserByIdAsync(int userId);
+    Task<UserProfileDto> GetUserProfileAsync(int userId);
+    Task UpdateUserProfileAsync(int userId, UserProfileDto dto);
+    Task<UserDto?> GetUserByUsernameAsync(string username);
 }
