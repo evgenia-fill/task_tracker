@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
-using SMMTracker.Application.Services;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Infrastructure.Data.DataContext;
 
@@ -14,10 +14,10 @@ namespace SMMTracker.WebUI.API;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly UserService _userService;
+    private readonly IUserService _userService;
     private readonly ApplicationDbContext _context;
 
-    public AuthController(UserService userService, ApplicationDbContext context)
+    public AuthController(IUserService userService, ApplicationDbContext context)
     {
         _userService = userService;
         _context = context;
@@ -50,7 +50,7 @@ public class AuthController : ControllerBase
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, appUser.Id.ToString()),
-                new Claim(ClaimTypes.Name, appUser.Username)
+                new Claim(ClaimTypes.Name, appUser.UserName)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

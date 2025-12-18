@@ -25,6 +25,12 @@ public class UserRepository : IUserRepository
         return await _context.Users.FirstOrDefaultAsync(user => user.TelegramId == telegramId);
     }
 
+    public async Task<User?> GetByUsernameAsync(string username)
+    {
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.UserName.ToLower() == username.ToLower());
+    }
+
     public async Task AddAsync(User user)
     {
         await _context.Users.AddAsync(user);

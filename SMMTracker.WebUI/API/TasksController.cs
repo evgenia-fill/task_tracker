@@ -55,7 +55,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            await _taskService.RemoveTaskAsync(taskId);
+            await _taskService.DeleteTaskAsync(taskId);
             return NoContent();
         }
         catch (Exception ex)

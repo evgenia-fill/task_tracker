@@ -29,6 +29,23 @@ public class UserService : IUserService
         return GetUserDto(user);
     }
 
+    public async Task<UserDto?> GetUserByIdAsync(int userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            return null;
+
+        return new UserDto
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            UserName = user.UserName,
+            TelegramId = user.TelegramId,
+            ProfileDescription = user.ProfileDescription
+        };
+    }
+
     private static UserDto GetUserDto(User user)
     {
         return new UserDto
@@ -36,17 +53,17 @@ public class UserService : IUserService
             Id = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Username = user.UserName
+            UserName = user.UserName
         };
     }
 
     public async Task<UserProfileDto> GetUserProfileAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
-        
+
         if (user == null)
             throw new KeyNotFoundException($"Пользователь Id{userId} не найден");
-        
+
         return new UserProfileDto()
         {
             FirstName = user.FirstName,
@@ -56,15 +73,31 @@ public class UserService : IUserService
     }
 
 
-    public async Task UpdateUserProfileAsync(int userId, string firstName, string lastName, string description)
+    public async Task UpdateUserProfileAsync(int userId, UserProfileDto dto)
     {
         var user = await _userRepository.GetByIdAsync(userId);
-        
+
         if (user == null)
             throw new KeyNotFoundException($"Пользователь Id{userId} не найден");
-        
-        user.UpdateUserProfile(firstName, lastName, description);
-        
+
+        user.UpdateUserProfile(dto.FirstName, dto.LastName, dto.Description);
+
         await _userRepository.UpdateAsync(user);
+    }
+
+    public async Task<UserDto?> GetUserByUsernameAsync(string username)
+    {
+        var user = await _userRepository.GetByUsernameAsync(username);
+        if (user == null) return null;
+       
+        return new UserDto
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            UserName = user.UserName,
+            TelegramId = user.TelegramId,
+            ProfileDescription = user.ProfileDescription
+        };
     }
 }

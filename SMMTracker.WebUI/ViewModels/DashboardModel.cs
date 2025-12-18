@@ -1,174 +1,170 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using SMMTracker.Application.Abstractions;
+using System.Security.Claims;
+using SMMTracker.Application.Dtos;
 
-namespace SMMTracker.WebUI.ViewModels
+namespace SMMTracker.WebUI.ViewModels;
+
+public class DashboardModel : PageModel
 {
-    public class DashboardModel : PageModel
+    private readonly IUserService _userService;
+    private readonly ITeamService _teamService;
+
+    public DashboardModel(IUserService userService, ITeamService teamService)
     {
-        public DashboardViewModel ViewModel { get; set; } = new DashboardViewModel();
-        
-        [BindProperty]
-        public EditProfileViewModel EditProfile { get; set; } = new EditProfileViewModel();
-        
-        [BindProperty]
-        public CreateTeamViewModel NewTeam { get; set; } = new CreateTeamViewModel();
-        
-        [BindProperty]
-        public string InvitationCodeInput { get; set; } = "";
-        
-        // ДОБАВЛЯЕМ недостающие поля!
-        public bool ShowProfileModal { get; set; }
-        public bool ShowTeamModal { get; set; }
-        
-        public IActionResult OnGet()
+        _userService = userService;
+        _teamService = teamService;
+    }
+
+    public DashboardViewModel ViewModel { get; set; } = new();
+
+    [BindProperty] public EditProfileViewModel EditProfile { get; set; } = new();
+
+    [BindProperty] public CreateTeamViewModel NewTeam { get; set; } = new();
+
+    [BindProperty] public string InvitationCodeInput { get; set; } = "";
+
+    public bool ShowProfileModal { get; set; }
+    public bool ShowTeamModal { get; set; }
+
+    public async Task<IActionResult> OnGetAsync()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdString, out var userId))
         {
-            LoadMockData();
+            return RedirectToPage("/Login");
+        }
+
+        var userDto = await _userService.GetUserByIdAsync(userId);
+        if (userDto == null)
+        {
+            return RedirectToPage("/Logout"); 
+        }
+
+        var teams = await _teamService.GetTeamsForUserAsync(userId);
+
+        ViewModel.UserInfo = new UserInfoViewModel
+        {
+            Id = userDto.Id,
+            TelegramId = userDto.TelegramId,
+            FirstName = userDto.FirstName,
+            LastName = userDto.LastName,
+            TelegramUsername = userDto.UserName,
+            ProfileDescription = userDto.ProfileDescription ?? "" 
+        };
+
+        ViewModel.Teams = teams.Select(t => new TeamViewModel
+        {
+            Id = t.Id, 
+            Name = t.Name,
+            InvitationCode = t.InvitationCode,
+            CreatedAt = t.CreatedAt,
+            MemberCount = t.MemberCount,
+            IsOwner = t.IsOwner
+        }).ToList();
+
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostJoinTeamAsync()
+    {
+        if (string.IsNullOrWhiteSpace(InvitationCodeInput))
+        {
+            TempData["ErrorMessage"] = "Введите код приглашения";
+            return RedirectToPage();
+        }
+
+        try
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var joinDto = new JoinTeamDto
+            {
+                Code = InvitationCodeInput,
+                UserId = userId
+            };
+
+            var success = await _teamService.JoinTeamAsync(joinDto);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Вы успешно присоединились к команде!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Неверный код приглашения или вы уже состоите в этой команде";
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Произошла ошибка: {ex.Message}";
+        }
+
+        return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostLeaveTeamAsync(int teamId)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+        try
+        {
+            await _teamService.LeaveTeamAsync(teamId, userId);
+            TempData["SuccessMessage"] = "Вы покинули команду";
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Ошибка: {ex.Message}";
+        }
+
+        return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostUpdateProfileAsync()
+    {
+        if (!ModelState.IsValid)
+        {
+            await OnGetAsync();
+            ShowProfileModal = true;
             return Page();
         }
-        
-        public IActionResult OnPostUpdateProfile()
+
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdString, out var userId))
         {
-            if (string.IsNullOrWhiteSpace(EditProfile.FirstName) || string.IsNullOrWhiteSpace(EditProfile.LastName))
-            {
-                TempData["ErrorMessage"] = "Имя и фамилия обязательны";
-                LoadMockData();
-                ShowProfileModal = true; // Устанавливаем флаг для показа модалки
-                return Page();
-            }
-            
-            ViewModel.UserInfo.FirstName = EditProfile.FirstName;
-            ViewModel.UserInfo.LastName = EditProfile.LastName;
-            ViewModel.UserInfo.ProfileDescription = EditProfile.ProfileDescription;
-            
+            return Unauthorized();
+        }
+
+        var profileDto = new UserProfileDto
+        {
+            FirstName = EditProfile.FirstName,
+            LastName = EditProfile.LastName,
+            Description = EditProfile.ProfileDescription
+        };
+
+        try
+        {
+            await _userService.UpdateUserProfileAsync(userId, profileDto);
             TempData["SuccessMessage"] = "Профиль успешно обновлен!";
-            return RedirectToPage();
         }
-        
-        public IActionResult OnPostJoinTeam()
+        catch (Exception ex)
         {
-            if (string.IsNullOrWhiteSpace(InvitationCodeInput))
-            {
-                TempData["ErrorMessage"] = "Введите код приглашения";
-                LoadMockData();
-                return Page();
-            }
-            
-            var newTeam = new TeamViewModel
-            {
-                Id = Guid.NewGuid(),
-                Name = $"Команда {InvitationCodeInput}",
-                Description = "Вы присоединились по приглашению",
-                InvitationCode = InvitationCodeInput,
-                CreatedAt = DateTime.Now,
-                MemberCount = 3,
-                IsOwner = false
-            };
-            
-            ViewModel.Teams.Add(newTeam);
-            TempData["SuccessMessage"] = "Вы успешно присоединились к команде!";
-            
-            return RedirectToPage();
+            TempData["ErrorMessage"] = $"Ошибка при обновлении профиля: {ex.Message}";
         }
-        
-        public IActionResult OnPostCreateTeam()
-        {
-            if (string.IsNullOrWhiteSpace(NewTeam.Name))
-            {
-                TempData["ErrorMessage"] = "Название команды обязательно";
-                LoadMockData();
-                ShowTeamModal = true; // Устанавливаем флаг для показа модалки
-                return Page();
-            }
-            
-            var invitationCode = GenerateInvitationCode();
-            
-            var newTeam = new TeamViewModel
-            {
-                Id = Guid.NewGuid(),
-                Name = NewTeam.Name,
-                Description = NewTeam.Description,
-                InvitationCode = invitationCode,
-                CreatedAt = DateTime.Now,
-                MemberCount = 1,
-                IsOwner = true
-            };
-            
-            ViewModel.Teams.Add(newTeam);
-            TempData["SuccessMessage"] = $"Команда создана! Код приглашения: {invitationCode}";
-            
-            return RedirectToPage();
-        }
-        
-        public IActionResult OnPostLeaveTeam(Guid teamId)
-        {
-            var team = ViewModel.Teams.FirstOrDefault(t => t.Id == teamId);
-            if (team != null)
-            {
-                ViewModel.Teams.Remove(team);
-                TempData["SuccessMessage"] = $"Вы покинули команду {team.Name}";
-            }
-            
-            return RedirectToPage();
-        }
-        
-        private void LoadMockData()
-        {
-            if (ViewModel.UserInfo == null || string.IsNullOrEmpty(ViewModel.UserInfo.FirstName))
-            {
-                ViewModel.UserInfo = new UserInfoViewModel
-                {
-                    TelegramId = 123456789,
-                    FirstName = "Иван",
-                    LastName = "Иванов",
-                    TelegramUsername = "ivanov",
-                    ProfileDescription = "Маркетолог, специалист по SMM. Работаю с Instagram, Telegram, VK."
-                };
-            }
-            
-            if (string.IsNullOrEmpty(EditProfile.FirstName))
-            {
-                EditProfile.FirstName = ViewModel.UserInfo.FirstName;
-                EditProfile.LastName = ViewModel.UserInfo.LastName;
-                EditProfile.ProfileDescription = ViewModel.UserInfo.ProfileDescription;
-            }
-            
-            if (!ViewModel.Teams.Any())
-            {
-                ViewModel.Teams.AddRange(new List<TeamViewModel>
-                {
-                    new TeamViewModel
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Маркетинговая команда",
-                        Description = "Работа над продвижением продукта в социальных сетях",
-                        InvitationCode = "ABC123",
-                        CreatedAt = DateTime.Now.AddDays(-30),
-                        MemberCount = 5,
-                        IsOwner = true
-                    },
-                    new TeamViewModel
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Проект 'Запуск'",
-                        Description = "Подготовка к запуску нового продукта",
-                        InvitationCode = "XYZ789",
-                        CreatedAt = DateTime.Now.AddDays(-15),
-                        MemberCount = 3,
-                        IsOwner = false
-                    }
-                });
-            }
-        }
-        
-        private string GenerateInvitationCode()
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var random = new Random();
-            return new string(Enumerable.Repeat(chars, 6)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
+
+        return RedirectToPage();
+    }
+
+    private string GenerateInvitationCode()
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var random = new Random();
+        return new string(Enumerable.Repeat(chars, 6)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 }

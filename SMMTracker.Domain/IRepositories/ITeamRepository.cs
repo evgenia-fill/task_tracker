@@ -12,5 +12,5 @@ public interface ITeamRepository
     Task AddAsync(Team team);
     Task UpdateAsync(Team team);
     Task DeleteAsync(int teamId);
-
+    Task<Team?> GetByIdWithMembersAsync(int teamId);
 }

@@ -10,7 +10,7 @@
         background: #f8f9fa;
         min-height: 100vh;
     }
-    
+
     .sidebar {
         background: white;
         border-right: 1px solid #dee2e6;
@@ -19,11 +19,11 @@
         position: sticky;
         top: 0;
     }
-    
+
     .main-content {
         padding: 30px;
     }
-    
+
     .nav-link {
         color: #495057;
         padding: 12px 15px;
@@ -31,17 +31,17 @@
         margin-bottom: 5px;
         transition: all 0.2s;
     }
-    
+
     .nav-link:hover {
         background-color: #f8f9fa;
         color: #0d6efd;
     }
-    
+
     .nav-link.active {
         background-color: #0d6efd;
         color: white;
     }
-    
+
     .team-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -49,15 +49,15 @@
         border-radius: 15px;
         margin-bottom: 30px;
     }
-    
+
     .info-card {
         background: white;
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    
+
     .member-card {
         background: white;
         border-radius: 10px;
@@ -66,12 +66,12 @@
         border: 1px solid #dee2e6;
         transition: transform 0.2s;
     }
-    
+
     .member-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-    
+
     .event-card {
         background: white;
         border-radius: 10px;
@@ -79,15 +79,15 @@
         margin-bottom: 15px;
         border-left: 4px solid #0c39ef;
     }
-    
+
     .event-card.upcoming {
         border-left-color: #198754;
     }
-    
+
     .event-card.past {
         border-left-color: #263d50;
     }
-    
+
     .back-button {
         position: fixed;
         top: 20px;
@@ -97,14 +97,12 @@
 </style>
 
 <div class="team-container">
-    <!-- Кнопка возврата в главное меню -->
     <div class="back-button">
         <a href="/Dashboard" class="btn btn-primary btn-lg shadow">
             <i class="bi bi-arrow-left me-2"></i>Назад к командам
         </a>
     </div>
 
-    <!-- Сообщения -->
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="container-fluid">
@@ -127,10 +125,8 @@
 
     <div class="container-fluid p-0">
         <div class="row g-0">
-            <!-- Левая панель - навигация -->
             <div class="col-md-3 col-lg-2 sidebar">
                 <div class="d-flex flex-column h-100">
-                    <!-- Информация о команде -->
                     <div class="mb-4">
                         <h4 class="mb-3">@Model.Team.Name</h4>
                         <p class="text-muted small mb-2">
@@ -141,7 +137,6 @@
                         </p>
                     </div>
 
-                    <!-- Навигация -->
                     <nav class="nav flex-column mb-4">
                         <a class="nav-link active" href="#team-info">
                             <i class="bi bi-info-circle me-2"></i>Информация о команде
@@ -163,7 +158,6 @@
                         }
                     </nav>
 
-                    <!-- Код приглашения -->
                     <div class="mt-auto">
                         <div class="card border-primary">
                             <div class="card-header bg-primary text-white py-2">
@@ -175,7 +169,8 @@
                                            class="form-control font-monospace"
                                            value="@Model.Team.InvitationCode"
                                            readonly>
-                                    <button class="btn btn-outline-primary" type="button" onclick="copyToClipboard('@Model.Team.InvitationCode')">
+                                    <button class="btn btn-outline-primary" type="button"
+                                            onclick="copyToClipboard('@Model.Team.InvitationCode')">
                                         <i class="bi bi-clipboard"></i>
                                     </button>
                                 </div>
@@ -185,27 +180,24 @@
                 </div>
             </div>
 
-            <!-- Основной контент -->
             <div class="col-md-9 col-lg-10 main-content">
-                <!-- Заголовок команды -->
                 <div class="team-header">
                     <h1 class="display-5 mb-2">@Model.Team.Name</h1>
                     <p class="lead mb-0">@Model.Team.Description</p>
                 </div>
 
-                <!-- Информация о команде -->
                 <div id="team-info" class="mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="h4 mb-0">
                             <i class="bi bi-info-circle text-primary me-2"></i>Информация о команде
                         </h2>
                     </div>
-                    
+
                     <div class="info-card">
                         <h5 class="mb-3">Описание команды</h5>
                         <p class="mb-0">@Model.Team.Description</p>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="info-card">
@@ -228,25 +220,28 @@
                                     <small class="text-muted d-block">Код приглашения</small>
                                     <div class="d-flex align-items-center mt-1">
                                         <code class="bg-light p-2 rounded me-2">@Model.Team.InvitationCode</code>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('@Model.Team.InvitationCode')">
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                onclick="copyToClipboard('@Model.Team.InvitationCode')">
                                             <i class="bi bi-clipboard"></i>
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <div class="info-card">
                                 <h5 class="mb-3">Быстрые действия</h5>
                                 <div class="d-grid gap-2">
                                     @if (Model.IsOwner)
                                     {
-                                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                                        <button class="btn btn-outline-primary" data-bs-toggle="modal"
+                                                data-bs-target="#addMemberModal">
                                             <i class="bi bi-person-plus me-2"></i>Добавить участника
                                         </button>
                                     }
-                                    <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addEventModal">
+                                    <button class="btn btn-outline-success" data-bs-toggle="modal"
+                                            data-bs-target="#addEventModal">
                                         <i class="bi bi-calendar-plus me-2"></i>Добавить мероприятие
                                     </button>
                                     @if (Model.IsOwner)
@@ -261,7 +256,6 @@
                     </div>
                 </div>
 
-                <!-- Участники -->
                 <div id="members" class="mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="h4 mb-0">
@@ -269,7 +263,7 @@
                         </h2>
                         <span class="badge bg-primary">@Model.Members.Count участников</span>
                     </div>
-                    
+
                     <div class="row">
                         @foreach (var member in Model.Members)
                         {
@@ -277,8 +271,9 @@
                                 <div class="member-card">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0">
-                                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center" 
-                                                 style="width: 50px; height: 50px; color: white;">
+                                            <div
+                                                class="rounded-circle bg-primary d-flex align-items-center justify-content-center"
+                                                style="width: 50px; height: 50px; color: white;">
                                                 <i class="bi bi-person-fill" style="font-size: 1.5rem;"></i>
                                             </div>
                                         </div>
@@ -287,15 +282,16 @@
                                             <p class="text-muted small mb-1">@@@member.TelegramUsername</p>
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <span class="badge bg-secondary">@member.Role</span>
-                                                <small class="text-muted">@member.JoinedAt.ToString("dd.MM.yyyy")</small>
+                                                <small
+                                                    class="text-muted">@member.JoinedAt.ToString("dd.MM.yyyy")</small>
                                             </div>
                                         </div>
                                     </div>
                                     @if (Model.IsOwner && member.Role != "Владелец")
                                     {
                                         <form method="post" asp-page-handler="RemoveMember" class="mt-3">
-                                            <input type="hidden" name="id" value="@Model.Team.Id" />
-                                            <input type="hidden" name="memberId" value="@member.Id" />
+                                            <input type="hidden" name="id" value="@Model.Team.Id"/>
+                                            <input type="hidden" name="memberId" value="@member.Id"/>
                                             <button type="submit" class="btn btn-outline-danger btn-sm w-100"
                                                     onclick="return confirm('Удалить участника из команды?')">
                                                 <i class="bi bi-person-x me-1"></i>Удалить
@@ -308,7 +304,6 @@
                     </div>
                 </div>
 
-                <!-- Мероприятия -->
                 <div id="events" class="mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="h4 mb-0">
@@ -316,7 +311,7 @@
                         </h2>
                         <span class="badge bg-success">@Model.UpcomingEvents.Count мероприятий</span>
                     </div>
-                    
+
                     <div class="row">
                         @foreach (var ev in Model.UpcomingEvents.OrderBy(e => e.EventDate))
                         {
@@ -325,7 +320,8 @@
                                     <div class="event-card @(ev.EventDate.Date == DateTime.Now.Date ? "upcoming" : "")">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <h6 class="mb-0">@ev.Title</h6>
-                                            <span class="badge @(ev.EventDate.Date == DateTime.Now.Date ? "bg-success" : "bg-primary")">
+                                            <span
+                                                class="badge @(ev.EventDate.Date == DateTime.Now.Date ? "bg-success" : "bg-primary")">
                                                 @ev.EventDate.ToString("dd.MM.yyyy HH:mm")
                                             </span>
                                         </div>
@@ -339,7 +335,7 @@
                             </div>
                         }
                     </div>
-                    
+
                     @if (!Model.UpcomingEvents.Any())
                     {
                         <div class="alert alert-info">
@@ -354,7 +350,6 @@
                     }
                 </div>
 
-                <!-- Заглушки для других разделов -->
                 <div id="calendar" class="mb-5">
                     <div class="alert alert-warning">
                         <h4 class="alert-heading"><i class="bi bi-calendar-week me-2"></i>Календарь</h4>
@@ -376,7 +371,6 @@
     </div>
 </div>
 
-<!-- Модальное окно добавления участника -->
 <div class="modal fade" id="addMemberModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -385,14 +379,14 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="post" asp-page-handler="AddMember">
-                <input type="hidden" name="id" value="@Model.Team.Id" />
+                <input type="hidden" name="id" value="@Model.Team.Id"/>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Telegram username</label>
                         <div class="input-group">
                             <span class="input-group-text">@@</span>
-                            <input type="text" 
-                                   class="form-control" 
+                            <input type="text"
+                                   class="form-control"
                                    asp-for="NewMemberUsername"
                                    placeholder="username"
                                    required>
@@ -409,7 +403,6 @@
     </div>
 </div>
 
-<!-- Модальное окно добавления мероприятия -->
 <div class="modal fade" id="addEventModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -418,27 +411,27 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="post" asp-page-handler="AddEvent">
-                <input type="hidden" name="id" value="@Model.Team.Id" />
+                <input type="hidden" name="id" value="@Model.Team.Id"/>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Название мероприятия *</label>
-                        <input type="text" 
-                               class="form-control" 
+                        <input type="text"
+                               class="form-control"
                                asp-for="NewEvent.Title"
                                placeholder="Например: Планирование на месяц"
                                required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Описание</label>
-                        <textarea class="form-control" 
+                        <textarea class="form-control"
                                   asp-for="NewEvent.Description"
                                   rows="3"
                                   placeholder="Опишите детали мероприятия"></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Дата и время</label>
-                        <input type="datetime-local" 
-                               class="form-control" 
+                        <input type="datetime-local"
+                               class="form-control"
                                asp-for="NewEvent.EventDate"
                                required>
                     </div>
@@ -453,14 +446,12 @@
 </div>
 
 <script>
-    // Функция для копирования текста в буфер обмена
     function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(function() {
+        navigator.clipboard.writeText(text).then(function () {
             showToast('Скопировано в буфер обмена!');
         });
     }
 
-    // Функция для показа уведомлений
     function showToast(message) {
         const toast = document.createElement('div');
         toast.className = 'toast align-items-center text-white bg-success border-0';
@@ -485,28 +476,24 @@
         const bsToast = new bootstrap.Toast(toast);
         bsToast.show();
 
-        toast.addEventListener('hidden.bs.toast', function() {
+        toast.addEventListener('hidden.bs.toast', function () {
             toastContainer.remove();
         });
     }
 
-    // Плавная прокрутка к разделам
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const navLinks = document.querySelectorAll('.nav-link');
-        
+
         navLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
+            link.addEventListener('click', function (e) {
                 e.preventDefault();
                 const targetId = this.getAttribute('href').substring(1);
                 const targetElement = document.getElementById(targetId);
-                
+
                 if (targetElement) {
-                    // Убираем активный класс у всех ссылок
                     navLinks.forEach(l => l.classList.remove('active'));
-                    // Добавляем активный класс текущей ссылке
                     this.classList.add('active');
-                    
-                    // Плавная прокрутка
+
                     targetElement.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
@@ -515,17 +502,16 @@
             });
         });
 
-        // Автоматическое определение активного раздела при прокрутке
         const sections = document.querySelectorAll('[id^="team-"], [id="members"], [id="events"], [id="calendar"], [id="settings"]');
-        
-        window.addEventListener('scroll', function() {
+
+        window.addEventListener('scroll', function () {
             let current = '';
             const scrollPosition = window.pageYOffset + 100;
 
             sections.forEach(section => {
                 const sectionTop = section.offsetTop;
                 const sectionHeight = section.clientHeight;
-                
+
                 if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
                     current = section.getAttribute('id');
                 }
