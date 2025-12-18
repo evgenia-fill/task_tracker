@@ -1,222 +1,146 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
-using System.Collections.Generic;
+using SMMTracker.Application.Abstractions;
+using SMMTracker.Application.Dtos;
+using SMMTracker.WebUI.ViewModels;
+using System.Security.Claims;
 
-namespace SMMTracker.WebUI.ViewModels
+namespace SMMTracker.WebUI.ViewModels;
+
+public class TeamModel : PageModel
 {
-    public class TeamModel : PageModel
+    private readonly ITeamService _teamService;
+    private readonly IEventService _eventService;
+    private readonly IUserService _userService;
+
+    public TeamViewModel Team { get; set; } = new();
+    public List<TeamMemberViewModel> Members { get; set; } = new();
+    public List<TeamEventViewModel> UpcomingEvents { get; set; } = new();
+    public bool IsOwner { get; set; }
+
+    [BindProperty] public string NewMemberUsername { get; set; } = "";
+    [BindProperty] public NewEventViewModel NewEvent { get; set; } = new();
+
+    public TeamModel(ITeamService teamService, IEventService eventService, IUserService userService)
     {
-        public TeamViewModel Team { get; set; } = new TeamViewModel();
-        public List<TeamMemberViewModel> Members { get; set; } = new List<TeamMemberViewModel>();
-        public List<TeamEventViewModel> UpcomingEvents { get; set; } = new List<TeamEventViewModel>();
-        
-        [BindProperty]
-        public string NewMemberUsername { get; set; } = "";
-        
-        [BindProperty]
-        public NewEventViewModel NewEvent { get; set; } = new NewEventViewModel();
-        
-        public bool IsOwner { get; set; }
-        
-        public IActionResult OnGet(Guid id)
+        _teamService = teamService;
+        _eventService = eventService;
+        _userService = userService;
+    }
+
+    public async Task<IActionResult> OnGetAsync(int id)
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdString, out var userId))
         {
-            // Загрузка тестовых данных
-            LoadMockData(id);
-            return Page();
+            return RedirectToPage("/Login");
         }
-        
-        public IActionResult OnPostAddMember(Guid id)
+
+        var teamDetails = await _teamService.GetTeamDetailsAsync(id);
+        if (teamDetails == null)
         {
-            if (string.IsNullOrWhiteSpace(NewMemberUsername))
-            {
-                TempData["ErrorMessage"] = "Введите username пользователя";
-                LoadMockData(id);
-                return Page();
-            }
-            
-            // Добавляем нового участника
-            var newMember = new TeamMemberViewModel
-            {
-                Id = Guid.NewGuid(),
-                TelegramId = new Random().Next(100000, 999999),
-                FirstName = "Новый",
-                LastName = "Участник",
-                TelegramUsername = NewMemberUsername,
-                Role = "Участник",
-                JoinedAt = DateTime.Now
-            };
-            
-            Members.Add(newMember);
-            Team.MemberCount++;
-            NewMemberUsername = "";
-            
-            TempData["SuccessMessage"] = $"Участник @{newMember.TelegramUsername} добавлен в команду";
-            
+            return NotFound("Команда не найдена");
+        }
+
+        IsOwner = await _teamService.IsUserAdminAsync(id, userId);
+
+        Team = new TeamViewModel
+        {
+            Id = teamDetails.Id,
+            Name = teamDetails.Name,
+            InvitationCode = teamDetails.InvitationCode,
+            MemberCount = teamDetails.Members.Count,
+            IsOwner = IsOwner
+        };
+
+        Members = teamDetails.Members.Select(m => new TeamMemberViewModel
+        {
+            Id = m.UserId,
+            FirstName = m.FirstName,
+            LastName = m.LastName,
+            TelegramUsername = m.Username,
+            Role = m.Role.ToString()
+        }).ToList();
+
+        var eventDtos = await _eventService.GetEventsForTeamAsync(id);
+        UpcomingEvents = eventDtos.Select(e => new TeamEventViewModel
+        {
+            Id = e.Id,
+            Title = e.Name,
+            EventDate = e.Date
+        }).ToList();
+
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAddEventAsync(int id) // id - это teamId
+    {
+        if (!ModelState.IsValid)
+        {
+            return await OnGetAsync(id);
+        }
+
+        var calendar = await _teamService.GetCalendarForTeamAsync(id); // Нужен такой метод в сервисе
+        if (calendar == null)
+        {
+            TempData["ErrorMessage"] = "Календарь для команды не найден.";
             return RedirectToPage(new { id });
         }
-        
-        public IActionResult OnPostAddEvent(Guid id)
+
+        var createDto = new CreateEventDto
         {
-            if (string.IsNullOrWhiteSpace(NewEvent.Title))
-            {
-                TempData["ErrorMessage"] = "Введите название мероприятия";
-                LoadMockData(id);
-                return Page();
-            }
-            
-            var newEvent = new TeamEventViewModel
-            {
-                Id = Guid.NewGuid(),
-                Title = NewEvent.Title,
-                Description = NewEvent.Description,
-                EventDate = NewEvent.EventDate,
-                CreatedAt = DateTime.Now,
-                CreatedBy = "Иван Иванов"
-            };
-            
-            UpcomingEvents.Add(newEvent);
-            NewEvent = new NewEventViewModel();
-            
-            TempData["SuccessMessage"] = $"Мероприятие '{newEvent.Title}' добавлено";
-            
-            return RedirectToPage(new { id });
-        }
-        
-        public IActionResult OnPostRemoveMember(Guid id, Guid memberId)
+            Name = NewEvent.Title,
+            Description = NewEvent.Description,
+            Date = NewEvent.EventDate,
+            CalendarId = calendar.Id
+        };
+
+        await _eventService.CreateEventAsync(createDto);
+        TempData["SuccessMessage"] = $"Мероприятие '{NewEvent.Title}' добавлено.";
+        return RedirectToPage(new { id });
+    }
+
+    public async Task<IActionResult> OnPostRemoveMemberAsync(int id, int memberId) // id - teamId, memberId - userId
+    {
+        var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        try
         {
-            var member = Members.FirstOrDefault(m => m.Id == memberId);
-            if (member != null)
-            {
-                Members.Remove(member);
-                Team.MemberCount--;
-                TempData["SuccessMessage"] = $"Участник {member.FirstName} {member.LastName} удален";
-            }
-            
-            return RedirectToPage(new { id });
+            await _teamService.RemoveUserFromTeamAsync(id, memberId, currentUserId);
+            TempData["SuccessMessage"] = "Участник удален из команды.";
         }
-        
-        private void LoadMockData(Guid teamId)
+        catch (Exception ex)
         {
-            // Загружаем данные команды (в реальном приложении из базы данных)
-            Team = new TeamViewModel
-            {
-                Id = teamId,
-                Name = "Маркетинговая команда",
-                Description = "Работа над продвижением продукта в социальных сетях",
-                InvitationCode = "ABC123",
-                CreatedAt = DateTime.Now.AddDays(-30),
-                MemberCount = 5,
-                IsOwner = true
-            };
-            
-            IsOwner = Team.IsOwner;
-            
-            // Тестовые данные участников
-            Members = new List<TeamMemberViewModel>
-            {
-                new TeamMemberViewModel
-                {
-                    Id = Guid.NewGuid(),
-                    TelegramId = 123456789,
-                    FirstName = "Иван",
-                    LastName = "Иванов",
-                    TelegramUsername = "ivanov",
-                    Role = "Владелец",
-                    JoinedAt = DateTime.Now.AddDays(-30)
-                },
-                new TeamMemberViewModel
-                {
-                    Id = Guid.NewGuid(),
-                    TelegramId = 987654321,
-                    FirstName = "Мария",
-                    LastName = "Петрова",
-                    TelegramUsername = "petrova",
-                    Role = "Маркетолог",
-                    JoinedAt = DateTime.Now.AddDays(-25)
-                },
-                new TeamMemberViewModel
-                {
-                    Id = Guid.NewGuid(),
-                    TelegramId = 456123789,
-                    FirstName = "Алексей",
-                    LastName = "Сидоров",
-                    TelegramUsername = "sidorov",
-                    Role = "Контент-менеджер",
-                    JoinedAt = DateTime.Now.AddDays(-20)
-                },
-                new TeamMemberViewModel
-                {
-                    Id = Guid.NewGuid(),
-                    TelegramId = 789123456,
-                    FirstName = "Екатерина",
-                    LastName = "Кузнецова",
-                    TelegramUsername = "kuznetsova",
-                    Role = "Дизайнер",
-                    JoinedAt = DateTime.Now.AddDays(-15)
-                }
-            };
-            
-            // Тестовые данные мероприятий
-            UpcomingEvents = new List<TeamEventViewModel>
-            {
-                new TeamEventViewModel
-                {
-                    Id = Guid.NewGuid(),
-                    Title = "Планирование контента на месяц",
-                    Description = "Обсуждение и планирование публикаций на февраль",
-                    EventDate = DateTime.Now.AddDays(2),
-                    CreatedAt = DateTime.Now.AddDays(-5),
-                    CreatedBy = "Иван Иванов"
-                },
-                new TeamEventViewModel
-                {
-                    Id = Guid.NewGuid(),
-                    Title = "Анализ эффективности кампании",
-                    Description = "Разбор результатов последней рекламной кампании",
-                    EventDate = DateTime.Now.AddDays(5),
-                    CreatedAt = DateTime.Now.AddDays(-3),
-                    CreatedBy = "Мария Петрова"
-                },
-                new TeamEventViewModel
-                {
-                    Id = Guid.NewGuid(),
-                    Title = "Подготовка к запуску нового продукта",
-                    Description = "Финальное обсуждение перед запуском",
-                    EventDate = DateTime.Now.AddDays(7),
-                    CreatedAt = DateTime.Now.AddDays(-1),
-                    CreatedBy = "Алексей Сидоров"
-                }
-            };
+            TempData["ErrorMessage"] = $"Ошибка: {ex.Message}";
         }
+
+        return RedirectToPage(new { id });
     }
-    
-    public class TeamMemberViewModel
-    {
-        public Guid Id { get; set; }
-        public long TelegramId { get; set; }
-        public string FirstName { get; set; } = "";
-        public string LastName { get; set; } = "";
-        public string TelegramUsername { get; set; } = "";
-        public string Role { get; set; } = "";
-        public DateTime JoinedAt { get; set; }
-    }
-    
-    public class TeamEventViewModel
-    {
-        public Guid Id { get; set; }
-        public string Title { get; set; } = "";
-        public string Description { get; set; } = "";
-        public DateTime EventDate { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public string CreatedBy { get; set; } = "";
-    }
-    
-    public class NewEventViewModel
-    {
-        public string Title { get; set; } = "";
-        public string Description { get; set; } = "";
-        public DateTime EventDate { get; set; } = DateTime.Now.AddDays(1);
-    }
-    
+}
+
+public class TeamMemberViewModel
+{
+    public int Id { get; set; }
+    public long TelegramId { get; set; }
+    public string FirstName { get; set; } = "";
+    public string LastName { get; set; } = "";
+    public string TelegramUsername { get; set; } = "";
+    public string Role { get; set; } = "";
+    public DateTime JoinedAt { get; set; }
+}
+
+public class TeamEventViewModel
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = "";
+    public string Description { get; set; } = "";
+    public DateTime EventDate { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string CreatedBy { get; set; } = "";
+}
+
+public class NewEventViewModel
+{
+    public string Title { get; set; } = "";
+    public string Description { get; set; } = "";
+    public DateTime EventDate { get; set; } = DateTime.Now.AddDays(1);
 }
