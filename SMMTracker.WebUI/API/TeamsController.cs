@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Services;
 
@@ -11,9 +12,9 @@ namespace SMMTracker.WebUI.API;
 [Authorize]
 public class TeamsController : ControllerBase
 {
-    private readonly TeamService _teamService;
+    private readonly ITeamService _teamService;
 
-    public TeamsController(TeamService teamService)
+    public TeamsController(ITeamService teamService)
     {
         _teamService = teamService;
     }
@@ -49,22 +50,6 @@ public class TeamsController : ControllerBase
         catch (UnauthorizedAccessException ex)
         {
             return Forbid(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
-
-    [HttpPost("{teamId}/leave")]
-    public async Task<IActionResult> LeaveTeam(int teamId, [FromBody] LeaveTeamDto dto)
-    {
-        try
-        {
-            var result = await _teamService.LeaveTeamAsync(teamId, dto.UserId);
-            if (!result)
-                return BadRequest("User is not in the team");
-            return Ok();
         }
         catch (Exception ex)
         {

@@ -6,14 +6,14 @@ public class Team : Entity
 {
     public string? Name { get; private set; }
     public string Code { get; set; }
-    
+
     public Calendar? Calendar { get; set; }
-    public List<UserTeam>? UserTeams { get; set; }
-    
-    public Team(string name, string code)
+    public List<UserTeam>? UserTeams { get; set; } = new(); 
+
+    public Team(string name, string Code)
     {
         Name = name;
-        Code = code;
+        Code = Code;
     }
 
     private Team()
