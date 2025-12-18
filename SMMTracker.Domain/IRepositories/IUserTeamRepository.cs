@@ -10,4 +10,5 @@ public interface IUserTeamRepository
     Task AddAsync(UserTeam userTeam);
     Task DeleteAsync(int userTeamId);
     Task<bool> IsUserAdminAsync(int teamId, int userid);
+    Task<List<UserTeam>> GetByUserIdAsync(int userId);
 }

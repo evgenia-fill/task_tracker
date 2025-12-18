@@ -47,4 +47,12 @@ public class UserTeamRepository : IUserTeamRepository
         return await _context.UserTeams
             .AnyAsync(ut => ut.TeamId == teamId && ut.UserId == userId && ut.Role == TeamRole.Admin);
     }
+
+    public async Task<List<UserTeam>> GetByUserIdAsync(int userId)
+    {
+        return await _context.UserTeams
+            .Where(ut => ut.UserId == userId)
+            .Include(ut => ut.Team)
+            .ToListAsync();
+    }
 }
