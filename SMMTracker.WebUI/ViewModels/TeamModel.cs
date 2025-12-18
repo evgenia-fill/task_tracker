@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 namespace SMMTracker.WebUI.ViewModels
 {
+    
     public class TeamModel : PageModel
     {
         public TeamViewModel Team { get; set; } = new TeamViewModel();
@@ -18,6 +19,8 @@ namespace SMMTracker.WebUI.ViewModels
         public NewEventViewModel NewEvent { get; set; } = new NewEventViewModel();
         
         public bool IsOwner { get; set; }
+        
+        public int CalendarId { get; set; }
         
         public IActionResult OnGet(Guid id)
         {
@@ -109,6 +112,8 @@ namespace SMMTracker.WebUI.ViewModels
                 MemberCount = 5,
                 IsOwner = true
             };
+
+            CalendarId = 123;
             
             IsOwner = Team.IsOwner;
             
