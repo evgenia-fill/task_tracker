@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Services;
 using SMMTracker.Infrastructure.Data.DataContext;
@@ -8,6 +6,9 @@ using SMMTracker.Infrastructure.Repositories;
 using SMMTracker.Domain.IRepositories;
 
 namespace SMMTracker.TgBot;
+//    "DefaultConnection": "Data Source=/app/data/SMMTracker.db;Cache=Shared;Pooling=true" это для хоста (должно работать, но не обязано)
+//     "DefaultConnection": "Data Source=../../Data/DataBase.db" - это локальная, но она не работает для сайта, так как он запускается из bin
+
 
 static class Program
 {
@@ -18,7 +19,7 @@ static class Program
             .AddJsonFile("appsettings.Secrets.json", optional: false)
             .Build();
 
-        var token = configuration["TelegramBotToken"];
+        var token = configuration["Telegram:BotToken"];  
         
         if (string.IsNullOrEmpty(token))
         {

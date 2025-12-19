@@ -13,6 +13,13 @@ public static class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        
+        builder.Configuration
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.Secrets.json", optional: false, reloadOnChange: true)
+            .AddEnvironmentVariables();
+        
         ConfigureServices(builder);
         
         var app = builder.Build();
@@ -56,11 +63,11 @@ public static class Program
         
         // шттп для razor pages
         services.AddScoped<HttpClient>(_ => 
-            new HttpClient { BaseAddress = new Uri("http://localhost:5002") });
+            new HttpClient { BaseAddress = new Uri("https://kindly-rapid-margay.cloudpub.ru") }); // тут должны быть ваши url или localhost
         
         // cors
         services.AddCors(options => options.AddPolicy("CorsPolicy",
-            policy => policy.WithOrigins("http://localhost:5002")
+            policy => policy.WithOrigins("https://kindly-rapid-margay.cloudpub.ru")
                            .AllowAnyHeader()
                            .AllowAnyMethod()));
         
@@ -68,16 +75,33 @@ public static class Program
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
+                options.LoginPath = "/Login"; // Путь к странице логина
+                options.AccessDeniedPath = "/Login"; // При отказе в доступе тоже на логин
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.Lax;
+        
+                // Для API запросов
                 options.Events.OnRedirectToLogin = context =>
                 {
-                    context.Response.StatusCode = 401;
+                    if (context.Request.Path.StartsWithSegments("/api"))
+                    {
+                        context.Response.StatusCode = 401;
+                        return Task.CompletedTask;
+                    }
+                    context.Response.Redirect(context.RedirectUri);
                     return Task.CompletedTask;
                 };
                 options.Events.OnRedirectToAccessDenied = context =>
                 {
-                    context.Response.StatusCode = 403;
+                    if (context.Request.Path.StartsWithSegments("/api"))
+                    {
+                        context.Response.StatusCode = 403;
+                        return Task.CompletedTask;
+                    }
+                    context.Response.Redirect(context.RedirectUri);
                     return Task.CompletedTask;
                 };
             });
