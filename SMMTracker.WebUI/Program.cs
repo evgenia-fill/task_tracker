@@ -86,32 +86,32 @@ public static class Program
     }
     
     private static async Task ConfigureMiddlewareAsync(WebApplication app)
+{
+    // миграции
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.Database.MigrateAsync();
+    
+    // конфиг pipeline
+    if (app.Environment.IsDevelopment())
     {
-        // миграции
-        using var scope = app.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await context.Database.MigrateAsync();
-        
-        // конфиг pipeline
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
-            app.UseHsts();
-        }
-        
-        app.UseStaticFiles();
-        app.UseRouting();
-        app.UseCors("CorsPolicy");
-        app.UseAuthentication();
-        app.UseAuthorization();
-        
-        app.MapRazorPages();
-        app.MapControllers();
+        app.UseDeveloperExceptionPage();
+        app.UseSwagger();
+        app.UseSwaggerUI();
     }
+    else
+    {
+        app.UseExceptionHandler("/Error");
+        app.UseHsts();
+    }
+    
+    app.UseStaticFiles();
+    app.UseRouting();
+    app.UseCors("CorsPolicy");
+    app.UseAuthentication();
+    app.UseAuthorization();
+    
+    app.MapRazorPages();
+    app.MapControllers();
+}
 }
