@@ -1,28 +1,67 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 namespace SMMTracker.WebUI.ViewModels;
 
 public class LoginModel : PageModel
 {
-    [BindProperty] public string Username { get; set; } = "";
-
+    public string BotName { get; set; } = "";
+    public string CallbackUrl { get; set; } = ""; 
     public string ErrorMessage { get; set; } = "";
+    public bool IsAuthenticated { get; set; }
 
-    public IActionResult OnGet()
+    private readonly IConfiguration _configuration;
+
+    public LoginModel(IConfiguration configuration)
     {
-        return Page();
+        _configuration = configuration;
     }
 
-    public IActionResult OnPostTelegram()
+    public IActionResult OnGet(string? error = null)
     {
-        if (string.IsNullOrWhiteSpace(Username))
+        // Проверяем реальную аутентификацию через Claims
+        IsAuthenticated = User.Identity?.IsAuthenticated == true && 
+                          User.HasClaim(c => c.Type == ClaimTypes.NameIdentifier);
+        
+        if (IsAuthenticated)
         {
-            ErrorMessage = "Пожалуйста, введите ваш Telegram username";
-            return Page();
+            Console.WriteLine($"[LOGIN_DEBUG] Пользователь авторизован: {User.Identity?.Name}");
+            Console.WriteLine($"[LOGIN_DEBUG] Claims: {string.Join(", ", User.Claims.Select(c => $"{c.Type}:{c.Value}"))}");
+        }
+        else
+        {
+            Console.WriteLine($"[LOGIN_DEBUG] Пользователь НЕ авторизован");
         }
 
-        ErrorMessage = "Функция авторизации через Telegram временно недоступна";
+        if (!string.IsNullOrEmpty(error))
+        {
+            ErrorMessage = error switch
+            {
+                "auth_failed" => "Ошибка авторизации. Попробуйте снова.",
+                "invalid_data" => "Неверные данные авторизации.",
+                "timeout" => "Время авторизации истекло. Попробуйте снова.",
+                _ => "Произошла ошибка при авторизации."
+            };
+        }
+        
+        // Получаем имя бота из конфигурации
+        BotName = _configuration["Telegram:BotName"] ?? "SmmTrackerTestBot_bot";
+        
+        // Формируем полный callback URL для Telegram Widget
+        CallbackUrl = "https://kindly-rapid-margay.cloudpub.ru/api/auth/telegram-callback"; // тут должен быть другой юрл!! этот не факт, что у вас зарабоатет
+        // можно заменить на http://localhost:5002...
+        
         return Page();
+    }
+    
+    // Метод для принудительного выхода (на случай проблем)
+    // Метод для принудительного выхода (на случай проблем)
+    public async Task<IActionResult> OnPostForceLogout()
+    {
+        await HttpContext.SignOutAsync();
+        return RedirectToPage("/Login");
     }
 }

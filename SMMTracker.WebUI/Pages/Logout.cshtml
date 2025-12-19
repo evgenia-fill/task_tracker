@@ -1,0 +1,19 @@
+@page
+@model SMMTracker.WebUI.ViewModels.LogoutModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
+@{
+    ViewData["Title"] = "Выход";
+    Layout = "_Layout";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Выход...</title>
+    <meta http-equiv="refresh" content="0; url=/Login">
+</head>
+<body>
+<p>Выход из системы...</p>
+</body>
+</html>
