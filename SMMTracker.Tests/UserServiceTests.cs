@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using Moq;
+using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Services;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Domain.IRepositories;
