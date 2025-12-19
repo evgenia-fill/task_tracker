@@ -10,10 +10,10 @@ public class Team : Entity
     public Calendar? Calendar { get; set; }
     public List<UserTeam>? UserTeams { get; set; } = new(); 
 
-    public Team(string name, string Code)
+    public Team(string name, string code)
     {
         Name = name;
-        Code = Code;
+        Code = code;
     }
 
     private Team()
