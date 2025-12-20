@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -26,68 +26,78 @@
         .content-wrapper {
             padding-top: 20px;
         }
+        
         .calendar-grid {
             display: grid;
-            /* Создает 7 одинаковых колонок для дней недели */
             grid-template-columns: repeat(7, 1fr);
-            gap: 5px; /* Небольшой отступ между ячейками */
-        }
-
-        .day-header, .calendar-day {
-            /* Общие стили для ячеек */
-            padding: 10px 5px;
-            text-align: center;
+            gap: 1px;
+            background-color: #dee2e6; /* Цвет сетки */
+            border: 1px solid #dee2e6;
             border-radius: 8px;
-            min-height: 80px; /* Чтобы ячейки были видны */
-            position: relative;
+            overflow: hidden;
         }
 
         .day-header {
+            background-color: #f8f9fa;
             font-weight: bold;
-            background-color: #e0e0e0; /* Светлый фон для заголовков */
+            text-align: center;
+            padding: 12px 5px;
+            color: #495057;
+            border-bottom: 1px solid #dee2e6;
         }
 
         .calendar-day {
             background-color: #ffffff;
-            border: 1px solid #ddd;
+            min-height: 110px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
             transition: background-color 0.2s;
-            cursor: pointer;
         }
 
         .calendar-day:hover {
-            background-color: #f0f0f0;
+            background-color: #f8f9ff;
         }
 
         .calendar-day.today {
-            border: 2px solid #667eea; /* Выделение текущего дня */
+            background-color: #fff9db;
         }
 
-        .day-number {
-            font-size: 1.2em;
+        .date-number {
+            font-size: 1rem;
             font-weight: 600;
-            display: block;
-            margin-bottom: 5px;
             color: #333;
+            margin-bottom: 4px;
         }
-
-        /* Стили для событий */
+        
         .event-item {
-            font-size: 0.75rem;
-            padding: 2px 4px;
-            margin-top: 2px;
+            display: block; 
+            background-color: #667eea;
+            color: white !important;
+            font-size: 11px;
+            padding: 4px 8px;
             border-radius: 4px;
+            text-decoration: none !important;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: white;
-            text-align: left;
+            cursor: pointer;
+            border-left: 3px solid #4a54e1;
+            transition: all 0.2s;
         }
 
-        .evt-blue { background-color: #4b89dc; }
-        .evt-green { background-color: #47b864; }
-        .evt-yellow { background-color: #f7b733; }
-        .evt-purple { background-color: #8c56c2; }
-        /* --- Конец стилей для Календаря --- */
+        .event-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            filter: brightness(110%);
+        }
+        
+        .evt-blue { background-color: #4b89dc; border-left-color: #2a6ec1; }
+        .evt-green { background-color: #47b864; border-left-color: #2e8b46; }
+        .evt-yellow { background-color: #f7b733; border-left-color: #d19211; }
+        .evt-purple { background-color: #8c56c2; border-left-color: #6a3a9d; }
+
     </style>
 </head>
 <body>
@@ -95,9 +105,8 @@
 <header>
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
         <div class="container">
-            <a class="navbar-brand" asp-area="" asp-page="/Index">SMM Tracker</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <a class="navbar-brand fw-bold text-primary" asp-area="" asp-page="/Index">SMM Tracker</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
@@ -119,20 +128,13 @@
     </nav>
 </header>
 
-@{
-    // Лучше задать переменную здесь
-    var containerClass = "gradient-bg";
-}
-
-<div class="main-container @containerClass">
+<div class="main-container gradient-bg">
     <main role="main" class="container content-wrapper">
         @RenderBody()
     </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
-
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

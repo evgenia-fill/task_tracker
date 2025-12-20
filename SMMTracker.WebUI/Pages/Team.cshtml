@@ -300,7 +300,6 @@
 
 @section Scripts {
     <script>
-        // === Общие скрипты UI (оставляем как есть) ===
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(function() { showToast('Скопировано в буфер обмена!'); });
         }
@@ -323,28 +322,23 @@
             bsToast.show();
             toast.addEventListener('hidden.bs.toast', function() { toast.remove(); });
         }
-
-        // === Логика Недельного Календаря ===
         
-        let currentWeekStart = new Date(); // Хранит дату понедельника текущей недели
-        let loadedEvents = []; // Кэш событий, чтобы не дергать API постоянно
+        let currentWeekStart = new Date(); 
+        let loadedEvents = []; 
         const calendarId = "@Model.CalendarId";
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // Устанавливаем дату на понедельник текущей недели
             alignToMonday(currentWeekStart);
             await renderCalendar();
         });
-
-        // Сдвигает дату переданного объекта на понедельник
+        
         function alignToMonday(date) {
             const day = date.getDay();
-            const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1); 
             date.setDate(diff);
         }
 
         async function changeWeek(step) {
-            // Сдвигаем текущую дату на +/- 7 дней
             currentWeekStart.setDate(currentWeekStart.getDate() + (step * 7));
             await renderCalendar();
         }
@@ -363,27 +357,22 @@
             const monthName = middleOfWeek.toLocaleString('ru-RU', { month: 'long' });
             const year = middleOfWeek.getFullYear();
             display.innerText = `${monthName} ${year}`;
-
-            // Загружаем данные из API для текущей недели
+            
             await ensureEventsLoadedForWeek(currentWeekStart);
 
             for (let i = 0; i < 7; i++) {
                 const currentDayDate = new Date(currentWeekStart);
                 currentDayDate.setDate(currentWeekStart.getDate() + i);
-
-                // Рендер заголовка (Пн, 12...)
+                
                 const headerCell = document.createElement('div');
                 headerCell.className = 'day-header' + (isSameDate(currentDayDate, new Date()) ? ' bg-primary text-white' : '');
                 headerCell.innerText = `${currentDayDate.toLocaleString('ru-RU', { weekday: 'short' })}, ${currentDayDate.getDate()}`;
                 headerGrid.appendChild(headerCell);
-
-                // Рендер ячейки дня
+                
                 const bodyCell = document.createElement('div');
                 bodyCell.className = 'calendar-day';
                 bodyCell.style.minHeight = "150px";
-
-                // Фильтруем события для этого дня
-                // ВАЖНО: проверяем и startTime (из API) и eventDate (если придет из модели)
+                
                 const dayEvents = loadedEvents.filter(e => {
                     const dateStr = e.startTime || e.eventDate;
                     return isSameDate(new Date(dateStr), currentDayDate);
@@ -391,11 +380,10 @@
 
                 dayEvents.forEach(evt => {
                     const evtDiv = document.createElement('div');
-                    evtDiv.className = 'event-item evt-purple'; // Можно менять цвет в зависимости от типа
+                    evtDiv.className = 'event-item evt-purple'; 
                     evtDiv.style.cursor = 'pointer';
                     evtDiv.innerHTML = `<strong>${evt.title}</strong>`;
-
-                    // Переход на страницу события при клике
+                    
                     evtDiv.onclick = () => {
                         window.location.href = `/Event/@Model.Team.Id/${evt.id}`;
                     };
@@ -412,9 +400,7 @@
                    d1.getMonth() === d2.getMonth() && 
                    d1.getFullYear() === d2.getFullYear();
         }
-
-        // Умная загрузка событий
-        // Если неделя 29 янв - 4 фев, нам нужно подгрузить и январь, и февраль
+        
         async function ensureEventsLoadedForWeek(startDate) {
             const startMonth = startDate.getMonth() + 1;
             const startYear = startDate.getFullYear();
@@ -426,17 +412,16 @@
 
             await fetchAndCache(startMonth, startYear);
             
-            // Если конец недели в другом месяце, грузим и его
             if (startMonth !== endMonth || startYear !== endYear) {
                 await fetchAndCache(endMonth, endYear);
             }
         }
 
-        let loadedMonths = new Set(); // Хранит строки "M-YYYY"
+        let loadedMonths = new Set(); 
 
         async function fetchAndCache(month, year) {
             const key = `${month}-${year}`;
-            if (loadedMonths.has(key)) return; // Уже загружено
+            if (loadedMonths.has(key)) return; 
 
             if (calendarId == 0) return;
 
@@ -444,7 +429,6 @@
                 const response = await fetch(`/api/calendars/${calendarId}/events?month=${month}&year=${year}`);
                 if (response.ok) {
                     const events = await response.json();
-                    // Добавляем новые события к существующим
                     loadedEvents = [...loadedEvents, ...events];
                     loadedMonths.add(key);
                 }
