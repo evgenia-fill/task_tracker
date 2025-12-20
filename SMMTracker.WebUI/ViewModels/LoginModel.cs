@@ -23,11 +23,8 @@ namespace SMMTracker.WebUI.ViewModels
                 return Page();
             }
             
-            // Эмуляция попытки авторизации
             ErrorMessage = "Функция авторизации через Telegram временно недоступна";
             return Page();
         }
-        
-        // Убрал OnPostTest - теперь используется просто ссылка <a href="/Dashboard">
     }
 }

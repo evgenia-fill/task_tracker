@@ -24,7 +24,6 @@ namespace SMMTracker.WebUI.ViewModels
         
         public IActionResult OnGet(Guid id)
         {
-            // Загрузка тестовых данных
             LoadMockData(id);
             return Page();
         }
@@ -38,7 +37,6 @@ namespace SMMTracker.WebUI.ViewModels
                 return Page();
             }
             
-            // Добавляем нового участника
             var newMember = new TeamMemberViewModel
             {
                 Id = Guid.NewGuid(),
@@ -101,7 +99,6 @@ namespace SMMTracker.WebUI.ViewModels
         
         private void LoadMockData(Guid teamId)
         {
-            // Загружаем данные команды (в реальном приложении из базы данных)
             Team = new TeamViewModel
             {
                 Id = teamId,
@@ -117,7 +114,6 @@ namespace SMMTracker.WebUI.ViewModels
             
             IsOwner = Team.IsOwner;
             
-            // Тестовые данные участников
             Members = new List<TeamMemberViewModel>
             {
                 new TeamMemberViewModel
@@ -162,7 +158,6 @@ namespace SMMTracker.WebUI.ViewModels
                 }
             };
             
-            // Тестовые данные мероприятий
             UpcomingEvents = new List<TeamEventViewModel>
             {
                 new TeamEventViewModel

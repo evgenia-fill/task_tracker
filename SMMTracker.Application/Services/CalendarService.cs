@@ -17,17 +17,20 @@ public class CalendarService : ICalendarService
         _calendarRepository = calendarRepository;
         _teamRepository = teamRepository;
     }
-
-    // --- МЕТОД, КОТОРЫЙ ИСПОЛЬЗУЕТ Calendar.cshtml.cs ---
+    
     public async Task<int> GetCalendarIdByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
-        // Вызываем новый метод из репозитория
         var calendar = await _calendarRepository.GetByUserIdAsync(userId, cancellationToken);
         
         return calendar?.Id ?? 0;
     }
-
-    // --- Существующий метод ---
+    
+    public async Task<(int CalendarId, int TeamId)> GetCalendarInfoByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var calendar = await _calendarRepository.GetByUserIdAsync(userId, cancellationToken);
+        return (calendar?.Id ?? 0, calendar?.TeamId ?? 0);
+    }
+    
     public async Task<int> CreateCalendarAsync(CreateCalendarDto dto,
         CancellationToken cancellationToken = default)
     {

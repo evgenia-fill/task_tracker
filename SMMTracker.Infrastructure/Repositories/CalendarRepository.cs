@@ -24,11 +24,9 @@ public class CalendarRepository : ICalendarRepository
             .FirstOrDefaultAsync(c => c.Id == calendarId);
     }
     
-    // Внутри класса CalendarRepository (который использует DbContext)
 
     public async Task<Calendar?> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
-        // Используем DbContext (_context) для выполнения запроса:
         return await _context.Calendars 
             .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
     }

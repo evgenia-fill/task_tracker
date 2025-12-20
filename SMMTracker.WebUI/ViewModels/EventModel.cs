@@ -25,7 +25,6 @@ namespace SMMTracker.WebUI.ViewModels
         
         public IActionResult OnGet(Guid teamId, Guid eventId)
         {
-            // Загрузка тестовых данных
             LoadMockData(teamId, eventId);
             return Page();
         }
@@ -45,7 +44,7 @@ namespace SMMTracker.WebUI.ViewModels
                 Title = NewTask.Title,
                 Description = NewTask.Description,
                 Status = TaskStatus.InProgress,
-                CreatedBy = "Иван Иванов", // В реальном приложении текущий пользователь
+                CreatedBy = "Иван Иванов", 
                 CreatedAt = DateTime.Now,
                 Assignee = NewTask.Assignee
             };
@@ -109,7 +108,7 @@ namespace SMMTracker.WebUI.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Text = CommentText,
-                CreatedBy = "Иван Иванов", // В реальном приложении текущий пользователь
+                CreatedBy = "Иван Иванов", 
                 CreatedAt = DateTime.Now
             };
             
@@ -133,7 +132,6 @@ namespace SMMTracker.WebUI.ViewModels
         
         private void LoadMockData(Guid teamId, Guid eventId)
         {
-            // Тестовые данные команды
             Team = new TeamViewModel
             {
                 Id = teamId,
@@ -145,9 +143,8 @@ namespace SMMTracker.WebUI.ViewModels
             };
             
             IsOwner = Team.IsOwner;
-            IsTeamMember = true; // В реальном приложении проверка, является ли пользователь участником команды
+            IsTeamMember = true; 
             
-            // Тестовые данные мероприятия
             Event = new EventViewModel
             {
                 Id = eventId,
@@ -159,7 +156,6 @@ namespace SMMTracker.WebUI.ViewModels
                 Status = EventStatus.Planned
             };
             
-            // Тестовые данные задач
             Tasks = new List<EventTaskViewModel>
             {
                 new EventTaskViewModel
@@ -206,7 +202,6 @@ namespace SMMTracker.WebUI.ViewModels
                 }
             };
             
-            // Тестовые данные комментариев
             Comments = new List<EventCommentViewModel>
             {
                 new EventCommentViewModel

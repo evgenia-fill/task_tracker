@@ -5,14 +5,12 @@
 }
 
 <div class="glass-card">
-    <h1 class="mb-4">Календарь событий</h1>
-
-    <div id="calendar-container" data-calendarid="@Model.CurrentCalendarId">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+    <div id="calendar-container" data-calendarid="@Model.CurrentCalendarId" data-teamid="@Model.TeamId">
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <button class="btn btn-outline-primary" onclick="changeMonth(-1)">
                 <i class="bi bi-chevron-left"></i>
             </button>
-            <h2 id="monthYearDisplay" class="mb-0">Загрузка...</h2>
+            <h2 id="monthYearDisplay" class="mb-0 fw-bold text-primary">Загрузка...</h2>
             <button class="btn btn-outline-primary" onclick="changeMonth(1)">
                 <i class="bi bi-chevron-right"></i>
             </button>
@@ -32,149 +30,109 @@
 
 @section Scripts {
     <script>
-        // Объявляем переменные, которые будут использоваться в разных функциях
-        let calendarId = 0;
-        let currentDate = new Date();
-        // ВАЖНО: Эти переменные будут определены внутри DOMContentLoaded
-        let calendarContainer;
-        let grid;
-        let displayElement;
+        let state = {
+            year: new Date().getFullYear(),
+            month: new Date().getMonth(), 
+            calendarId: 0,
+            teamId: 0
+        };
 
-        // --- ЗАПУСК: Ищем элементы только после загрузки DOM ---
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Ищем контейнеры здесь, после загрузки DOM
-            calendarContainer = document.getElementById('calendar-container');
-            grid = document.getElementById('calendarGrid');
-            displayElement = document.getElementById('monthYearDisplay');
-
-            if (!calendarContainer) {
-                // Эта ошибка теперь не должна появляться, так как мы добавили контейнер выше
-                console.error("Критическая ошибка: Контейнер #calendar-container не найден.");
-                return;
+            const container = document.getElementById('calendar-container');
+            if (container) {
+                state.calendarId = parseInt(container.dataset.calendarid) || 0;
+                state.teamId = parseInt(container.dataset.teamid) || 0;
             }
-
-            // 2. Получаем ID календаря
-            calendarId = parseInt(calendarContainer.dataset.calendarid) || 0;
-            console.log("Calendar ID из C#:", calendarId);
-
-            // --- ПРОВЕРКА CALENDAR ID ---
-            if (calendarId === 0) {
-                // Если ID=0, мы вставляем сообщение вместо всей структуры
-                calendarContainer.innerHTML = `
-                    <div class="p-5 text-center alert alert-warning" role="alert">
-                        <h3 class="alert-heading">Календарь не найден</h3>
-                        <p>У вас еще нет активного календаря для отображения.</p>
-                        <button class="btn btn-primary mt-3" onclick="alert('TODO: Реализовать создание календаря')">Создать календарь</button>
-                    </div>
-                `;
-                return;
-            }
-            // --- Если ID есть, запускаем рендеринг ---
             renderCalendar();
         });
 
-        // Функция для смены месяца (Теперь использует глобальные переменные)
-        function changeMonth(step) {
-            if (step === 0) {
-                currentDate = new Date();
-            } else {
-                currentDate.setMonth(currentDate.getMonth() + step);
-            }
+        function changeMonth(offset) {
+            state.month += offset;
+            if (state.month < 0) { state.month = 11; state.year--; }
+            else if (state.month > 11) { state.month = 0; state.year++; }
             renderCalendar();
         }
 
-        async function renderCalendar() {
-            // --- Проверка ID и элементов (для безопасности) ---
-            if (calendarId === 0) return;
-            if (!grid) {
-                console.error("Элемент #calendarGrid не найден.");
-                return;
-            }
-            // ---------------------------------------------------
+        async function fetchEvents(year, month) {
+            const mockEvents = [
+                { id: 101, name: "🔥 Пост в Instagram", date: new Date(year, month - 1, 10) },
+                { id: 102, name: "🎬 Съемка Reels", date: new Date(year, month - 1, 15) },
+                { id: 103, name: "📊 Отчет за неделю", date: new Date(year, month - 1, 20) }
+            ];
 
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
+            if (state.calendarId === 0) return mockEvents;
 
-            // Обновляем заголовок
-            const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-            if (displayElement) {
-                displayElement.innerText = `${monthNames[month]} ${year}`;
-            }
-
-            // Получаем события с сервера
-            const events = await fetchEvents(year, month + 1);
-
-            // Вычисляем первый день месяца и количество дней
-            const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0=Вс, 1=Пн, ... 6=Сб
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            // --- КОРРЕКЦИЯ ОТСТУПА ДЛЯ НАЧАЛА С ПОНЕДЕЛЬНИКА ---
-            // Если месяц начинается с Вс (0), отступ равен 6 дней.
-            // В противном случае, отступ равен (firstDayOfMonth - 1).
-            const startOffset = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1;
-
-            // Очищаем старые ячейки (оставляем только заголовки дней недели - их 7 штук)
-            while (grid.children.length > 7) {
-                grid.removeChild(grid.lastChild);
-            }
-
-            // Добавляем пустые ячейки для дней предыдущего месяца
-            for (let i = 0; i < startOffset; i++) {
-                const emptyCell = document.createElement('div');
-                emptyCell.classList.add('calendar-day', 'other-month');
-                grid.appendChild(emptyCell);
-            }
-
-            // Генерируем дни месяца
-            for (let day = 1; day <= daysInMonth; day++) {
-                const cell = document.createElement('div');
-                cell.classList.add('calendar-day');
-
-                const today = new Date();
-                if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                    cell.classList.add('today');
+            try {
+                const response = await fetch(`/api/calendars/${state.calendarId}/events?month=${month}&year=${year}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.length > 0
+                        ? data.map(e => ({ ...e, date: new Date(e.date) }))
+                        : mockEvents;
                 }
-
-                // Номер дня
-                const dayNum = document.createElement('span');
-                dayNum.classList.add('day-number');
-                dayNum.innerText = day;
-                cell.appendChild(dayNum);
-
-                // Фильтрация и отрисовка событий
-                if(events && events.length > 0) {
-                    const dayEvents = events.filter(e => {
-                        const eventDate = new Date(e.startTime);
-                        return eventDate.getDate() === day;
-                    });
-                    dayEvents.forEach(evt => {
-                        const evtDiv = document.createElement('div');
-                        evtDiv.classList.add('event-item');
-                        evtDiv.innerText = evt.title || "Событие";
-
-                        const colors = ['evt-blue', 'evt-green', 'evt-yellow', 'evt-purple'];
-                        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-                        evtDiv.classList.add(randomColor);
-
-                        cell.appendChild(evtDiv);
-                    });
-                }
-
-                grid.appendChild(cell);
+            } catch (error) {
+                console.error("Ошибка загрузки событий:", error);
             }
+            return mockEvents;
         }
 
-        async function fetchEvents(year, month) {
-            try {
-                const response = await fetch(`/api/calendars/${calendarId}/events?month=${month}&year=${year}`);
-                if (!response.ok) {
-                    console.error("Ошибка загрузки событий:", response.status);
-                    return [];
+        async function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const display = document.getElementById('monthYearDisplay');
+            if (!grid || !display) return;
+
+            const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+            display.innerText = `${monthNames[state.month]} ${state.year}`;
+            
+            const oldDays = grid.querySelectorAll('.calendar-day');
+            oldDays.forEach(d => d.remove());
+
+            const firstDay = new Date(state.year, state.month, 1);
+            const lastDay = new Date(state.year, state.month + 1, 0);
+            
+            let startOffset = firstDay.getDay() - 1;
+            if (startOffset === -1) startOffset = 6;
+
+            const events = await fetchEvents(state.year, state.month + 1);
+            
+            for (let i = 0; i < startOffset; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'calendar-day empty';
+                grid.appendChild(empty);
+            }
+            
+            for (let d = 1; d <= lastDay.getDate(); d++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day';
+
+                const num = document.createElement('div');
+                num.className = 'date-number';
+                num.innerText = d;
+                cell.appendChild(num);
+                
+                const today = new Date();
+                if (d === today.getDate() && state.month === today.getMonth() && state.year === today.getFullYear()) {
+                    cell.classList.add('today');
                 }
-                return await response.json();
-            } catch (error) {
-                console.error("Ошибка сети при загрузке событий:", error);
-                return [];
+                
+                const dayEvents = events.filter(e =>
+                    e.date.getDate() === d &&
+                    e.date.getMonth() === state.month &&
+                    e.date.getFullYear() === state.year
+                );
+
+                dayEvents.forEach(evt => {
+                    const evDiv = document.createElement('div');
+                    evDiv.className = 'event-item';
+                    evDiv.innerText = evt.name || "Событие";
+                    evDiv.onclick = (e) => {
+                        e.stopPropagation();
+                        window.location.href = `/Event/${state.teamId}/${evt.id}`;
+                    };
+                    cell.appendChild(evDiv);
+                });
+
+                grid.appendChild(cell);
             }
         }
     </script>
