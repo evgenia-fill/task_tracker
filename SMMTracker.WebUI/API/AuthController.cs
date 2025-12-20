@@ -43,7 +43,6 @@ public class AuthController : ControllerBase
             Console.WriteLine($"[TELEGRAM_AUTH_DEBUG] База данных: {connection.DataSource}");
             Console.WriteLine($"[TELEGRAM_AUTH_DEBUG] Данные пользователя: {id}, {first_name}, {username}");
 
-            // Получаем токен бота из конфигурации
             var botToken = _configuration["Telegram:BotToken"];
             if (string.IsNullOrEmpty(botToken))
             {
@@ -51,7 +50,6 @@ public class AuthController : ControllerBase
                 return Redirect("/Login?error=auth_failed");
             }
 
-            // Проверяем подпись данных
             var isValid = ValidateTelegramData(botToken, id, first_name, last_name, 
                 username, photo_url, auth_date, hash);
             
@@ -61,7 +59,6 @@ public class AuthController : ControllerBase
                 return Redirect("/Login?error=invalid_data");
             }
 
-            // Проверяем давность данных (не старше 1 минуты)
             var authDateTime = DateTimeOffset.FromUnixTimeSeconds(auth_date);
             if (DateTimeOffset.UtcNow - authDateTime > TimeSpan.FromMinutes(1))
             {
@@ -69,7 +66,6 @@ public class AuthController : ControllerBase
                 return Redirect("/Login?error=timeout");
             }
 
-            // Создаем или находим пользователя
             var user = new User
             {
                 TelegramId = id,
@@ -82,7 +78,6 @@ public class AuthController : ControllerBase
             var appUser = await _userService.FindOrCreateUserAsync(user);
             Console.WriteLine($"[TELEGRAM_AUTH_SUCCESS] Пользователь авторизован: {appUser.Id}, {appUser.UserName}");
 
-            // Создаем куки авторизации
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, appUser.Id.ToString()),
@@ -122,9 +117,8 @@ public class AuthController : ControllerBase
 {
     try
     {
-        Console.WriteLine($"[VALIDATE_DEBUG] Токен: {botToken.Substring(0, 15)}...");
+        Console.WriteLine($"[VALIDATE_DEBUG] Токен: {botToken[..15]}...");
         
-        // 1. Создаем data_check_string как ДИКТ
         var dataCheckDict = new Dictionary<string, string>
         {
             ["auth_date"] = authDate.ToString(),
@@ -141,15 +135,11 @@ public class AuthController : ControllerBase
         if (!string.IsNullOrEmpty(username))
             dataCheckDict["username"] = username;
         
-        // 2. Сортируем по ключам
         var sortedKeys = dataCheckDict.Keys.OrderBy(k => k).ToList();
         
-        // 3. Формируем строку для проверки
         var dataCheckArray = new List<string>();
         foreach (var key in sortedKeys)
-        {
             dataCheckArray.Add($"{key}={dataCheckDict[key]}");
-        }
         
         var dataCheckString = string.Join("\n", dataCheckArray);
         
@@ -157,15 +147,12 @@ public class AuthController : ControllerBase
         Console.WriteLine($"\"{dataCheckString.Replace("\n", "\\n")}\"");
         Console.WriteLine($"[VALIDATE_DEBUG] Ожидаемый хеш: {hash}");
         
-        // 4. ВАЖНО: Telegram использует SHA256, но с ключом как секрет
-        // Ключ = HMAC-SHA256 от "WebAppData" с токеном бота как ключом
         byte[] secretKey;
         using (var sha256 = SHA256.Create())
         {
             secretKey = sha256.ComputeHash(Encoding.UTF8.GetBytes(botToken));
         }
         
-        // 5. Вычисляем HMAC-SHA256 с правильным ключом
         using var hmac = new HMACSHA256(secretKey);
         var computedHashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(dataCheckString));
         var computedHashString = BitConverter.ToString(computedHashBytes)
@@ -175,7 +162,6 @@ public class AuthController : ControllerBase
         Console.WriteLine($"[VALIDATE_DEBUG] Вычисленный хеш: {computedHashString}");
         Console.WriteLine($"[VALIDATE_DEBUG] Совпадают: {computedHashString == hash.ToLower()}");
         
-        // 6. Дополнительная проверка: может быть нужно использовать raw байты токена
         Console.WriteLine($"[VALIDATE_DEBUG] Альтернативный расчет с raw токеном...");
         using var hmac2 = new HMACSHA256(Encoding.UTF8.GetBytes(botToken));
         var computedHash2 = BitConverter.ToString(hmac2.ComputeHash(Encoding.UTF8.GetBytes(dataCheckString)))
@@ -193,16 +179,13 @@ public class AuthController : ControllerBase
 }
 
     [HttpPost("api/auth/telegram")]
-    public async Task<IActionResult> LoginWithTelegram([FromBody] TelegramLoginDto dto)
+    public async Task<IActionResult> LoginWithTelegram([FromBody] TelegramLoginDto? dto)
     {
-        // Оставляем старый метод для совместимости
         var connection = (SqliteConnection)_context.Database.GetDbConnection();
         Console.WriteLine($"[AUTH_CONTROLLER_DEBUG] Сайт использует базу данных: {connection.DataSource}");
 
         if (dto == null)
-        {
             return BadRequest("No dto received");
-        }
 
         var user = new User
         {
@@ -219,8 +202,8 @@ public class AuthController : ControllerBase
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, appUser.Id.ToString()),
-                new Claim(ClaimTypes.Name, appUser.UserName)
+                new(ClaimTypes.NameIdentifier, appUser.Id.ToString()),
+                new(ClaimTypes.Name, appUser.UserName)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

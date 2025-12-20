@@ -33,19 +33,16 @@ public static class Program
         var services = builder.Services;
         var config = builder.Configuration;
         
-        // бд
         var connectionString = config.GetConnectionString("DefaultConnection");
         services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlite(connectionString));
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
         
-        // основные сервисы
         services.AddRazorPages();
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddHttpClient();
         
-        // репозитории
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITeamRepository, TeamRepository>();
         services.AddScoped<ITaskRepository, TaskRepository>();
@@ -54,36 +51,31 @@ public static class Program
         services.AddScoped<IUserTeamRepository, UserTeamRepository>();
         services.AddScoped<IUserTaskRepository, UserTaskRepository>();
         
-        // сервисы
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<ITeamService, TeamService>();
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<IEventService, EventService>();
         
-        // шттп для razor pages
         services.AddScoped<HttpClient>(_ => 
-            new HttpClient { BaseAddress = new Uri("https://kindly-rapid-margay.cloudpub.ru") }); // тут должны быть ваши url или localhost
+            new HttpClient { BaseAddress = new Uri("https://kindly-rapid-margay.cloudpub.ru") }); 
         
-        // cors
         services.AddCors(options => options.AddPolicy("CorsPolicy",
             policy => policy.WithOrigins("https://kindly-rapid-margay.cloudpub.ru")
                            .AllowAnyHeader()
                            .AllowAnyMethod()));
         
-        // Authentication
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
-                options.LoginPath = "/Login"; // Путь к странице логина
-                options.AccessDeniedPath = "/Login"; // При отказе в доступе тоже на логин
+                options.LoginPath = "/Login"; 
+                options.AccessDeniedPath = "/Login"; 
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.SameSite = SameSiteMode.Lax;
         
-                // Для API запросов
                 options.Events.OnRedirectToLogin = context =>
                 {
                     if (context.Request.Path.StartsWithSegments("/api"))
@@ -111,12 +103,10 @@ public static class Program
     
     private static async Task ConfigureMiddlewareAsync(WebApplication app)
 {
-    // миграции
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await context.Database.MigrateAsync();
     
-    // конфиг pipeline
     if (app.Environment.IsDevelopment())
     {
         app.UseDeveloperExceptionPage();

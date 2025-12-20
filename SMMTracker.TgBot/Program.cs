@@ -6,9 +6,6 @@ using SMMTracker.Infrastructure.Repositories;
 using SMMTracker.Domain.IRepositories;
 
 namespace SMMTracker.TgBot;
-//    "DefaultConnection": "Data Source=/app/data/SMMTracker.db;Cache=Shared;Pooling=true" это для хоста (должно работать, но не обязано)
-//     "DefaultConnection": "Data Source=../../Data/DataBase.db" - это локальная, но она не работает для сайта, так как он запускается из bin
-
 
 static class Program
 {
