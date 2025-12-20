@@ -9,7 +9,7 @@ public abstract class Entity
         return obj is Entity other && Equals(other);
     }
 
-    public bool Equals(Entity? other)
+    private bool Equals(Entity? other)
     {
         if (other is null) return false;
         if (Id == 0 || other.Id == 0)

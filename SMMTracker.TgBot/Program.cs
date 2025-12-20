@@ -7,43 +7,59 @@ using SMMTracker.Domain.IRepositories;
 
 namespace SMMTracker.TgBot;
 
-class Program
+static class Program
 {
-    const string token = "8450218559:AAGCQdk6hnrtP8aFZpZM-bCc7tCWeKNWaIE";
-
     public static async Task Main()
     {
-        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile("appsettings.Secrets.json", optional: false)
+            .Build();
 
+        var token = configuration["Telegram:BotToken"];  
+        
+        if (string.IsNullOrEmpty(token))
+        {
+            Console.WriteLine("Токен не найден в файле appsettings.Secrets.json");
+            return;
+        }
+        Console.WriteLine($"Токен найден");
+        
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        
         if (string.IsNullOrEmpty(connectionString))
         {
-            var solutionDir = Directory.GetParent(AppContext.BaseDirectory)!
-                .Parent!.Parent!.Parent!.Parent!.FullName;
-            
-            var dbPath = Path.Combine(solutionDir, "SharedDatabase", "DataBase.db");
-            var dir = Path.GetDirectoryName(dbPath);
-
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir!);
-            }
-
-            connectionString = $"Data Source={dbPath}";
+            Console.WriteLine("путь к бд не найден в конфиге");
+            return;
         }
+        
+        Console.WriteLine($"путь к бд {connectionString}");
+        
+        var services = new ServiceCollection();
+        
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlite(connectionString));
+        
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserService, UserService>();
+        
+        var serviceProvider = services.BuildServiceProvider();
 
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlite(connectionString)
-            .Options;
+        try
+        {
+            var userService = serviceProvider.GetRequiredService<IUserService>();
+            var bot = new TelegramBotService(token, userService);
+            
+            await bot.StartAsync(CancellationToken.None);
 
-        var context = new ApplicationDbContext(options);
-        await context.Database.MigrateAsync();
-
-        IUserRepository userRepository = new UserRepository(context);
-        IUserService userService = new UserService(userRepository);
-
-        var bot = new TelegramBotService(token, userService);
-        await bot.StartAsync(CancellationToken.None);
-
-        await Task.Delay(-1);
+            Console.WriteLine("Бот запущен");
+            Console.WriteLine("/start в @SmmTrackerTestBot_bot");
+            
+            await Task.Delay(-1, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}");
+        }
     }
 }
