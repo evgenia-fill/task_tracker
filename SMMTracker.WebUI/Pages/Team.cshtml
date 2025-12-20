@@ -273,6 +273,7 @@
                                         <div class="flex-grow-1 ms-3">
                                             <h6 class="mb-1">@member.FirstName @member.LastName</h6>
                                             <p class="text-muted small mb-1">@@@member.TelegramUsername</p>
+                                            <p class="text-muted small mb-0"><strong>Роль:</strong> @member.Role</p>
                                         </div>
                                     </div>
                                     @if (Model.IsOwner && member.Role != "Владелец")
