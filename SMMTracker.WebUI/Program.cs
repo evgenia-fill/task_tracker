@@ -82,6 +82,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         };
     });
 
+
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
