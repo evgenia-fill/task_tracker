@@ -22,7 +22,6 @@ public class LoginModel : PageModel
 
     public IActionResult OnGet(string? error = null)
     {
-        // Проверяем реальную аутентификацию через Claims
         IsAuthenticated = User.Identity?.IsAuthenticated == true && 
                           User.HasClaim(c => c.Type == ClaimTypes.NameIdentifier);
         
@@ -47,18 +46,13 @@ public class LoginModel : PageModel
             };
         }
         
-        // Получаем имя бота из конфигурации
         BotName = _configuration["Telegram:BotName"] ?? "SmmTrackerTestBot_bot";
         
-        // Формируем полный callback URL для Telegram Widget
-        CallbackUrl = "https://kindly-rapid-margay.cloudpub.ru/api/auth/telegram-callback"; // тут должен быть другой юрл!! этот не факт, что у вас зарабоатет
-        // можно заменить на http://localhost:5002...
+        CallbackUrl = "https://smmtracker.ru//api/auth/telegram-callback";
         
         return Page();
     }
     
-    // Метод для принудительного выхода (на случай проблем)
-    // Метод для принудительного выхода (на случай проблем)
     public async Task<IActionResult> OnPostForceLogout()
     {
         await HttpContext.SignOutAsync();
