@@ -64,12 +64,33 @@ public class TeamModel : PageModel
         }).ToList();
 
         var eventDtos = await _eventService.GetEventsForTeamAsync(id);
-        UpcomingEvents = eventDtos.Select(e => new TeamEventViewModel
+
+        // --- ДЕБАГ ---
+        Console.WriteLine($"Всего событий для команды {id}: {eventDtos.Count}");
+        foreach (var e in eventDtos)
         {
-            Id = e.Id,
-            Title = e.Name,
-            EventDate = e.Date
-        }).ToList();
+            Console.WriteLine($"Id={e.Id}, Name={e.Name}, Date={e.Date}, CreatedBy={e.CreatedBy}");
+        }
+
+        UpcomingEvents = eventDtos
+            .Where(e => e.Date.ToLocalTime().Date >= DateTime.Today)
+            .OrderBy(e => e.Date)
+            .Select(e => new TeamEventViewModel
+            {
+                Id = e.Id,
+                Title = e.Name,
+                Description = e.Description,
+                EventDate = e.Date,
+                CreatedAt = e.CreatedAt,
+                CreatedBy = e.CreatedBy
+            }).ToList();
+
+        // --- ЕЩЁ ДЕБАГ ---
+        Console.WriteLine($"Событий после фильтра DateTime.Now: {UpcomingEvents.Count}");
+        foreach (var ev in UpcomingEvents)
+        {
+            Console.WriteLine($"Id={ev.Id}, Name={ev.Title}, Date={ev.EventDate}");
+        }
 
         return Page();
     }

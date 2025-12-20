@@ -10,7 +10,8 @@ public class Event : Entity
     public string? Description { get; private set; }
     public DateTime Date { get; private set; }
     public int CalendarId { get; private set; }
-
+    public DateTime CreatedAt { get; private set; } = DateTime.Now;
+    public string CreatedBy { get; private set; } = "";
     public Calendar Calendar { get; private set; } = null!;
     public List<Task> Tasks { get; private set; } = new();
     public int? TeamId { get; private set; }

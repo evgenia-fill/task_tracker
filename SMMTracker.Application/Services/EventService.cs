@@ -82,7 +82,10 @@ public class EventService : IEventService
         {
             Id = e.Id,
             Name = e.Name,
-            Date = e.Date
+            Date = e.Date,
+            Description = e.Description,
+            CreatedAt = e.CreatedAt,
+            CreatedBy = e.CreatedBy
         }).ToList();
     }
 }
