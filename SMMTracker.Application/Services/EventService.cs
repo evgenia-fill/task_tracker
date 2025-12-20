@@ -19,11 +19,14 @@ public class EventService : IEventService
     public async Task<int> CreateEventAsync(CreateEventDto dto,
         CancellationToken cancellationToken = default)
     {
+        var calendar = await _calendarRepository.GetByIdAsync(dto.CalendarId);
         var eventAs = new Event(
             dto.Name,
             dto.Description,
             dto.Date,
-            dto.CalendarId
+            dto.CalendarId,
+            dto.CreatedBy,
+            calendar.TeamId
         );
         await _eventRepository.AddAsync(eventAs);
         return eventAs.Id;
@@ -39,7 +42,8 @@ public class EventService : IEventService
             {
                 Id = e.Id,
                 Name = e.Name,
-                Date = e.Date
+                Date = e.Date,
+                CreatedBy = e.CreatedBy,
             })
             .ToList();
     }
@@ -57,14 +61,16 @@ public class EventService : IEventService
             Name = eventEntity.Name,
             Description = eventEntity.Description,
             Date = eventEntity.Date,
-            Tasks = eventEntity.Tasks
-                .Select(t => new TaskSummaryDto
-                {
-                    Id = t.Id,
-                    Name = t.Name,
-                    Status = (TaskStatus)t.Status
-                }).ToList()
+            CreatedAt = eventEntity.CreatedAt,
+            CreatedBy = eventEntity.CreatedBy,
+            Tasks = eventEntity.Tasks.Select(t => new TaskSummaryDto
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Status = (TaskStatus)t.Status
+            }).ToList()
         };
+
     }
 
     public async Task<List<EventSummaryDto>> GetEventsForTeamAsync(int teamId)
@@ -80,7 +86,11 @@ public class EventService : IEventService
         {
             Id = e.Id,
             Name = e.Name,
-            Date = e.Date
+            Date = e.Date,
+            Description = e.Description,
+            CreatedAt = e.CreatedAt,
+            CreatedBy = e.CreatedBy
         }).ToList();
     }
+    
 }

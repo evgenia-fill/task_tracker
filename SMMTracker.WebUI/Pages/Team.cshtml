@@ -413,6 +413,20 @@
             <form method="post" asp-page-handler="AddEvent">
                 <input type="hidden" name="id" value="@Model.Team.Id"/>
                 <div class="modal-body">
+                    @if (!ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach (var modelState in ViewData.ModelState.Values)
+                                {
+                                    foreach (var error in modelState.Errors)
+                                    {
+                                        <li>@error.ErrorMessage</li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
                     <div class="mb-3">
                         <label class="form-label">Название мероприятия *</label>
                         <input type="text"

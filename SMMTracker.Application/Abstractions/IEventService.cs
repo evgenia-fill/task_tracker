@@ -9,4 +9,5 @@ public interface IEventService
         CancellationToken cancellationToken = default);
     Task<EventDetailsDto?> GetEventDetailsAsync(int eventId, CancellationToken cancellationToken = default);
     Task<List<EventSummaryDto>> GetEventsForTeamAsync(int teamId);
+
 }

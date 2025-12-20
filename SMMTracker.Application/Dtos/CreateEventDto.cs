@@ -6,4 +6,5 @@ public class CreateEventDto
     public string? Description { get; set; }
     public DateTime Date { get; set; }
     public int CalendarId { get; set; }
+    public int CreatedBy { get; set; }
 }

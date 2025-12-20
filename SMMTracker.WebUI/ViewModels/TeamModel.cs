@@ -18,7 +18,8 @@ public class TeamModel : PageModel
     public List<TeamEventViewModel> UpcomingEvents { get; set; } = new();
     public bool IsOwner { get; set; }
 
-    [BindProperty] public string NewMemberUsername { get; set; } = "";
+    // Делаем nullable, чтобы не ломалось при добавлении события
+    [BindProperty] public string? NewMemberUsername { get; set; } 
     [BindProperty] public NewEventViewModel NewEvent { get; set; } = new();
 
     public TeamModel(ITeamService teamService, IEventService eventService, IUserService userService)
@@ -63,24 +64,55 @@ public class TeamModel : PageModel
         }).ToList();
 
         var eventDtos = await _eventService.GetEventsForTeamAsync(id);
-        UpcomingEvents = eventDtos.Select(e => new TeamEventViewModel
+
+        // --- ДЕБАГ ---
+        Console.WriteLine($"Всего событий для команды {id}: {eventDtos.Count}");
+        foreach (var e in eventDtos)
         {
-            Id = e.Id,
-            Title = e.Name,
-            EventDate = e.Date
-        }).ToList();
+            Console.WriteLine($"Id={e.Id}, Name={e.Name}, Date={e.Date}, CreatedBy={e.CreatedBy}");
+        }
+
+        UpcomingEvents = eventDtos
+            .Where(e => e.Date.ToLocalTime().Date >= DateTime.Today)
+            .OrderBy(e => e.Date)
+            .Select(e => new TeamEventViewModel
+            {
+                Id = e.Id,
+                Title = e.Name,
+                Description = e.Description,
+                EventDate = e.Date,
+                CreatedAt = e.CreatedAt,
+                CreatedBy = e.CreatedBy
+            }).ToList();
+
+        // --- ЕЩЁ ДЕБАГ ---
+        Console.WriteLine($"Событий после фильтра DateTime.Now: {UpcomingEvents.Count}");
+        foreach (var ev in UpcomingEvents)
+        {
+            Console.WriteLine($"Id={ev.Id}, Name={ev.Title}, Date={ev.EventDate}");
+        }
 
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAddEventAsync(int id) // id - это teamId
+    
+    public async Task<IActionResult> OnPostAddEventAsync(int id)
     {
+        // игнорируем NewMemberUsername, чтобы не ломало ModelState
+        ModelState.Remove(nameof(NewMemberUsername));
+
         if (!ModelState.IsValid)
         {
             return await OnGetAsync(id);
         }
+        
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdString, out var userId))
+        {
+            return RedirectToPage("/Login");
+        }
 
-        var calendar = await _teamService.GetCalendarForTeamAsync(id); // Нужен такой метод в сервисе
+        var calendar = await _teamService.GetCalendarForTeamAsync(id);
         if (calendar == null)
         {
             TempData["ErrorMessage"] = "Календарь для команды не найден.";
@@ -92,7 +124,8 @@ public class TeamModel : PageModel
             Name = NewEvent.Title,
             Description = NewEvent.Description,
             Date = NewEvent.EventDate,
-            CalendarId = calendar.Id
+            CalendarId = calendar.Id,
+            CreatedBy = userId
         };
 
         await _eventService.CreateEventAsync(createDto);
@@ -135,7 +168,7 @@ public class TeamEventViewModel
     public string Description { get; set; } = "";
     public DateTime EventDate { get; set; }
     public DateTime CreatedAt { get; set; }
-    public string CreatedBy { get; set; } = "";
+    public int CreatedBy { get; set; }
 }
 
 public class NewEventViewModel

@@ -32,7 +32,10 @@ public class TeamService : ITeamService
 
         var team = new Team(dto.Name, code);
         await _teamRepository.AddAsync(team);
-
+        
+        var calendar = new Calendar(team.Id);
+        await _calendarRepository.AddAsync(calendar);
+        
         var userTeam = new UserTeam
         {
             TeamId = team.Id,
