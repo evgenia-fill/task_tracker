@@ -16,11 +16,12 @@ public class TeamRepository : ITeamRepository
         _context = context;
     }
 
-    public async Task<Team?> GetByIdAsync(int teamId)
+    public async Task<Team?> GetByIdAsync(int id)
     {
         return await _context.Teams
-            .AsNoTracking()
-            .FirstOrDefaultAsync(team => team.Id == teamId);
+            .Include(t => t.UserTeams)
+            .ThenInclude(ut => ut.User) 
+            .FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task<Team?> GetByCodeAsync(string code)

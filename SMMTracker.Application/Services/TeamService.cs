@@ -31,21 +31,32 @@ public class TeamService : ITeamService
         }
 
         var team = new Team(dto.Name, code);
+
+        // Добавляем команду в базу
         await _teamRepository.AddAsync(team);
-        
+
+        // Создаем календарь
         var calendar = new Calendar(team.Id);
         await _calendarRepository.AddAsync(calendar);
-        
+
+        // Создатель команды как участник
         var userTeam = new UserTeam
         {
             TeamId = team.Id,
             UserId = creatorId,
             Role = TeamRole.Admin,
+            Team = team // привязка к объекту команды
         };
+
+        // Добавляем в коллекцию команды
+        team.UserTeams.Add(userTeam);
+
+        // Добавляем в репозиторий UserTeam
         await _userTeamRepository.AddAsync(userTeam);
 
         return team.Id;
     }
+
 
     private static string GenerateTeamCode()
     {
@@ -129,22 +140,26 @@ public class TeamService : ITeamService
     {
         var team = await _teamRepository.GetByIdAsync(teamId);
         if (team == null) return null;
-        var teamDetailsDto = new TeamDetailsDto
+        
+        var members = team.UserTeams?
+            .Where(ut => ut.User != null) 
+            .Select(ut => new TeamMemberDto
+            {
+                UserId = ut.UserId,
+                FirstName = ut.User!.FirstName,
+                LastName = ut.User!.LastName,
+                Username = ut.User!.UserName,
+                Role = ut.Role
+            })
+            .ToList() ?? new List<TeamMemberDto>();
+
+        return new TeamDetailsDto
         {
             Id = team.Id,
             Name = team.Name,
             InvitationCode = team.Code,
-            Members = team.UserTeams.Select(ut => new TeamMemberDto
-            {
-                UserId = ut.UserId,
-                FirstName = ut.User.FirstName,
-                LastName = ut.User.LastName,
-                Username = ut.User.UserName,
-                Role = ut.Role
-            }).ToList()
+            Members = members
         };
-
-        return teamDetailsDto;
     }
 
     public async Task<CalendarDto?> GetCalendarForTeamAsync(int teamId)

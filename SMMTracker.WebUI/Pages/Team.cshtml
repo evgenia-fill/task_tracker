@@ -273,11 +273,6 @@
                                         <div class="flex-grow-1 ms-3">
                                             <h6 class="mb-1">@member.FirstName @member.LastName</h6>
                                             <p class="text-muted small mb-1">@@@member.TelegramUsername</p>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="badge bg-secondary">@member.Role</span>
-                                                <small
-                                                    class="text-muted">@member.JoinedAt.ToString("dd.MM.yyyy")</small>
-                                            </div>
                                         </div>
                                     </div>
                                     @if (Model.IsOwner && member.Role != "Владелец")
