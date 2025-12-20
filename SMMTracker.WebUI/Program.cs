@@ -58,10 +58,10 @@ public static class Program
         services.AddScoped<IEventService, EventService>();
         
         services.AddScoped<HttpClient>(_ => 
-            new HttpClient { BaseAddress = new Uri("https://kindly-rapid-margay.cloudpub.ru") }); 
+            new HttpClient { BaseAddress = new Uri("https://smmtracker.ru/") }); 
         
         services.AddCors(options => options.AddPolicy("CorsPolicy",
-            policy => policy.WithOrigins("https://kindly-rapid-margay.cloudpub.ru")
+            policy => policy.WithOrigins("https://smmtracker.ru/")
                            .AllowAnyHeader()
                            .AllowAnyMethod()));
         
