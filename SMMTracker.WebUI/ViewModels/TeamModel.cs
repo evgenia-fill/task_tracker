@@ -18,7 +18,8 @@ public class TeamModel : PageModel
     public List<TeamEventViewModel> UpcomingEvents { get; set; } = new();
     public bool IsOwner { get; set; }
 
-    [BindProperty] public string NewMemberUsername { get; set; } = "";
+    // Делаем nullable, чтобы не ломалось при добавлении события
+    [BindProperty] public string? NewMemberUsername { get; set; } 
     [BindProperty] public NewEventViewModel NewEvent { get; set; } = new();
 
     public TeamModel(ITeamService teamService, IEventService eventService, IUserService userService)
@@ -73,14 +74,18 @@ public class TeamModel : PageModel
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAddEventAsync(int id) // id - это teamId
+    
+    public async Task<IActionResult> OnPostAddEventAsync(int id)
     {
+        // игнорируем NewMemberUsername, чтобы не ломало ModelState
+        ModelState.Remove(nameof(NewMemberUsername));
+
         if (!ModelState.IsValid)
         {
             return await OnGetAsync(id);
         }
 
-        var calendar = await _teamService.GetCalendarForTeamAsync(id); // Нужен такой метод в сервисе
+        var calendar = await _teamService.GetCalendarForTeamAsync(id);
         if (calendar == null)
         {
             TempData["ErrorMessage"] = "Календарь для команды не найден.";

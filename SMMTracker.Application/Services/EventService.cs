@@ -72,7 +72,9 @@ public class EventService : IEventService
         var calendar = await _calendarRepository.GetByTeamIdAsync(teamId);
         if (calendar == null)
         {
-            return new List<EventSummaryDto>();
+            // Временное решение: создаём виртуальный календарь на сервере
+            calendar = new Calendar(teamId);
+            await _calendarRepository.AddAsync(calendar);
         }
 
         var events = await _eventRepository.GetEventsForCalendarAsync(calendar.Id);

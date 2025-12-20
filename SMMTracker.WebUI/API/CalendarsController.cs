@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Services;
 
@@ -8,10 +9,10 @@ namespace SMMTracker.WebUI.API;
 [Route("api/[controller]")]
 public class CalendarsController : ControllerBase
 {
-    private readonly CalendarService _calendarService;
-    private readonly EventService _eventService;
+    private readonly ICalendarService _calendarService;
+    private readonly IEventService _eventService;
 
-    public CalendarsController(CalendarService calendarService, EventService eventService)
+    public CalendarsController(ICalendarService calendarService, IEventService eventService)
     {
         _calendarService = calendarService;
         _eventService = eventService;
