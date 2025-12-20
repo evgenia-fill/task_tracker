@@ -104,7 +104,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="navigation-bar">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
@@ -115,19 +115,19 @@
                     <a href="/Team/@Model.Team.Id" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-1"></i>Назад в команду
                     </a>
+                    <!-- Просто добавляем кнопку рядом -->
+                    <button class="btn btn-success ms-2" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                        <i class="bi bi-plus-circle me-1"></i>Добавить задачу
+                    </button>
                 </div>
                 <div>
-                    @if (Model.IsTeamMember)
-                    {
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">
-                            <i class="bi bi-plus-circle me-1"></i>Добавить задачу
-                        </button>
-                    }
+                    <!-- здесь пока можно оставить пусто или удалить -->
                 </div>
             </div>
         </div>
     </div>
-    
+
+
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="container">
@@ -154,13 +154,13 @@
                 <div class="task-column task-column-inprogress h-100">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="mb-0">
-                            <span class="badge bg-primary me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InProgress)</span>
+                            <span class="badge bg-primary me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InProgress.ToString())</span>
                             В разработке
                         </h4>
                         <small class="text-muted">Добавляют все</small>
                     </div>
                     
-                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InProgress))
+                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InProgress.ToString()))
                     {
                         <div class="task-card">
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -189,7 +189,7 @@
                         </div>
                     }
                     
-                    @if (Model.Tasks.All(t => t.Status != SMMTracker.WebUI.ViewModels.TaskStatus.InProgress))
+                    @if (Model.Tasks.All(t => t.Status != SMMTracker.WebUI.ViewModels.TaskStatus.InProgress.ToString()))
                     {
                         <div class="text-center py-4">
                             <i class="bi bi-inbox display-4 text-muted mb-3"></i>
@@ -203,7 +203,7 @@
                 <div class="task-column task-column-review h-100">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="mb-0">
-                            <span class="badge bg-warning me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview)</span>
+                            <span class="badge bg-warning me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview.ToString())</span>
                             На ревью
                         </h4>
                         @if (Model.IsOwner)
@@ -214,7 +214,7 @@
                         }
                     </div>
                     
-                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview))
+                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview.ToString()))
                     {
                         <div class="task-card">
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -264,7 +264,7 @@
                         </div>
                     }
                     
-                    @if (!Model.Tasks.Any(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview))
+                    @if (!Model.Tasks.Any(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview.ToString()))
                     {
                         <div class="text-center py-4">
                             <i class="bi bi-hourglass-split display-4 text-muted mb-3"></i>
@@ -278,13 +278,13 @@
                 <div class="task-column task-column-completed h-100">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="mb-0">
-                            <span class="badge bg-success me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed)</span>
+                            <span class="badge bg-success me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed.ToString())</span>
                             Выполнено
                         </h4>
                         <small class="text-muted">Одобренные задачи</small>
                     </div>
                     
-                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed))
+                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed.ToString()))
                     {
                         <div class="task-card">
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -315,7 +315,7 @@
                         </div>
                     }
                     
-                    @if (!Model.Tasks.Any(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed))
+                    @if (!Model.Tasks.Any(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed.ToString()))
                     {
                         <div class="text-center py-4">
                             <i class="bi bi-check-circle display-4 text-muted mb-3"></i>
@@ -341,42 +341,72 @@
                 <h5 class="modal-title">Добавить задачу</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" asp-page-handler="AddTask">
-                <input type="hidden" name="teamId" value="@Model.Team.Id" />
-                <input type="hidden" name="eventId" value="@Model.Event.Id" />
+            <form>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Название задачи *</label>
-                        <input type="text" 
-                               class="form-control" 
-                               asp-for="NewTask.Title"
-                               placeholder="Например: Подготовить контент-план"
-                               required>
+                        <input type="text" class="form-control" placeholder="Например: Подготовить контент-план" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Описание</label>
-                        <textarea class="form-control" 
-                                  asp-for="NewTask.Description"
-                                  rows="3"
-                                  placeholder="Опишите детали задачи..."></textarea>
+                        <textarea class="form-control" rows="3" placeholder="Опишите детали задачи..."></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Исполнитель</label>
-                        <input type="text" 
-                               class="form-control" 
-                               asp-for="NewTask.Assignee"
-                               placeholder="На кого назначить задачу">
+                        <input type="text" class="form-control" placeholder="На кого назначить задачу">
                         <div class="form-text">Если не указано, задача будет назначена на вас</div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-success">Добавить задачу</button>
+                    <button type="button" class="btn btn-success" id="dummyAddTaskBtn">Добавить задачу</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('dummyAddTaskBtn').addEventListener('click', function() {
+        const titleInput = document.querySelector('#addTaskModal input[placeholder*="Например"]');
+        const descInput = document.querySelector('#addTaskModal textarea');
+        const assigneeInput = document.querySelector('#addTaskModal input[placeholder*="На кого"]');
+
+        if (!titleInput.value.trim()) {
+            alert('Введите название задачи!');
+            return;
+        }
+
+        // создаем карточку задачи
+        const taskCard = document.createElement('div');
+        taskCard.className = 'task-card';
+        taskCard.innerHTML = `
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="mb-0">${titleInput.value}</h6>
+            <span class="status-badge bg-primary text-white">В работе</span>
+        </div>
+        <p class="small text-muted mb-2">${descInput.value}</p>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <small class="text-muted"><i class="bi bi-person me-1"></i>${assigneeInput.value || 'Вы'}</small>
+            <small class="text-muted"><i class="bi bi-calendar me-1"></i>${new Date().toLocaleDateString()}</small>
+        </div>
+    `;
+
+        // добавляем в колонку "В разработке"
+        const inProgressColumn = document.querySelector('.task-column-inprogress');
+        inProgressColumn.appendChild(taskCard);
+
+        // закрываем модалку
+        const modalEl = document.getElementById('addTaskModal');
+        const bsModal = bootstrap.Modal.getInstance(modalEl);
+        bsModal.hide();
+
+        // очищаем форму
+        titleInput.value = '';
+        descInput.value = '';
+        assigneeInput.value = '';
+    });
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

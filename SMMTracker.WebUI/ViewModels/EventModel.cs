@@ -8,6 +8,8 @@ namespace SMMTracker.WebUI.ViewModels;
 
 public class EventModel : PageModel
 {
+    public List<TeamMemberViewModel> TeamMembers { get; set; } = new();
+
     public EventViewModel Event { get; set; } = new();
     public TeamViewModel Team { get; set; } = new();
 
@@ -55,12 +57,20 @@ public class EventModel : PageModel
             EventDate = eventDetails.Date,
             // Status = (ViewModels.EventStatus)eventDetails.Status
         };
+        
+        TeamMembers = (await _teamService.GetTeamMembersAsync(eventDetails.TeamId))
+            .Select(u => new TeamMemberViewModel
+            {
+                Id = u.UserId,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+            }).ToList();
 
         Tasks = eventDetails.Tasks.Select(t => new EventTaskViewModel
         {
             Id = t.Id,
             Title = t.Name,
-            Status = (ViewModels.TaskStatus)t.Status,
+            Status = t.Status,
         }).ToList();
         
         return Page(); 
@@ -81,13 +91,15 @@ public class EventModel : PageModel
             Name = NewTask.Title,
             Description = NewTask.Description,
             EventId = eventId,
-            CalendarId = calendarId
+            CalendarId = calendarId,
+            AssignedUserId = NewTask.Assignee
         };
 
         await _taskService.CreateTaskAsync(createTaskDto);
 
         TempData["SuccessMessage"] = $"Задача '{NewTask.Title}' добавлена";
-        return RedirectToPage(new { calendarId, eventId });
+        return RedirectToPage("/Event", new { calendarId, eventId });
+
     }
 
     public async Task<IActionResult> OnPostMoveToReviewAsync(int eventId, int taskId)
@@ -157,7 +169,7 @@ public class EventTaskViewModel
     public int Id { get; set; }
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
-    public TaskStatus Status { get; set; }
+    public string Status { get; set; }
     public string CreatedBy { get; set; } = "";
     public DateTime CreatedAt { get; set; }
     public string Assignee { get; set; } = "";
@@ -177,7 +189,7 @@ public class NewTaskViewModel
 {
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
-    public string Assignee { get; set; } = "";
+    public int Assignee { get; set; }
 }
 
 public enum TaskStatus

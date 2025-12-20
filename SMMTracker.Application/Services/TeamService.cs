@@ -125,6 +125,26 @@ public class TeamService : ITeamService
         }).ToList();
     }
 
+    public async Task<List<TeamMemberDto>> GetTeamMembersAsync(int teamId)
+    {
+        var team = await _teamRepository.GetByIdWithMembersAsync(teamId);
+        if (team == null) return new List<TeamMemberDto>();
+
+        return team.UserTeams.Select(ut => new TeamMemberDto
+        {
+            UserId = ut.UserId,
+            FirstName = ut.User?.FirstName ?? "",
+            LastName = ut.User?.LastName ?? "",
+            Username = ut.User?.UserName ?? "",
+            Role = ut.Role switch
+            {
+                TeamRole.Admin => "Админ",
+                TeamRole.User => "Участник",
+                _ => "Участник"
+            }
+        }).ToList();
+    }
+
     public async Task<bool> IsUserAdminAsync(int teamId, int userId)
     {
         return await _userTeamRepository.IsUserAdminAsync(teamId, userId);
@@ -153,7 +173,7 @@ public class TeamService : ITeamService
                     TeamRole.Admin => "Админ",
                     TeamRole.User => "Участник",
                     _ => "Участник"
-                }
+                }   
             }).ToList()
         };
 

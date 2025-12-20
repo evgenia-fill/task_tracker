@@ -67,7 +67,7 @@ public class EventService : IEventService
             {
                 Id = t.Id,
                 Name = t.Name,
-                Status = (TaskStatus)t.Status
+                Status = t.Status.ToString(),
             }).ToList()
         };
 
