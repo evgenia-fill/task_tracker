@@ -80,7 +80,6 @@
 </style>
 
 <div class="event-container">
-    <!-- Шапка мероприятия -->
     <div class="event-header">
         <div class="container">
             <div class="row align-items-center">
@@ -105,8 +104,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Панель навигации -->
+    
     <div class="navigation-bar">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
@@ -129,8 +127,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Сообщения -->
+    
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="container">
@@ -150,10 +147,8 @@
             </div>
         </div>
     }
-
-    <!-- Основной контент - ТОЛЬКО ТАБЛИЦА ЗАДАЧ -->
+    
     <div class="container">
-        <!-- Таблица задач -->
         <div class="row mb-5">
             <div class="col-md-4 mb-4">
                 <div class="task-column task-column-inprogress h-100">
@@ -331,8 +326,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Кнопка возврата в профиль -->
+    
     <div class="back-to-profile">
         <a href="/Dashboard" class="btn btn-primary btn-lg shadow">
             <i class="bi bi-person-circle me-2"></i>В профиль
@@ -340,7 +334,6 @@
     </div>
 </div>
 
-<!-- Модальное окно добавления задачи -->
 <div class="modal fade" id="addTaskModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -386,13 +379,10 @@
 </div>
 
 <script>
-    // Автоматическое отображение модального окна при ошибке
     document.addEventListener('DOMContentLoaded', function() {
-        // Проверяем, есть ли сообщение об ошибке
         const errorAlerts = document.querySelectorAll('.alert-danger');
         const hasError = errorAlerts.length > 0;
         
-        // Если есть ошибка и есть модальное окно добавления задачи - показываем его
         if (hasError) {
             const addTaskModal = document.getElementById('addTaskModal');
             if (addTaskModal) {
@@ -400,14 +390,12 @@
                 modal.show();
             }
         }
-        
-        // Инициализация тултипов Bootstrap
+
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-        
-        // Анимация для карточек задач
+
         const taskCards = document.querySelectorAll('.task-card');
         taskCards.forEach(card => {
             card.addEventListener('mouseenter', function() {
@@ -419,13 +407,11 @@
             });
         });
         
-        // Функция для обновления статистики
         function updateTaskStats() {
             const inProgressCount = document.querySelectorAll('.task-column-inprogress .task-card').length;
             const inReviewCount = document.querySelectorAll('.task-column-review .task-card').length;
             const completedCount = document.querySelectorAll('.task-column-completed .task-card').length;
-            
-            // Обновляем бейджи с количеством задач
+
             const inProgressBadge = document.querySelector('.task-column-inprogress h4 .badge');
             const inReviewBadge = document.querySelector('.task-column-review h4 .badge');
             const completedBadge = document.querySelector('.task-column-completed h4 .badge');
@@ -434,11 +420,9 @@
             if (inReviewBadge) inReviewBadge.textContent = inReviewCount;
             if (completedBadge) completedBadge.textContent = completedCount;
         }
-        
-        // Вызываем обновление статистики при загрузке
+
         updateTaskStats();
-        
-        // Функция для подтверждения действий
+
         function setupConfirmations() {
             const rejectButtons = document.querySelectorAll('form[asp-page-handler="RejectTask"] button[type="submit"]');
             const deleteButtons = document.querySelectorAll('form[asp-page-handler="DeleteTask"] button[type="submit"]');
@@ -464,8 +448,7 @@
         }
         
         setupConfirmations();
-        
-        // Автоматическое скрытие алертов через 5 секунд
+
         setTimeout(function() {
             const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
             alerts.forEach(alert => {
@@ -474,7 +457,6 @@
             });
         }, 5000);
         
-        // Редактирование задач по двойному клику
         document.querySelectorAll('.task-card h6').forEach(title => {
             title.addEventListener('dblclick', function() {
                 if (!confirm('Хотите редактировать задачу?')) return;
@@ -506,7 +488,6 @@
             });
         });
         
-        // Функция для показа тостов (уведомлений)
         window.showToast = function(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast align-items-center text-white bg-${type} border-0`;
