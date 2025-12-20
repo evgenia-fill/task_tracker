@@ -38,7 +38,15 @@ public class EventRepository : IEventRepository
             .Where(e => e.CalendarId == calendarId && e.Date.Year == year && e.Date.Month == month)
             .ToListAsync();
     }
-
+    public async Task<List<Event>> GetEventsForTeamAsync(int teamId)
+    {
+        return await _context.Events
+            .Where(e => e.Calendar.TeamId == teamId) 
+            .Include(e => e.Tasks)                   
+            .Include(e => e.Calendar)                 
+            .AsSplitQuery()                           
+            .ToListAsync();
+    }
     public async Task AddAsync(Event eventEntity)
     {
         await _context.Events.AddAsync(eventEntity);

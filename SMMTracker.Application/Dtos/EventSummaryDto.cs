@@ -6,6 +6,6 @@ public class EventSummaryDto
     public string Name { get; set; }
     public DateTime Date { get; set; }
     public string Description { get; set; } = "";
-    public string CreatedBy { get; set; } = "";
+    public int CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }
 }

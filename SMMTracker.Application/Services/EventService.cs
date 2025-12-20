@@ -19,11 +19,14 @@ public class EventService : IEventService
     public async Task<int> CreateEventAsync(CreateEventDto dto,
         CancellationToken cancellationToken = default)
     {
+        var calendar = await _calendarRepository.GetByIdAsync(dto.CalendarId);
         var eventAs = new Event(
             dto.Name,
             dto.Description,
             dto.Date,
-            dto.CalendarId
+            dto.CalendarId,
+            dto.CreatedBy,
+            calendar.TeamId
         );
         await _eventRepository.AddAsync(eventAs);
         return eventAs.Id;
@@ -39,7 +42,8 @@ public class EventService : IEventService
             {
                 Id = e.Id,
                 Name = e.Name,
-                Date = e.Date
+                Date = e.Date,
+                CreatedBy = e.CreatedBy,
             })
             .ToList();
     }
@@ -57,14 +61,16 @@ public class EventService : IEventService
             Name = eventEntity.Name,
             Description = eventEntity.Description,
             Date = eventEntity.Date,
-            Tasks = eventEntity.Tasks
-                .Select(t => new TaskSummaryDto
-                {
-                    Id = t.Id,
-                    Name = t.Name,
-                    Status = (TaskStatus)t.Status
-                }).ToList()
+            CreatedAt = eventEntity.CreatedAt,
+            CreatedBy = eventEntity.CreatedBy,
+            Tasks = eventEntity.Tasks.Select(t => new TaskSummaryDto
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Status = (TaskStatus)t.Status
+            }).ToList()
         };
+
     }
 
     public async Task<List<EventSummaryDto>> GetEventsForTeamAsync(int teamId)
@@ -72,9 +78,7 @@ public class EventService : IEventService
         var calendar = await _calendarRepository.GetByTeamIdAsync(teamId);
         if (calendar == null)
         {
-            // Временное решение: создаём виртуальный календарь на сервере
-            calendar = new Calendar(teamId);
-            await _calendarRepository.AddAsync(calendar);
+            return new List<EventSummaryDto>();
         }
 
         var events = await _eventRepository.GetEventsForCalendarAsync(calendar.Id);
@@ -88,4 +92,5 @@ public class EventService : IEventService
             CreatedBy = e.CreatedBy
         }).ToList();
     }
+    
 }

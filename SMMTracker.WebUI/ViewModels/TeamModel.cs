@@ -105,6 +105,12 @@ public class TeamModel : PageModel
         {
             return await OnGetAsync(id);
         }
+        
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdString, out var userId))
+        {
+            return RedirectToPage("/Login");
+        }
 
         var calendar = await _teamService.GetCalendarForTeamAsync(id);
         if (calendar == null)
@@ -118,7 +124,8 @@ public class TeamModel : PageModel
             Name = NewEvent.Title,
             Description = NewEvent.Description,
             Date = NewEvent.EventDate,
-            CalendarId = calendar.Id
+            CalendarId = calendar.Id,
+            CreatedBy = userId
         };
 
         await _eventService.CreateEventAsync(createDto);
@@ -161,7 +168,7 @@ public class TeamEventViewModel
     public string Description { get; set; } = "";
     public DateTime EventDate { get; set; }
     public DateTime CreatedAt { get; set; }
-    public string CreatedBy { get; set; } = "";
+    public int CreatedBy { get; set; }
 }
 
 public class NewEventViewModel
