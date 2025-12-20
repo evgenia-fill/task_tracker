@@ -11,8 +11,8 @@ using SMMTracker.Infrastructure.Data.DataContext;
 namespace SMMTracker.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251220115713_AddCreatedAtAndCreatedByToEvent")]
-    partial class AddCreatedAtAndCreatedByToEvent
+    [Migration("20251220170519_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,9 +49,8 @@ namespace SMMTracker.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("TEXT");
@@ -62,7 +61,7 @@ namespace SMMTracker.Infrastructure.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("TeamId")
+                    b.Property<int>("TeamId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -255,7 +254,9 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasOne("SMMTracker.Domain.Entities.Team", "Team")
                         .WithMany()
-                        .HasForeignKey("TeamId");
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Calendar");
 

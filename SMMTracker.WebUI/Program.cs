@@ -17,7 +17,8 @@ builder.Services.AddControllers();
 
 // База данных
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
+var dbPath = builder.Configuration.GetConnectionString("DefaultConnection")?.Replace("Data Source=", "");
+Console.WriteLine($"Database path: {Path.GetFullPath(dbPath)}");
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
     opt.UseSqlite(connectionString));
 
