@@ -233,13 +233,6 @@
                             <div class="info-card">
                                 <h5 class="mb-3">Быстрые действия</h5>
                                 <div class="d-grid gap-2">
-                                    @if (Model.IsOwner)
-                                    {
-                                        <button class="btn btn-outline-primary" data-bs-toggle="modal"
-                                                data-bs-target="#addMemberModal">
-                                            <i class="bi bi-person-plus me-2"></i>Добавить участника
-                                        </button>
-                                    }
                                     <button class="btn btn-outline-success" data-bs-toggle="modal"
                                             data-bs-target="#addEventModal">
                                         <i class="bi bi-calendar-plus me-2"></i>Добавить мероприятие
@@ -371,37 +364,6 @@
     </div>
 </div>
 
-<div class="modal fade" id="addMemberModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Добавить участника</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="post" asp-page-handler="AddMember">
-                <input type="hidden" name="id" value="@Model.Team.Id"/>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Telegram username</label>
-                        <div class="input-group">
-                            <span class="input-group-text">@@</span>
-                            <input type="text"
-                                   class="form-control"
-                                   asp-for="NewMemberUsername"
-                                   placeholder="username"
-                                   required>
-                        </div>
-                        <div class="form-text">Введите логин пользователя в Telegram</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Добавить</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 <div class="modal fade" id="addEventModal" tabindex="-1">
     <div class="modal-dialog">
