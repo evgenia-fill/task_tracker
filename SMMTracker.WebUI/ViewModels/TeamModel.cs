@@ -48,7 +48,6 @@ public class TeamModel : PageModel
 
         IsOwner = await _teamService.IsUserAdminAsync(id, userId);
 
-        // Заполняем основную модель команды
         Team = new TeamViewModel
         {
             Id = teamDetails.Id,
@@ -62,7 +61,6 @@ public class TeamModel : PageModel
         TeamName = Team.Name;
         TeamDescription = Team.Description;
 
-        // Члены команды
         Members = teamDetails.Members.Select(m => new TeamMemberViewModel
         {
             Id = m.UserId,
@@ -72,7 +70,6 @@ public class TeamModel : PageModel
             Role = m.Role.ToString()
         }).ToList();
 
-        // Предстоящие события
         var eventDtos = await _eventService.GetEventsForTeamAsync(id);
         UpcomingEvents = eventDtos
             .Where(e => e.Date.ToLocalTime().Date >= DateTime.Today)
@@ -94,14 +91,12 @@ public class TeamModel : PageModel
     {
         var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-        // Проверка прав
         if (!await _teamService.IsUserAdminAsync(TeamId, adminId))
         {
             TempData["ErrorMessage"] = "У вас нет прав для редактирования команды.";
             return RedirectToPage(new { id = TeamId });
         }
 
-        // Проверка имени команды
         if (string.IsNullOrWhiteSpace(TeamName))
         {
             TempData["ErrorMessage"] = "Название команды не может быть пустым";
@@ -169,33 +164,4 @@ public class TeamModel : PageModel
 
         return RedirectToPage(new { id });
     }
-}
-
-// Модели остаются без изменений
-public class TeamMemberViewModel
-{
-    public int Id { get; set; }
-    public long TelegramId { get; set; }
-    public string FirstName { get; set; } = "";
-    public string LastName { get; set; } = "";
-    public string TelegramUsername { get; set; } = "";
-    public string Role { get; set; } = "";
-    public DateTime JoinedAt { get; set; }
-}
-
-public class TeamEventViewModel
-{
-    public int Id { get; set; }
-    public string Title { get; set; } = "";
-    public string Description { get; set; } = "";
-    public DateTime EventDate { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public int CreatedBy { get; set; }
-}
-
-public class NewEventViewModel
-{
-    public string Title { get; set; } = "";
-    public string Description { get; set; } = "";
-    public DateTime EventDate { get; set; } = DateTime.Now.AddDays(1);
 }
