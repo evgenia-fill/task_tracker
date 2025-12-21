@@ -18,9 +18,12 @@ public class TeamModel : PageModel
     public List<TeamEventViewModel> UpcomingEvents { get; set; } = new();
     public bool IsOwner { get; set; }
 
-    // Делаем nullable, чтобы не ломалось при добавлении события
-    [BindProperty] public string? NewMemberUsername { get; set; } 
+    [BindProperty] public string? NewMemberUsername { get; set; }
     [BindProperty] public NewEventViewModel NewEvent { get; set; } = new();
+
+    [BindProperty] public string TeamName { get; set; } = "";
+    [BindProperty] public string TeamDescription { get; set; } = "";
+    [BindProperty] public int TeamId { get; set; }
 
     public TeamModel(ITeamService teamService, IEventService eventService, IUserService userService)
     {
@@ -54,6 +57,10 @@ public class TeamModel : PageModel
             IsOwner = IsOwner
         };
 
+        TeamId = Team.Id;
+        TeamName = Team.Name;
+        TeamDescription = Team.Description;
+
         Members = teamDetails.Members.Select(m => new TeamMemberViewModel
         {
             Id = m.UserId,
@@ -64,14 +71,6 @@ public class TeamModel : PageModel
         }).ToList();
 
         var eventDtos = await _eventService.GetEventsForTeamAsync(id);
-
-        // --- ДЕБАГ ---
-        Console.WriteLine($"Всего событий для команды {id}: {eventDtos.Count}");
-        foreach (var e in eventDtos)
-        {
-            Console.WriteLine($"Id={e.Id}, Name={e.Name}, Date={e.Date}, CreatedBy={e.CreatedBy}");
-        }
-
         UpcomingEvents = eventDtos
             .Where(e => e.Date.ToLocalTime().Date >= DateTime.Today)
             .OrderBy(e => e.Date)
@@ -85,32 +84,48 @@ public class TeamModel : PageModel
                 CreatedBy = e.CreatedBy
             }).ToList();
 
-        // --- ЕЩЁ ДЕБАГ ---
-        Console.WriteLine($"Событий после фильтра DateTime.Now: {UpcomingEvents.Count}");
-        foreach (var ev in UpcomingEvents)
-        {
-            Console.WriteLine($"Id={ev.Id}, Name={ev.Title}, Date={ev.EventDate}");
-        }
-
         return Page();
     }
 
-    
+    public async Task<IActionResult> OnPostEditTeamAsync()
+    {
+        var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+        if (!await _teamService.IsUserAdminAsync(TeamId, adminId))
+        {
+            TempData["ErrorMessage"] = "У вас нет прав для редактирования команды.";
+            return RedirectToPage(new { id = TeamId });
+        }
+
+        if (string.IsNullOrWhiteSpace(TeamName))
+        {
+            TempData["ErrorMessage"] = "Название команды не может быть пустым";
+            return Page();
+        }
+
+        try
+        {
+            await _teamService.UpdateTeamAsync(TeamId, TeamName, TeamDescription, adminId);
+            TempData["SuccessMessage"] = "Данные команды обновлены";
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Ошибка: {ex.Message}";
+        }
+
+        return RedirectToPage(new { id = TeamId });
+    }
+
     public async Task<IActionResult> OnPostAddEventAsync(int id)
     {
-        // игнорируем NewMemberUsername, чтобы не ломало ModelState
         ModelState.Remove(nameof(NewMemberUsername));
 
         if (!ModelState.IsValid)
         {
             return await OnGetAsync(id);
         }
-        
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!int.TryParse(userIdString, out var userId))
-        {
-            return RedirectToPage("/Login");
-        }
+
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         var calendar = await _teamService.GetCalendarForTeamAsync(id);
         if (calendar == null)
@@ -133,9 +148,10 @@ public class TeamModel : PageModel
         return RedirectToPage(new { id });
     }
 
-    public async Task<IActionResult> OnPostRemoveMemberAsync(int id, int memberId) // id - teamId, memberId - userId
+    public async Task<IActionResult> OnPostRemoveMemberAsync(int id, int memberId)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
         try
         {
             await _teamService.RemoveUserFromTeamAsync(id, memberId, currentUserId);
@@ -148,32 +164,4 @@ public class TeamModel : PageModel
 
         return RedirectToPage(new { id });
     }
-}
-
-public class TeamMemberViewModel
-{
-    public int Id { get; set; }
-    public long TelegramId { get; set; }
-    public string FirstName { get; set; } = "";
-    public string LastName { get; set; } = "";
-    public string TelegramUsername { get; set; } = "";
-    public string Role { get; set; } = "";
-    public DateTime JoinedAt { get; set; }
-}
-
-public class TeamEventViewModel
-{
-    public int Id { get; set; }
-    public string Title { get; set; } = "";
-    public string Description { get; set; } = "";
-    public DateTime EventDate { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public int CreatedBy { get; set; }
-}
-
-public class NewEventViewModel
-{
-    public string Title { get; set; } = "";
-    public string Description { get; set; } = "";
-    public DateTime EventDate { get; set; } = DateTime.Now.AddDays(1);
 }

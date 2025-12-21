@@ -1,8 +1,10 @@
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Domain.Entities;
+using SMMTracker.Domain.Enums;
 using SMMTracker.Domain.IRepositories;
 using Task = SMMTracker.Domain.Entities.Task;
+using TaskStatus = SMMTracker.Domain.Enums.TaskStatus;
 
 namespace SMMTracker.Application.Services;
 
@@ -119,4 +121,30 @@ public class TaskService : ITaskService
         };
         await _userTaskRepository.AddAsync(userTask);
     }
+    public async Task<int> AddTaskWithAssigneeAsync(CreateTaskDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var task = new Task(
+            dto.Name,
+            dto.Description,
+            dto.EventId,
+            dto.CalendarId
+        );
+
+        task.Status = TaskStatus.InProgress;
+
+        await _taskRepository.AddAsync(task);
+        
+        var userTask = new UserTask
+        {
+            TaskId = task.Id,
+            UserId = dto.AssignedUserId,
+            Role = UserTaskRole.Executor
+        };
+
+        await _userTaskRepository.AddAsync(userTask);
+
+        return task.Id;
+    }
+
 }

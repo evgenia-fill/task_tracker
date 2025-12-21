@@ -127,17 +127,20 @@ public class DashboardModel : PageModel
 
     public async Task<IActionResult> OnPostUpdateProfileAsync()
     {
-        if (!ModelState.IsValid)
-        {
-            await OnGetAsync();
-            ShowProfileModal = true;
-            return Page();
-        }
-
         var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!int.TryParse(userIdString, out var userId))
         {
             return Unauthorized();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            await OnGetAsync();
+            EditProfile.FirstName = ViewModel.UserInfo.FirstName;
+            EditProfile.LastName = ViewModel.UserInfo.LastName;
+            EditProfile.ProfileDescription = ViewModel.UserInfo.ProfileDescription;
+            ShowProfileModal = true;
+            return Page();
         }
 
         var profileDto = new UserProfileDto
@@ -151,10 +154,12 @@ public class DashboardModel : PageModel
         {
             await _userService.UpdateUserProfileAsync(userId, profileDto);
             TempData["SuccessMessage"] = "Профиль успешно обновлен!";
+            TempData["ShowProfileModal"] = false;
         }
         catch (Exception ex)
         {
             TempData["ErrorMessage"] = $"Ошибка при обновлении профиля: {ex.Message}";
+            TempData["ShowProfileModal"] = true;
         }
 
         return RedirectToPage();

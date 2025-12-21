@@ -9,7 +9,7 @@ public class Task : Entity
     public string? Description { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime Deadline { get; private set; }
-    public TaskStatus Status { get; private set; }
+    public TaskStatus Status { get; set; }
     public int EventId { get; private set; }
     public int? CalendarId { get; private set; }
 

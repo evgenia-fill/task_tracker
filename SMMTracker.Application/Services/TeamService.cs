@@ -30,22 +30,27 @@ public class TeamService : ITeamService
             code = GenerateTeamCode();
         }
 
-        var team = new Team(dto.Name, code);
+        var team = new Team(dto.Name, code, dto.Description);
         await _teamRepository.AddAsync(team);
-        
+
         var calendar = new Calendar(team.Id);
         await _calendarRepository.AddAsync(calendar);
-        
+
         var userTeam = new UserTeam
         {
             TeamId = team.Id,
             UserId = creatorId,
             Role = TeamRole.Admin,
+            Team = team 
         };
+
+        team.UserTeams.Add(userTeam);
+
         await _userTeamRepository.AddAsync(userTeam);
 
         return team.Id;
     }
+
 
     private static string GenerateTeamCode()
     {
@@ -120,6 +125,26 @@ public class TeamService : ITeamService
         }).ToList();
     }
 
+    public async Task<List<TeamMemberDto>> GetTeamMembersAsync(int teamId)
+    {
+        var team = await _teamRepository.GetByIdWithMembersAsync(teamId);
+        if (team == null) return new List<TeamMemberDto>();
+
+        return team.UserTeams.Select(ut => new TeamMemberDto
+        {
+            UserId = ut.UserId,
+            FirstName = ut.User?.FirstName ?? "",
+            LastName = ut.User?.LastName ?? "",
+            Username = ut.User?.UserName ?? "",
+            Role = ut.Role switch
+            {
+                TeamRole.Admin => "Админ",
+                TeamRole.User => "Участник",
+                _ => "Участник"
+            }
+        }).ToList();
+    }
+
     public async Task<bool> IsUserAdminAsync(int teamId, int userId)
     {
         return await _userTeamRepository.IsUserAdminAsync(teamId, userId);
@@ -127,8 +152,11 @@ public class TeamService : ITeamService
 
     public async Task<TeamDetailsDto> GetTeamDetailsAsync(int teamId)
     {
-        var team = await _teamRepository.GetByIdAsync(teamId);
-        if (team == null) return null;
+        var team = await _teamRepository.GetByIdWithMembersAsync(teamId);
+
+        if (team == null) 
+            return null;
+
         var teamDetailsDto = new TeamDetailsDto
         {
             Id = team.Id,
@@ -137,15 +165,35 @@ public class TeamService : ITeamService
             Members = team.UserTeams.Select(ut => new TeamMemberDto
             {
                 UserId = ut.UserId,
-                FirstName = ut.User.FirstName,
-                LastName = ut.User.LastName,
-                Username = ut.User.UserName,
-                Role = ut.Role
+                FirstName = ut.User?.FirstName ?? "",
+                LastName = ut.User?.LastName ?? "",
+                Username = ut.User?.UserName ?? "",
+                Role = ut.Role switch
+                {
+                    TeamRole.Admin => "Админ",
+                    TeamRole.User => "Участник",
+                    _ => "Участник"
+                }   
             }).ToList()
         };
 
         return teamDetailsDto;
     }
+    public async Task UpdateTeamAsync(int teamId, string newName, string newDescription, int adminId,
+        CancellationToken cancellationToken = default)
+    {
+        var team = await _teamRepository.GetByIdAsync(teamId);
+        if (team == null)
+            throw new Exception("Team not found");
+        
+        if (!await _userTeamRepository.IsUserAdminAsync(teamId, adminId))
+            throw new UnauthorizedAccessException("Only admins can update the team");
+        
+        team.Name = newName;
+        team.Description = newDescription;
+        await _teamRepository.UpdateAsync(team);
+    }
+
 
     public async Task<CalendarDto?> GetCalendarForTeamAsync(int teamId)
     {

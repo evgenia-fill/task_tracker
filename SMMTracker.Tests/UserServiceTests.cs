@@ -24,7 +24,6 @@ public class UserServiceTests
     [Fact]
     public async Task GetUserProfileAsync_WhenUserExists_ReturnsProfile()
     {
-        // Arrange
         var userId = 1;
         var user = new User
         {
@@ -38,11 +37,9 @@ public class UserServiceTests
         _userRepositoryMock
             .Setup(r => r.GetByIdAsync(userId))
             .ReturnsAsync(user);
-
-        // Act
+        
         var result = await _userService.GetUserProfileAsync(userId);
-
-        // Assert
+        
         result.Should().NotBeNull();
         result.FirstName.Should().Be("Иван");
         result.LastName.Should().Be("Иванов");
@@ -54,13 +51,11 @@ public class UserServiceTests
     [Fact]
     public async Task GetUserProfileAsync_WhenUserNotExists_ThrowsKeyNotFoundException()
     {
-        // Arrange
         var userId = 999;
         _userRepositoryMock
             .Setup(r => r.GetByIdAsync(userId))
             .ReturnsAsync((User?)null);
-
-        // Act & Assert
+        
         await Assert.ThrowsAsync<KeyNotFoundException>(
             async () => await _userService.GetUserProfileAsync(userId));
     }
@@ -68,7 +63,6 @@ public class UserServiceTests
     [Fact]
     public async Task FindOrCreateUserAsync_WhenUserExists_ReturnsExistingUser()
     {
-        // Arrange
         var telegramId = 123456789L;
         var existingUser = new User
         {
@@ -89,11 +83,9 @@ public class UserServiceTests
         _userRepositoryMock
             .Setup(r => r.GetByTelegramIdAsync(telegramId))
             .ReturnsAsync(existingUser);
-
-        // Act
+        
         var result = await _userService.FindOrCreateUserAsync(newUserClaim);
 
-        // Assert
         result.Id.Should().Be(1);
         result.FirstName.Should().Be("Существующий");
         result.LastName.Should().Be("Пользователь");
@@ -105,7 +97,6 @@ public class UserServiceTests
     [Fact]
     public async Task FindOrCreateUserAsync_WhenUserNotExists_CreatesNewUser()
     {
-        // Arrange
         var telegramId = 987654321L;
         var newUserClaim = new User
         {
@@ -122,11 +113,9 @@ public class UserServiceTests
         _userRepositoryMock
             .Setup(r => r.AddAsync(It.IsAny<User>()))
             .Returns(Task.CompletedTask);
-
-        // Act
+        
         var result = await _userService.FindOrCreateUserAsync(newUserClaim);
 
-        // Assert
         result.FirstName.Should().Be("Новый");
         result.LastName.Should().Be("Пользователь");
 
@@ -137,7 +126,6 @@ public class UserServiceTests
     [Fact]
     public async Task UpdateUserProfileAsync_WhenUserExists_UpdatesUser()
     {
-        // Arrange
         var userId = 1;
         var user = new User
         {

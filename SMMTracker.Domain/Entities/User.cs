@@ -8,8 +8,7 @@ public class User : Entity
     public string UserName { get; set; }
     public string? ProfileDescription { get; set; }
     public string Hash { get; set; }
-
-
+    
     private readonly List<Invitation> Invitations = new();
     private readonly List<UserTeam> UserTeams = new();
     private readonly List<UserTask> UserTasks = new();
