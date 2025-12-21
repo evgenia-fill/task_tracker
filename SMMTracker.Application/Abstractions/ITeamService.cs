@@ -6,6 +6,8 @@ namespace SMMTracker.Application.Abstractions;
 
 public interface ITeamService
 {
+    Task UpdateTeamAsync(int teamId, string newName, string newDescription, int adminId,
+        CancellationToken cancellationToken = default);
     Task<List<TeamMemberDto>> GetTeamMembersAsync(int teamId);  
     Task<bool> IsUserAdminAsync(int teamId, int userId);
     Task<TeamDetailsDto> GetTeamDetailsAsync(int teamId);

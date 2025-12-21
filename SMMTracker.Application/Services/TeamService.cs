@@ -30,7 +30,7 @@ public class TeamService : ITeamService
             code = GenerateTeamCode();
         }
 
-        var team = new Team(dto.Name, code);
+        var team = new Team(dto.Name, code, dto.Description);
         await _teamRepository.AddAsync(team);
 
         var calendar = new Calendar(team.Id);
@@ -178,6 +178,20 @@ public class TeamService : ITeamService
         };
 
         return teamDetailsDto;
+    }
+    public async Task UpdateTeamAsync(int teamId, string newName, string newDescription, int adminId,
+        CancellationToken cancellationToken = default)
+    {
+        var team = await _teamRepository.GetByIdAsync(teamId);
+        if (team == null)
+            throw new Exception("Team not found");
+        
+        if (!await _userTeamRepository.IsUserAdminAsync(teamId, adminId))
+            throw new UnauthorizedAccessException("Only admins can update the team");
+        
+        team.Name = newName;
+        team.Description = newDescription;
+        await _teamRepository.UpdateAsync(team);
     }
 
 
