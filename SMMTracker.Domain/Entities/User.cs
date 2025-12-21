@@ -19,8 +19,6 @@ public class User : Entity
     {
         if (string.IsNullOrWhiteSpace(otherUser.FirstName))
             throw new Exception();
-        if (string.IsNullOrWhiteSpace(otherUser.LastName))
-            throw new Exception();
 
         var user = new User
         {

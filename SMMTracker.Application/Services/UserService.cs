@@ -53,7 +53,8 @@ public class UserService : IUserService
             Id = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            UserName = user.UserName
+            UserName = user.UserName,
+            TelegramId = user.TelegramId
         };
     }
 
