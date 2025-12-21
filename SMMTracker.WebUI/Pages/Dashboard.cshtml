@@ -435,3 +435,13 @@
     }
 
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var showProfileModal = @((TempData["ShowProfileModal"] != null && (bool)TempData["ShowProfileModal"]) ? "true" : "false");
+        if (showProfileModal === "true") {
+            var editProfileModal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+            editProfileModal.show();
+        }
+    });
+</script>

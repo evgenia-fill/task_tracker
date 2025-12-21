@@ -78,7 +78,7 @@ public class UserService : IUserService
         var user = await _userRepository.GetByIdAsync(userId);
 
         if (user == null)
-            throw new KeyNotFoundException($"Пользователь Id{userId} не найден");
+            throw new KeyNotFoundException($"Пользователь Id {userId} не найден");
 
         user.UpdateUserProfile(dto.FirstName, dto.LastName, dto.Description);
 
