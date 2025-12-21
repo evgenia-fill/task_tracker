@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Services;
 
@@ -8,9 +9,9 @@ namespace SMMTracker.WebUI.API;
 [Route("api/[controller]")]
 public class TasksController : ControllerBase
 {
-    private readonly TaskService _taskService;
+    private readonly ITaskService _taskService;
 
-    public TasksController(TaskService taskService)
+    public TasksController(ITaskService taskService)
     {
         _taskService = taskService;
     }
@@ -55,7 +56,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            await _taskService.RemoveTaskAsync(taskId);
+            await _taskService.DeleteTaskAsync(taskId);
             return NoContent();
         }
         catch (Exception ex)

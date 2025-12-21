@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace SMMTracker.Domain.Entities;
 
 public class User : Entity
@@ -11,19 +8,16 @@ public class User : Entity
     public string UserName { get; set; }
     public string? ProfileDescription { get; set; }
     public string Hash { get; set; }
-
-
-    private readonly List<Invitation> invitations = new();
-    private readonly List<UserTeam> userTeams = new();
-    private readonly List<UserTask> userTasks = new();
+    
+    private readonly List<Invitation> Invitations = new();
+    private readonly List<UserTeam> UserTeams = new();
+    private readonly List<UserTask> UserTasks = new();
 
     public User() {}
 
     public static User Create(User otherUser)
     {
         if (string.IsNullOrWhiteSpace(otherUser.FirstName))
-            throw new Exception();
-        if (string.IsNullOrWhiteSpace(otherUser.LastName))
             throw new Exception();
 
         var user = new User

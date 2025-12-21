@@ -2,7 +2,6 @@ using SMMTracker.Application.Abstractions;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
-using SMMTracker.Domain.Entities;
 using Task = System.Threading.Tasks.Task;
 using User = SMMTracker.Domain.Entities.User;
 
@@ -19,39 +18,74 @@ public class TelegramBotService
         _userService = userService;
     }
 
-    private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
+        CancellationToken cancellationToken)
     {
         if (update.Message == null)
             return;
-        
+
         var chatId = update.Message.Chat.Id;
         var tgUser = update.Message.From;
-        var user = new User
-        {
-            TelegramId = tgUser.Id,
-            FirstName = tgUser.FirstName ?? "Unknown",
-            LastName = tgUser.LastName ?? "",
-            UserName = tgUser.Username ?? ""
-        };
-        var userDto = await _userService.FindOrCreateUserAsync(user);
 
-        await botClient.SendMessage(
-            chatId: chatId,
-            text: $"Добро пожаловать, {userDto.FirstName}! Вы успешно авторизованы.",
-            cancellationToken: cancellationToken
-        );
+        if (tgUser == null)
+            return;
+
+        var messageText = update.Message.Text ?? string.Empty;
+
+        if (messageText.Equals("/start", StringComparison.OrdinalIgnoreCase))
+        {
+            await _client.SendMessage(
+                chatId: chatId,
+                text: "Привет! Я бот для авторизации в SMM Tracker.\n\n" +
+                      "Напишите любое сообщение для регистрации в системе.", cancellationToken: cancellationToken);
+            return;
+        }
+
+        try
+        {
+            var user = new User
+            {
+                TelegramId = tgUser.Id,
+                FirstName = tgUser.FirstName,
+                LastName = tgUser.LastName ?? "",
+                UserName = tgUser.Username ?? ""
+            };
+
+            var userDto = await _userService.FindOrCreateUserAsync(user);
+
+            await _client.SendMessage(
+                chatId: chatId,
+                text: $"Добро пожаловать, {userDto.FirstName}! Вы успешно авторизованы.\n",
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка обработки сообщения: {ex.Message}");
+
+            try
+            {
+                await _client.SendMessage(
+                    chatId: chatId,
+                    text: "Произошла ошибка при обработке вашего запроса.", cancellationToken: cancellationToken);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
     }
 
-    private Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+    private static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
+        CancellationToken cancellationToken)
     {
-        var ErrorMessage = exception switch
+        var errorMessage = exception switch
         {
             ApiRequestException apiRequestException
                 => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
             _ => exception.ToString()
         };
 
-        Console.WriteLine(ErrorMessage);
+        Console.WriteLine(errorMessage);
         return Task.CompletedTask;
     }
 
@@ -62,8 +96,7 @@ public class TelegramBotService
             HandleErrorAsync,
             cancellationToken: cancellationToken
         );
-        
-        var me = await _client.GetMe();
-        Console.WriteLine($"Бот @{me.Username} запущен!");
+
+        var me = await _client.GetMe(cancellationToken: cancellationToken);
     }
 }

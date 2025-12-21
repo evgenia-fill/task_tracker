@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
-using SMMTracker.Domain.IRepositoryes;
+using SMMTracker.Domain.IRepositories;
 using SMMTracker.Infrastructure.Data.DataContext;
 using Task = System.Threading.Tasks.Task;
 
@@ -8,9 +9,9 @@ namespace SMMTracker.Infrastructure.Repositories;
 
 public class UserRepository : IUserRepository
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IApplicationDbContext _context;
 
-    public UserRepository(ApplicationDbContext context)
+    public UserRepository(IApplicationDbContext context)
     {
         _context = context;
     }
@@ -25,16 +26,22 @@ public class UserRepository : IUserRepository
         return await _context.Users.FirstOrDefaultAsync(user => user.TelegramId == telegramId);
     }
 
+    public async Task<User?> GetByUsernameAsync(string username)
+    {
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.UserName.ToLower() == username.ToLower());
+    }
+
     public async Task AddAsync(User user)
     {
         await _context.Users.AddAsync(user);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(default);
     }
 
     public async Task UpdateAsync(User user)
     {
         _context.Users.Update(user);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(default);
     }
 
     public async Task DeleteAsync(int userId)
@@ -43,7 +50,7 @@ public class UserRepository : IUserRepository
         if (user != null)
         {
             _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(default);
         }
     }
 

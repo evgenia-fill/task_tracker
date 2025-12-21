@@ -9,13 +9,15 @@ namespace SMMTracker.WebUI.API;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class UserController : ControllerBase
+public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly ITeamService _teamService;
 
-    public UserController(IUserService userService)
+    public UsersController(IUserService userService, ITeamService teamService)
     {
         _userService = userService;
+        _teamService = teamService;
     }
 
     [HttpGet("{userId:int}")]
@@ -40,9 +42,7 @@ public class UserController : ControllerBase
             var userId = GetUserId();
             await _userService.UpdateUserProfileAsync(
                 userId,
-                request.FirstName,
-                request.LastName,
-                request.Description);
+                request);
 
             return Ok(new { Message = "Профиль успешно обновлен" });
         }
@@ -50,6 +50,13 @@ public class UserController : ControllerBase
         {
             return StatusCode(500, new { e.Message });
         }
+    }
+
+    [HttpGet("{userId}/teams")]
+    public async Task<IActionResult> GetTeamsForUserAsync(int userId)
+    {
+        var teams = await _teamService.GetTeamsForUserAsync(userId);
+        return Ok(teams);
     }
 
     private int GetUserId()

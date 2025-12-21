@@ -63,7 +63,6 @@ public class UserTeamRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task AddAsync_CreatesUserTeamRelationship()
     {
-        // Arrange
         var userTeam = new UserTeam
         {
             UserId = _user1.Id,
@@ -71,10 +70,7 @@ public class UserTeamRepositoryTests : IAsyncLifetime
             Role = TeamRole.Admin
         };
 
-        // Act
         await _repository.AddAsync(userTeam);
-
-        // Assert
         var saved = await _context.UserTeams.FirstOrDefaultAsync();
         saved.Should().NotBeNull();
         saved!.UserId.Should().Be(_user1.Id);
@@ -85,7 +81,6 @@ public class UserTeamRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task GetUserTeamAsync_ReturnsRelationship()
     {
-        // Arrange
         var userTeam = new UserTeam
         {
             UserId = _user1.Id,
@@ -94,11 +89,8 @@ public class UserTeamRepositoryTests : IAsyncLifetime
         };
         _context.UserTeams.Add(userTeam);
         await _context.SaveChangesAsync();
-
-        // Act
         var result = await _repository.GetUserTeamAsync(_team1.Id, _user1.Id);
-
-        // Assert
+        
         result.Should().NotBeNull();
         result!.UserId.Should().Be(_user1.Id);
         result.TeamId.Should().Be(_team1.Id);
@@ -107,7 +99,6 @@ public class UserTeamRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task IsUserAdminAsync_ReturnsCorrectValues()
     {
-        // Arrange
         var adminUserTeam = new UserTeam
         {
             UserId = _user1.Id,
@@ -125,7 +116,6 @@ public class UserTeamRepositoryTests : IAsyncLifetime
         _context.UserTeams.AddRange(adminUserTeam, regularUserTeam);
         await _context.SaveChangesAsync();
 
-        // Act & Assert
         (await _repository.IsUserAdminAsync(_team1.Id, _user1.Id)).Should().BeTrue();
         (await _repository.IsUserAdminAsync(_team1.Id, _user2.Id)).Should().BeFalse();
     }
@@ -133,7 +123,6 @@ public class UserTeamRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task DeleteAsync_RemovesUserTeam()
     {
-        // Arrange
         var userTeam = new UserTeam
         {
             UserId = _user1.Id,
@@ -142,11 +131,8 @@ public class UserTeamRepositoryTests : IAsyncLifetime
         };
         _context.UserTeams.Add(userTeam);
         await _context.SaveChangesAsync();
-
-        // Act
         await _repository.DeleteAsync(userTeam.Id);
-
-        // Assert
+        
         var deleted = await _context.UserTeams.FindAsync(userTeam.Id);
         deleted.Should().BeNull();
     }
@@ -154,7 +140,6 @@ public class UserTeamRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task ExistsAsync_ReturnsCorrectValues()
     {
-        // Arrange
         var userTeam = new UserTeam
         {
             UserId = _user1.Id,
@@ -163,8 +148,7 @@ public class UserTeamRepositoryTests : IAsyncLifetime
         };
         _context.UserTeams.Add(userTeam);
         await _context.SaveChangesAsync();
-
-        // Act & Assert
+        
         (await _repository.ExistsAsync(userTeam.Id)).Should().BeTrue();
         (await _repository.ExistsAsync(999999)).Should().BeFalse();
     }

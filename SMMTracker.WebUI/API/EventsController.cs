@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Application.Services;
 
@@ -8,9 +9,9 @@ namespace SMMTracker.WebUI.API;
 [Route("api/[controller]")]
 public class EventsController : ControllerBase
 {
-    private readonly EventService _eventService;
+    private readonly IEventService _eventService;
 
-    public EventsController(EventService eventService)
+    public EventsController(IEventService eventService)
     {
         _eventService = eventService;
     }

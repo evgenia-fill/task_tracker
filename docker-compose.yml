@@ -1,18 +1,37 @@
-version: '3.8'
-
 services:
-  service-one:
+  webui:
+    image: smmtracker-webui
+    container_name: webui
+    restart: unless-stopped
     build:
       context: .
-      dockerfile: ./BlazorApp1/Dockerfile
+      dockerfile: SMMTracker.WebUI/Dockerfile
     ports:
-      - "5001:8080"
-    restart: always
+      - "80:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/SMMTracker.db
+    volumes:
+      - ./data:/app/data
+    networks:
+      - smm-net
 
-  service-three:
+  tgbot:
+    image: smmtracker-tgbot
+    container_name: tgbot
+    restart: unless-stopped
     build:
       context: .
-      dockerfile: ./TgBot/Dockerfile
-    ports:
-      - "5003:8080"
-    restart: always
+      dockerfile: SMMTracker.TgBot/Dockerfile
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/SMMTracker.db
+    volumes:
+      - ./data:/app/data
+    networks:
+      - smm-net
+
+networks:
+  smm-net:
+    driver: bridge

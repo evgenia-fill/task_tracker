@@ -46,7 +46,7 @@
 
     .team-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
 
     .team-card .card-header {
@@ -89,33 +89,30 @@
 </style>
 
 <div class="dashboard-container">
-    <!-- Сообщения -->
     @if (TempData["SuccessMessage"] != null)
     {
-    <div class="container-fluid">
-        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="container-fluid">
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
         </div>
-    </div>
     }
 
     @if (TempData["ErrorMessage"] != null)
     {
-    <div class="container-fluid">
-        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="container-fluid">
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
         </div>
-    </div>
     }
 
     <div class="container-fluid p-0">
         <div class="row g-0">
-            <!-- Левая панель - информация о пользователе -->
             <div class="col-md-3 col-lg-2 sidebar">
                 <div class="d-flex flex-column h-100">
-                    <!-- Аватар и основная информация -->
                     <div class="text-center mb-4">
                         <div class="avatar-circle">
                             <i class="bi bi-person-fill" style="font-size: 2.5rem;"></i>
@@ -125,29 +122,27 @@
                         <small class="text-muted">ID: @Model.ViewModel.UserInfo.TelegramId</small>
                     </div>
 
-                    <!-- Описание профиля -->
                     <div class="mb-4">
                         <h6 class="sidebar-heading">Описание профиля</h6>
                         <p class="sidebar-text">
                             @if (!string.IsNullOrEmpty(Model.ViewModel.UserInfo.ProfileDescription))
                             {
-                            @Model.ViewModel.UserInfo.ProfileDescription
+                                @Model.ViewModel.UserInfo.ProfileDescription
                             }
                             else
                             {
-                            <span class="text-muted fst-italic">Описание не добавлено</span>
+                                <span class="text-muted fst-italic">Описание не добавлено</span>
                             }
                         </p>
                     </div>
 
-                    <!-- Кнопка редактирования профиля -->
                     <div class="mb-4">
-                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal"
+                                data-bs-target="#editProfileModal">
                             <i class="bi bi-pencil me-2"></i>Редактировать профиль
                         </button>
                     </div>
 
-                    <!-- Статистика -->
                     <div class="mb-4">
                         <h6 class="sidebar-heading">Статистика</h6>
                         <div class="row text-center">
@@ -171,25 +166,24 @@
                 </div>
             </div>
 
-            <!-- Основной контент - команды -->
             <div class="col-md-9 col-lg-10 main-content">
-                <!-- Заголовок и кнопка создания -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1 class="h3 mb-0">
                         <i class="bi bi-people me-2 text-primary"></i>Мои команды
                     </h1>
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createTeamModal">
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                            data-bs-target="#createTeamModal">
                         <i class="bi bi-plus-circle me-2"></i>Создать команду
                     </button>
                 </div>
 
-                <!-- Присоединиться к команде -->
                 <div class="card mb-4 border-primary">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0"><i class="bi bi-link-45deg me-2"></i>Присоединиться к команде</h5>
                     </div>
                     <div class="card-body">
                         <form method="post" asp-page-handler="JoinTeam">
+                            @Html.AntiForgeryToken()
                             <div class="row g-3 align-items-end">
                                 <div class="col-md-8">
                                     <label class="form-label">Код приглашения</label>
@@ -208,97 +202,13 @@
                         </form>
                     </div>
                 </div>
-
-                <!-- Список команд -->
-                <div class="row">
-                    @if (Model.ViewModel.Teams.Any())
-                    {
-                    @foreach (var team in Model.ViewModel.Teams)
-                    {
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card team-card h-100">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0 text-truncate">@team.Name</h5>
-                                @if (team.IsOwner)
-                                {
-                                <span class="badge bg-success">Владелец</span>
-                                }
-                                else
-                                {
-                                <span class="badge bg-secondary">Участник</span>
-                                }
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text">@team.Description</p>
-                                <div class="team-info">
-                                    <div class="d-flex justify-content-between mb-2">
-                                                <span class="text-muted">
-                                                    <i class="bi bi-people me-1"></i>@team.MemberCount участников
-                                                </span>
-                                        <span class="text-muted">
-                                                    <i class="bi bi-calendar me-1"></i>@team.CreatedAt.ToString("dd.MM.yyyy")
-                                                </span>
-                                    </div>
-                                    @if (team.IsOwner)
-                                    {
-                                    <div class="mt-2">
-                                        <small class="text-muted d-block mb-1">
-                                            <i class="bi bi-key me-1"></i>Код приглашения:
-                                        </small>
-                                        <div class="input-group input-group-sm">
-                                            <input type="text"
-                                                   class="form-control font-monospace"
-                                                   value="@team.InvitationCode"
-                                                   readonly>
-                                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('@team.InvitationCode')">
-                                                <i class="bi bi-clipboard"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    }
-                                </div>
-                            </div>
-                            <div class="card-footer bg-transparent border-top-0">
-                                <div class="d-grid gap-2">
-                                    <a href="/Team/@team.Id" class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-door-open me-1"></i>Перейти в команду
-                                    </a>
-                                    <form method="post" asp-page-handler="LeaveTeam"
-                                          onsubmit="return confirm('Вы уверены, что хотите покинуть команду?');">
-                                        <input type="hidden" name="teamId" value="@team.Id" />
-                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                                            <i class="bi bi-door-closed me-1"></i>Покинуть команду
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    }
-                    }
-                    else
-                    {
-                    <div class="col-12">
-                        <div class="alert alert-info">
-                            <div class="d-flex">
-                                <div class="me-3">
-                                    <i class="bi bi-info-circle display-6 text-info"></i>
-                                </div>
-                                <div>
-                                    <h5 class="alert-heading">У вас пока нет команд</h5>
-                                    <p class="mb-0">Создайте свою первую команду или присоединитесь к существующей с помощью кода приглашения.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    }
+                <div class="row" id="teams-container">
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Модальное окно редактирования профиля -->
 <div class="modal fade" id="editProfileModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -330,7 +240,6 @@
     </div>
 </div>
 
-<!-- Модальное окно создания команды -->
 <div class="modal fade" id="createTeamModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -338,20 +247,24 @@
                 <h5 class="modal-title">Создание новой команды</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" asp-page-handler="CreateTeam">
+            <form id="createTeamForm">
                 <div class="modal-body">
+                    <div id="createTeamError" class="alert alert-danger" style="display: none;"></div>
+
                     <div class="mb-3">
                         <label class="form-label">Название команды *</label>
-                        <input type="text" class="form-control" asp-for="NewTeam.Name" placeholder="Например: Маркетинговый отдел" required>
+                        <input type="text" class="form-control" id="teamNameInput"
+                               placeholder="Например: Маркетинговый отдел" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Описание команды</label>
-                        <textarea class="form-control" asp-for="NewTeam.Description" rows="4" placeholder="Опишите цели и задачи команды"></textarea>
+                        <textarea class="form-control" id="teamDescriptionInput" rows="4"
+                                  placeholder="Опишите цели и задачи команды"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-success">Создать команду</button>
+                    <button type="button" id="createTeamSubmitBtn" class="btn btn-success">Создать команду</button>
                 </div>
             </form>
         </div>
@@ -359,17 +272,15 @@
 </div>
 
 <script>
-    // Функция для копирования кода приглашения
+    const currentUserId = @Model.ViewModel.UserInfo.Id;
+
     function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(function() {
-            // Показываем уведомление
+        navigator.clipboard.writeText(text).then(function () {
             showToast('Код скопирован в буфер обмена!');
         });
     }
 
-    // Функция для показа тостов
     function showToast(message) {
-        // Создаем toast
         const toast = document.createElement('div');
         toast.className = 'toast align-items-center text-white bg-success border-0';
         toast.setAttribute('role', 'alert');
@@ -385,38 +296,152 @@
             </div>
         `;
 
-        // Добавляем в контейнер
         const toastContainer = document.createElement('div');
         toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
         toastContainer.appendChild(toast);
         document.body.appendChild(toastContainer);
 
-        // Показываем toast
         const bsToast = new bootstrap.Toast(toast);
         bsToast.show();
 
-        // Удаляем после скрытия
         toast.addEventListener('hidden.bs.toast', function () {
             toastContainer.remove();
         });
     }
 
-    // Автоматически показываем модальные окна при ошибках
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
+        loadTeams();
         @if (Model.ShowProfileModal)
         {
-        <text>
-        var editProfileModal = new bootstrap.Modal(document.getElementById('editProfileModal'));
-        editProfileModal.show();
-        </text>
+            <text>
+                var editProfileModal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+                editProfileModal.show();
+            </text>
         }
 
         @if (Model.ShowTeamModal)
         {
-        <text>
-        var createTeamModal = new bootstrap.Modal(document.getElementById('createTeamModal'));
-        createTeamModal.show();
-        </text>
+            <text>
+                var createTeamModal = new bootstrap.Modal(document.getElementById('createTeamModal'));
+                createTeamModal.show();
+            </text>
+        }
+    });
+
+    document.getElementById('createTeamSubmitBtn').addEventListener('click', async function () {
+
+        const teamName = document.getElementById('teamNameInput').value;
+        const teamDescription = document.getElementById('teamDescriptionInput').value;
+        const errorDiv = document.getElementById('createTeamError');
+
+        if (!teamName) {
+            errorDiv.textContent = 'Название команды не может быть пустым';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        errorDiv.style.display = 'none';
+
+        const createTeamDto = {
+            name: teamName,
+            description: teamDescription
+        };
+
+        try {
+            const response = await fetch('/api/teams', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(createTeamDto)
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                const errorData = await response.json();
+                errorDiv.textContent = `Ошибка сервера: ${errorData.message || response.statusText}`;
+                errorDiv.style.display = 'block';
+            }
+        } catch (error) {
+            errorDiv.textContent = 'Сетевая ошибка. Не удалось отправить запрос';
+            errorDiv.style.display = 'block';
+        }
+    });
+
+    const verificationToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    async function loadTeams() {
+        const teamsContainer = document.getElementById('teams-container');
+
+        try {
+            const response = await fetch(`/api/users/${currentUserId}/teams`, {
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                teamsContainer.innerHTML = '<p class="text-danger">Не удалось загрузить команды.</p>';
+                return;
+            }
+
+            const teams = await response.json();
+
+            teamsContainer.innerHTML = '';
+
+            if (teams.length === 0) {
+                teamsContainer.innerHTML = '<p>У вас пока нет команд. Создайте первую!</p>';
+                return;
+            }
+
+            teams.forEach(team => {
+                const isOwnerBadge = team.isOwner
+                    ? '<span class="badge bg-success">Владелец</span>'
+                    : '<span class="badge bg-secondary">Участник</span>';
+
+                const cardHtml = `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card team-card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 text-truncate">${team.name}</h5>
+                            ${isOwnerBadge}
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">${team.description || ''}</p>
+                            <div class="team-info">
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a href="/Team/${team.id}" class="btn btn-outline-primary btn-sm">Перейти в команду</a>
+                            
+                            <form method="post" action="/dashboard?handler=LeaveTeam"
+                                    class="w-100" 
+                                    onsubmit="return confirm('Вы уверены, что хотите покинуть команду?');">
+                                <input type="hidden" name="__RequestVerificationToken" value="${verificationToken}" />
+                                <input type="hidden" name="teamId" value="${team.id}" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                    Покинуть команду
+                                </button>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            `;
+                teamsContainer.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+        } catch (error) {
+            console.error('Ошибка при загрузке команд:', error);
+            teamsContainer.innerHTML = '<p class="text-danger">Произошла сетевая ошибка при загрузке команд.</p>';
+        }
+    }
+
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var showProfileModal = @((TempData["ShowProfileModal"] != null && (bool)TempData["ShowProfileModal"]) ? "true" : "false");
+        if (showProfileModal === "true") {
+            var editProfileModal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+            editProfileModal.show();
         }
     });
 </script>
