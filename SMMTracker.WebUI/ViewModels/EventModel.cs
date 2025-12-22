@@ -11,6 +11,7 @@ public class EventModel : PageModel
     public List<TeamMemberViewModel> TeamMembers { get; set; } = new();
 
     public EventViewModel Event { get; set; } = new();
+    [BindProperty] public NewEventViewModel NewEvent { get; set; }
     public TeamViewModel Team { get; set; } = new();
 
     [BindProperty] public NewTaskViewModel NewTask { get; set; } = new();
@@ -57,7 +58,7 @@ public class EventModel : PageModel
             EventDate = eventDetails.Date,
             // Status = (ViewModels.EventStatus)eventDetails.Status
         };
-        
+
         TeamMembers = (await _teamService.GetTeamMembersAsync(eventDetails.TeamId))
             .Select(u => new TeamMemberViewModel
             {
@@ -72,12 +73,17 @@ public class EventModel : PageModel
             Title = t.Name,
             Status = t.Status,
         }).ToList();
-        
-        return Page(); 
+
+        return Page();
     }
+
 
     public async Task<IActionResult> OnPostAddTaskAsync(int calendarId, int eventId)
     {
+        ModelState.Remove(nameof(NewEvent.Title));
+        ModelState.Remove(nameof(NewEvent.Description));
+        ModelState.Remove(nameof(NewEvent.EventDate));
+        ModelState.Remove(nameof(CommentText));
         if (!ModelState.IsValid)
         {
             return await OnGetAsync(calendarId, eventId);
@@ -99,7 +105,6 @@ public class EventModel : PageModel
 
         TempData["SuccessMessage"] = $"Задача '{NewTask.Title}' добавлена";
         return RedirectToPage("/Event", new { calendarId, eventId });
-
     }
 
     public async Task<IActionResult> OnPostMoveToReviewAsync(int eventId, int taskId)
@@ -147,7 +152,7 @@ public class EventModel : PageModel
         }
 
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-        
+
         TempData["SuccessMessage"] = "Комментарий добавлен.";
         return RedirectToPage(new { eventId });
     }
