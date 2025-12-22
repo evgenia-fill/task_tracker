@@ -8,6 +8,7 @@ public class Calendar : Entity
     public Team Team { get; private set; } = null!;
     public List<Event>? Events { get; set; }
     public List<Task>? Tasks { get; set; }
+    public string? UserId { get; set; }
 
     public Calendar(int teamId)
     {

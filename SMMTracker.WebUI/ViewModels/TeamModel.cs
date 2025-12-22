@@ -17,6 +17,7 @@ public class TeamModel : PageModel
     public List<TeamMemberViewModel> Members { get; set; } = new();
     public List<TeamEventViewModel> UpcomingEvents { get; set; } = new();
     public bool IsOwner { get; set; }
+    public int CalendarId { get; set; }
 
     [BindProperty] public string? NewMemberUsername { get; set; }
     [BindProperty] public NewEventViewModel NewEvent { get; set; } = new();

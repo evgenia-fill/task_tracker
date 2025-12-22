@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -23,18 +23,103 @@
             padding: 2rem;
         }
 
-        .toast-container {
-            z-index: 9999;
+        .content-wrapper {
+            padding-top: 20px;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: #dee2e6; /* Цвет сетки */
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .day-header {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            text-align: center;
+            padding: 12px 5px;
+            color: #495057;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .calendar-day {
+            background-color: #ffffff;
+            min-height: 110px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .calendar-day:hover {
+            background-color: #f8f9ff;
+        }
+
+        .calendar-day.today {
+            background-color: #fff9db;
+        }
+
+        .date-number {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .event-item {
+            display: block; 
+            background-color: #667eea;
+            color: white !important;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-decoration: none !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            border-left: 3px solid #4a54e1;
+            transition: all 0.2s;
         }
     </style>
-
 </head>
 <body>
-@{
-    var containerClass = "gradient-bg";
-}
-<div class="main-container @containerClass">
-    @RenderBody()
+
+<header>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" asp-area="" asp-page="/Index">SMM Tracker</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/Index">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/Calendar">
+                            <i class="bi bi-calendar3"></i> Календарь
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/Dashboard">Дашборд</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="main-container gradient-bg">
+    <main role="main" class="container content-wrapper">
+        @RenderBody()
+    </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

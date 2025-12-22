@@ -1,8 +1,9 @@
-using Microsoft.EntityFrameworkCore;
 using SMMTracker.Application.Abstractions;
-using SMMTracker.Domain.Entities;
 using SMMTracker.Application.Dtos;
+using SMMTracker.Domain.Entities;
 using SMMTracker.Domain.IRepositories;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SMMTracker.Application.Services;
 
@@ -16,7 +17,20 @@ public class CalendarService : ICalendarService
         _calendarRepository = calendarRepository;
         _teamRepository = teamRepository;
     }
-
+    
+    public async Task<int> GetCalendarIdByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var calendar = await _calendarRepository.GetByUserIdAsync(userId, cancellationToken);
+        
+        return calendar?.Id ?? 0;
+    }
+    
+    public async Task<(int CalendarId, int TeamId)> GetCalendarInfoByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var calendar = await _calendarRepository.GetByUserIdAsync(userId, cancellationToken);
+        return (calendar?.Id ?? 0, calendar?.TeamId ?? 0);
+    }
+    
     public async Task<int> CreateCalendarAsync(CreateCalendarDto dto,
         CancellationToken cancellationToken = default)
     {

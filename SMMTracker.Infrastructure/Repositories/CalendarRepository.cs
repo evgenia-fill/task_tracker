@@ -23,6 +23,13 @@ public class CalendarRepository : ICalendarRepository
             .Include(c => c.Tasks)
             .FirstOrDefaultAsync(c => c.Id == calendarId);
     }
+    
+
+    public async Task<Calendar?> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Calendars 
+            .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
+    }
 
     public async Task<Calendar?> GetByTeamIdAsync(int teamId)
     {
