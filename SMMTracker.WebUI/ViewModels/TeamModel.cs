@@ -119,7 +119,9 @@ public class TeamModel : PageModel
     public async Task<IActionResult> OnPostAddEventAsync(int id)
     {
         ModelState.Remove(nameof(NewMemberUsername));
-
+        ModelState.Remove(nameof(TeamName));
+        ModelState.Remove(nameof(TeamDescription));
+        
         if (!ModelState.IsValid)
         {
             return await OnGetAsync(id);
