@@ -16,43 +16,43 @@ public class UserTeamRepository : IUserTeamRepository
         _context = context;
     }
 
-    public async Task<UserTeam?> GetUserTeamAsync(int teamId, int userId, CancellationToken cancellationToken = default)
+    public async Task<UserTeam?> GetUserTeamAsync(int teamId, int userId)
     {
-        return await _context.UserTeams.FirstOrDefaultAsync(ut => ut.TeamId == teamId && ut.UserId == userId, cancellationToken: cancellationToken);
+        return await _context.UserTeams.FirstOrDefaultAsync(ut => ut.TeamId == teamId && ut.UserId == userId);
     }
 
-    public async Task<bool> ExistsAsync(int userTeamId, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsAsync(int userTeamId)
     {
-        return await _context.UserTeams.AnyAsync(userTeam => userTeam.Id == userTeamId, cancellationToken: cancellationToken);
+        return await _context.UserTeams.AnyAsync(userTeam => userTeam.Id == userTeamId);
     }
 
-    public async Task AddAsync(UserTeam userTeam, CancellationToken cancellationToken = default)
+    public async Task AddAsync(UserTeam userTeam)
     {
-        await _context.UserTeams.AddAsync(userTeam, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.UserTeams.AddAsync(userTeam);
+        await _context.SaveChangesAsync(default);
     }
 
-    public async Task DeleteAsync(int userTeamId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(int userTeamId)
     {
         var userTeam = await _context.UserTeams.FindAsync(userTeamId);
         if (userTeam != null)
         {
             _context.UserTeams.Remove(userTeam);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(default);
         }
     }
 
-    public async Task<bool> IsUserAdminAsync(int teamId, int userId, CancellationToken cancellationToken = default)
+    public async Task<bool> IsUserAdminAsync(int teamId, int userId)
     {
         return await _context.UserTeams
-            .AnyAsync(ut => ut.TeamId == teamId && ut.UserId == userId && ut.Role == TeamRole.Admin, cancellationToken: cancellationToken);
+            .AnyAsync(ut => ut.TeamId == teamId && ut.UserId == userId && ut.Role == TeamRole.Admin);
     }
 
-    public async Task<List<UserTeam>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default)
+    public async Task<List<UserTeam>> GetByUserIdAsync(int userId)
     {
         return await _context.UserTeams
             .Where(ut => ut.UserId == userId)
             .Include(ut => ut.Team)
-            .ToListAsync(cancellationToken: cancellationToken);
+            .ToListAsync();
     }
 }

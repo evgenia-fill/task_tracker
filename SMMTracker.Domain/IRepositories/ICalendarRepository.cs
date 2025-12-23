@@ -5,12 +5,12 @@ namespace SMMTracker.Domain.IRepositories;
 
 public interface ICalendarRepository
 {
-    Task<Calendar?> GetByIdAsync(int calendarId, CancellationToken cancellationToken = default);
-    Task<Calendar?> GetByTeamIdAsync(int teamId, CancellationToken cancellationToken = default);
-    Task<List<Calendar>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task AddAsync(Calendar calendar, CancellationToken cancellationToken = default);
+    Task<Calendar?> GetByIdAsync(int calendarId);
+    Task<Calendar?> GetByTeamIdAsync(int teamId);
+    Task<List<Calendar>> GetAllAsync();
+    Task AddAsync(Calendar calendar);
     Task<Calendar?> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default);
-    Task UpdateAsync(Calendar calendar, CancellationToken cancellationToken = default);
-    Task DeleteAsync(int calendarId, CancellationToken cancellationToken = default);
-    Task<bool> ExistsAsync(int calendarId, CancellationToken cancellationToken = default);
+    Task UpdateAsync(Calendar calendar);
+    Task DeleteAsync(int calendarId);
+    Task<bool> ExistsAsync(int calendarId);
 }

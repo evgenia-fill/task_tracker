@@ -1,71 +1,71 @@
 using Microsoft.EntityFrameworkCore;
-using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Domain.IRepositories;
+using SMMTracker.Infrastructure.Data.DataContext;
 using Task = System.Threading.Tasks.Task;
 
 namespace SMMTracker.Infrastructure.Repositories;
 
 public class EventRepository : IEventRepository
 {
-    private readonly IApplicationDbContext _context;
+    private readonly ApplicationDbContext _context;
 
-    public EventRepository(IApplicationDbContext context)
+    public EventRepository(ApplicationDbContext context)
     {
         _context = context;
     }
 
-    public async Task<Event?> GetByIdAsync(int eventId, CancellationToken cancellationToken = default)
+    public async Task<Event?> GetByIdAsync(int eventId)
     {
         return await _context.Events
             .Include(e => e.Tasks)
             .Include(e => e.Calendar)
             .Include(e => e.Team)
-            .FirstOrDefaultAsync(e => e.Id == eventId, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(e => e.Id == eventId);
     }
 
-    public async Task<List<Event>> GetEventsForCalendarAsync(int calendarId, CancellationToken cancellationToken = default)
+    public async Task<List<Event>> GetEventsForCalendarAsync(int calendarId)
     {
         return await _context.Events
             .Where(e => e.CalendarId == calendarId)
             .Include(e => e.Tasks)
-            .ToListAsync(cancellationToken: cancellationToken);
+            .ToListAsync();
     }
 
-    public async Task<List<Event>> GetEventsForMonthAsync(int calendarId, int month, int year, CancellationToken cancellationToken = default)
+    public async Task<List<Event>> GetEventsForMonthAsync(int calendarId, int month, int year)
     {
         return await _context.Events
             .Where(e => e.CalendarId == calendarId && e.Date.Year == year && e.Date.Month == month)
-            .ToListAsync(cancellationToken: cancellationToken);
+            .ToListAsync();
     }
-    public async Task<List<Event>> GetEventsForTeamAsync(int teamId, CancellationToken cancellationToken = default)
+    public async Task<List<Event>> GetEventsForTeamAsync(int teamId)
     {
         return await _context.Events
             .Where(e => e.Calendar.TeamId == teamId) 
             .Include(e => e.Tasks)                   
             .Include(e => e.Calendar)                 
             .AsSplitQuery()                           
-            .ToListAsync(cancellationToken: cancellationToken);
+            .ToListAsync();
     }
-    public async Task AddAsync(Event eventEntity, CancellationToken cancellationToken = default)
+    public async Task AddAsync(Event eventEntity)
     {
-        await _context.Events.AddAsync(eventEntity, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.Events.AddAsync(eventEntity);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Event eventEntity, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(Event eventEntity)
     {
         _context.Events.Update(eventEntity);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int eventId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(int eventId)
     {
         var eventEntity = await _context.Events.FindAsync(eventId);
         if (eventEntity != null)
         {
             _context.Events.Remove(eventEntity);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -136,12 +136,12 @@
                         </p>
                     </div>
 
-                    <div class="mb-4">
-                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal"
-                                data-bs-target="#editProfileModal">
-                            <i class="bi bi-pencil me-2"></i>Редактировать профиль
-                        </button>
-                    </div>
+                    @* <div class="mb-4"> *@
+                    @*     <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" *@
+                    @*             data-bs-target="#editProfileModal"> *@
+                    @*         <i class="bi bi-pencil me-2"></i>Редактировать профиль *@
+                    @*     </button> *@
+                    @* </div> *@
 
                     <div class="mb-4">
                         <h6 class="sidebar-heading">Статистика</h6>
@@ -204,36 +204,36 @@
     </div>
 </div>
 
-<div class="modal fade" id="editProfileModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Редактирование профиля</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="post" asp-page-handler="UpdateProfile">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Имя</label>
-                        <input type="text" class="form-control" asp-for="EditProfile.FirstName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Фамилия</label>
-                        <input type="text" class="form-control" asp-for="EditProfile.LastName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Описание профиля</label>
-                        <textarea class="form-control" asp-for="EditProfile.ProfileDescription" rows="4"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+@* <div class="modal fade" id="editProfileModal" tabindex="-1"> *@
+@*     <div class="modal-dialog"> *@
+@*         <div class="modal-content"> *@
+@*             <div class="modal-header"> *@
+@*                 <h5 class="modal-title">Редактирование профиля</h5> *@
+@*                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button> *@
+@*             </div> *@
+@*             <form method="post" asp-page-handler="UpdateProfile"> *@
+@*                 <div class="modal-body"> *@
+@*                     <div class="mb-3"> *@
+@*                         <label class="form-label">Имя</label> *@
+@*                         <input type="text" class="form-control" asp-for="EditProfile.FirstName" required> *@
+@*                     </div> *@
+@*                     <div class="mb-3"> *@
+@*                         <label class="form-label">Фамилия</label> *@
+@*                         <input type="text" class="form-control" asp-for="EditProfile.LastName" required> *@
+@*                     </div> *@
+@*                     <div class="mb-3"> *@
+@*                         <label class="form-label">Описание профиля</label> *@
+@*                         <textarea class="form-control" asp-for="EditProfile.ProfileDescription" rows="4"></textarea> *@
+@*                     </div> *@
+@*                 </div> *@
+@*                 <div class="modal-footer"> *@
+@*                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button> *@
+@*                     <button type="submit" class="btn btn-primary">Сохранить изменения</button> *@
+@*                 </div> *@
+@*             </form> *@
+@*         </div> *@
+@*     </div> *@
+@* </div> *@
 
 <div class="modal fade" id="createTeamModal" tabindex="-1">
     <div class="modal-dialog">

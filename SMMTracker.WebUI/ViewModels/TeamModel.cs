@@ -55,6 +55,7 @@ public class TeamModel : PageModel
             Name = teamDetails.Name,
             InvitationCode = teamDetails.InvitationCode,
             MemberCount = teamDetails.Members.Count,
+            Description = teamDetails.Description,
             IsOwner = IsOwner
         };
 
