@@ -17,11 +17,5 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<UserTask> UserTasks { get; set; }
     public DbSet<Team> Teams { get; set; }
     public DbSet<Task> Tasks { get; set; }
-    public DbSet<Invitation> Invitations { get; set; }
     public DbSet<Calendar> Calendars { get; set; }
-    
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        return base.SaveChangesAsync(cancellationToken);
-    }
 }
