@@ -8,9 +8,9 @@ namespace SMMTracker.Infrastructure.Repositories;
 
 public class CalendarRepository : ICalendarRepository
 {
-    private readonly IApplicationDbContext _context;
-
-    public CalendarRepository(IApplicationDbContext context)
+    private readonly ApplicationDbContext _context;
+    
+    public CalendarRepository(ApplicationDbContext context)
     {
         _context = context;
     }
@@ -48,14 +48,14 @@ public class CalendarRepository : ICalendarRepository
 
     public async Task AddAsync(Calendar calendar, CancellationToken cancellationToken = default)
     {
-        await _context.Calendars.AddAsync(calendar, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.Calendars.AddAsync(calendar);
+        // await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Calendar calendar, CancellationToken cancellationToken = default)
     {
         _context.Calendars.Update(calendar);
-        await _context.SaveChangesAsync(cancellationToken);
+        // await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(int calendarId, CancellationToken cancellationToken = default)
@@ -64,7 +64,7 @@ public class CalendarRepository : ICalendarRepository
         if (calendar != null)
         {
             _context.Calendars.Remove(calendar);
-            await _context.SaveChangesAsync(cancellationToken);
+            // await _context.SaveChangesAsync();
         }
     }
 

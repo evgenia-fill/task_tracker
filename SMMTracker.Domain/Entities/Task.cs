@@ -1,4 +1,3 @@
-using SMMTracker.Domain.Enums;
 using TaskStatus = SMMTracker.Domain.Enums.TaskStatus;
 
 namespace SMMTracker.Domain.Entities;
@@ -36,20 +35,20 @@ public class Task : Entity
     public void MoveToReview()
     {
         if (Status != TaskStatus.InProgress) throw new Exception("Cannot move task to Review from this status");
-        Status = TaskStatus.Review;
+        Status = TaskStatus.InReview;
         return;
     }
 
     public void MoveToDone()
     {
-        if (Status != TaskStatus.Review) throw new Exception("Cannot move task to Done from this status");
+        if (Status != TaskStatus.InReview) throw new Exception("Cannot move task to Done from this status");
         Status = TaskStatus.Done;
         return;
     }
 
     public void MoveToInProgress()
     {
-        if (Status != TaskStatus.Review)
+        if (Status != TaskStatus.InReview)
             throw new Exception("Cannot move task to InProgress from this status");
         Status = TaskStatus.InProgress;
     }

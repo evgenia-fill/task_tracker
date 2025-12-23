@@ -12,13 +12,15 @@ public class TeamService : ITeamService
     private readonly ITeamRepository _teamRepository;
     private readonly IUserTeamRepository _userTeamRepository;
     private readonly ICalendarRepository _calendarRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public TeamService(ITeamRepository teamRepository, IUserTeamRepository userTeamRepository,
-        ICalendarRepository calendarRepository)
+        ICalendarRepository calendarRepository,  IUnitOfWork unitOfWork)
     {
         _teamRepository = teamRepository;
         _userTeamRepository = userTeamRepository;
         _calendarRepository = calendarRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<int> CreateTeamAsync(CreateTeamDto dto, int creatorId,
@@ -47,6 +49,7 @@ public class TeamService : ITeamService
         team.UserTeams.Add(userTeam);
 
         await _userTeamRepository.AddAsync(userTeam);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return team.Id;
     }
@@ -77,6 +80,7 @@ public class TeamService : ITeamService
         };
 
         await _userTeamRepository.AddAsync(userTeam);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
     }
@@ -96,6 +100,7 @@ public class TeamService : ITeamService
             throw new Exception("User is not in the team");
 
         await _userTeamRepository.DeleteAsync(userTeam.Id);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<bool> LeaveTeamAsync(int teamId, int userId, CancellationToken cancellationToken = default)
@@ -109,6 +114,7 @@ public class TeamService : ITeamService
             throw new Exception("Admin cannot leave team");
 
         await _userTeamRepository.DeleteAsync(userTeam.Id);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
 
@@ -192,13 +198,14 @@ public class TeamService : ITeamService
         team.Name = newName;
         team.Description = newDescription;
         await _teamRepository.UpdateAsync(team);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
 
     public async Task<CalendarDto?> GetCalendarForTeamAsync(int teamId)
     {
-        var calendar = await _calendarRepository.GetByIdAsync(teamId);
-
+        var calendar = await _calendarRepository.GetByTeamIdAsync(teamId);
+    
         return calendar == null ? null : new CalendarDto { Id = calendar.Id };
     }
 }
