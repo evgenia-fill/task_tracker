@@ -50,6 +50,20 @@ public class TasksController : ControllerBase
             return NotFound(new { message = ex.Message });
         }
     }
+    
+    [HttpPost("{taskId}/move-to-progress")]
+    public async Task<IActionResult> MoveTaskToProgress(int taskId)
+    {
+        try
+        {
+            await _taskService.MoveTaskToProgressAsync(taskId);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 
     [HttpDelete("{taskId}")]
     public async Task<IActionResult> RemoveTask(int taskId)
@@ -124,4 +138,6 @@ public class TasksController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    
+    
 }
