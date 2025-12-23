@@ -1,6 +1,7 @@
 @page "/Event/{teamId}/{eventId}"
 @model SMMTracker.WebUI.ViewModels.EventModel
-@using SMMTracker.WebUI.ViewModels
+@using TaskStatus = SMMTracker.Domain.Enums.TaskStatus;
+
 @{
     ViewData["Title"] = Model.Event.Title;
     Layout = "_Layout";
@@ -116,13 +117,11 @@
                     <a href="/Team/@Model.Team.Id" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-1"></i>Назад в команду
                     </a>
-                    <!-- Просто добавляем кнопку рядом -->
                     <button class="btn btn-success ms-2" data-bs-toggle="modal" data-bs-target="#addTaskModal">
                         <i class="bi bi-plus-circle me-1"></i>Добавить задачу
                     </button>
                 </div>
                 <div>
-                    <!-- здесь пока можно оставить пусто или удалить -->
                 </div>
             </div>
         </div>
@@ -156,13 +155,13 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="mb-0">
                             <span
-                                class="badge bg-primary me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InProgress.ToString())</span>
+                                class="badge bg-primary me-2">@Model.Tasks.Count(t => t.Status == TaskStatus.InProgress)</span>
                             В разработке
                         </h4>
                         <small class="text-muted">Добавляют все</small>
                     </div>
 
-                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InProgress.ToString()))
+                    @foreach (var task in Model.Tasks.Where(t => t.Status == TaskStatus.InProgress))
                     {
                         <div class="task-card">
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -191,7 +190,7 @@
                         </div>
                     }
 
-                    @if (Model.Tasks.All(t => t.Status != SMMTracker.WebUI.ViewModels.TaskStatus.InProgress.ToString()))
+                    @if (Model.Tasks.All(t => t.Status is not TaskStatus.InProgress))
                     {
                         <div class="text-center py-4">
                             <i class="bi bi-inbox display-4 text-muted mb-3"></i>
@@ -206,7 +205,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="mb-0">
                             <span
-                                class="badge bg-warning me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview.ToString())</span>
+                                class="badge bg-warning me-2">@Model.Tasks.Count(t => t.Status == TaskStatus.InReview)</span>
                             На ревью
                         </h4>
                         @if (Model.IsOwner)
@@ -217,7 +216,7 @@
                         }
                     </div>
 
-                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview.ToString()))
+                    @foreach (var task in Model.Tasks.Where(t => t.Status == TaskStatus.InReview))
                     {
                         <div class="task-card">
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -267,7 +266,7 @@
                         </div>
                     }
 
-                    @if (!Model.Tasks.Any(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.InReview.ToString()))
+                    @if (!Model.Tasks.Any(t => t.Status == TaskStatus.InReview))
                     {
                         <div class="text-center py-4">
                             <i class="bi bi-hourglass-split display-4 text-muted mb-3"></i>
@@ -282,13 +281,13 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="mb-0">
                             <span
-                                class="badge bg-success me-2">@Model.Tasks.Count(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed.ToString())</span>
+                                class="badge bg-success me-2">@Model.Tasks.Count(t => t.Status == TaskStatus.Done)</span>
                             Выполнено
                         </h4>
                         <small class="text-muted">Одобренные задачи</small>
                     </div>
 
-                    @foreach (var task in Model.Tasks.Where(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed.ToString()))
+                    @foreach (var task in Model.Tasks.Where(t => t.Status == TaskStatus.Done))
                     {
                         <div class="task-card">
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -319,7 +318,7 @@
                         </div>
                     }
 
-                    @if (!Model.Tasks.Any(t => t.Status == SMMTracker.WebUI.ViewModels.TaskStatus.Completed.ToString()))
+                    @if (!Model.Tasks.Any(t => t.Status == TaskStatus.Done))
                     {
                         <div class="text-center py-4">
                             <i class="bi bi-check-circle display-4 text-muted mb-3"></i>
@@ -345,74 +344,311 @@
                 <h5 class="modal-title">Добавить задачу</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form>
+
+            <form method="post" asp-page-handler="AddTask">
+                @Html.AntiForgeryToken()
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Название задачи *</label>
-                        <input type="text" class="form-control" placeholder="Например: Подготовить контент-план"
-                               required>
+                        <input type="text" class="form-control" asp-for="NewTask.Title" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Описание</label>
-                        <textarea class="form-control" rows="3" placeholder="Опишите детали задачи..."></textarea>
+                        <textarea class="form-control" asp-for="NewTask.Description" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Исполнитель</label>
-                        <input type="text" class="form-control" placeholder="На кого назначить задачу">
-                        <div class="form-text">Если не указано, задача будет назначена на вас</div>
+                        <input type="text" class="form-control" asp-for="NewTask.Assignee">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-success" id="dummyAddTaskBtn">Добавить задачу</button>
+                    <button type="submit" class="btn btn-success">Добавить задачу</button>
                 </div>
             </form>
+
         </div>
     </div>
 </div>
 
-<script>
-    document.getElementById('dummyAddTaskBtn').addEventListener('click', function () {
-        const titleInput = document.querySelector('#addTaskModal input[placeholder*="Например"]');
-        const descInput = document.querySelector('#addTaskModal textarea');
-        const assigneeInput = document.querySelector('#addTaskModal input[placeholder*="На кого"]');
+@* <script> *@
+@*     // Этот код отвечает за интерактивность Bootstrap и другие UI-элементы *@
+@*     document.addEventListener('DOMContentLoaded', function () { *@
+@* *@
+@*         // Код для автоматического открытия модального окна при ошибках валидации *@
+@*         const errorAlerts = document.querySelectorAll('.alert-danger'); *@
+@*         const hasError = Array.from(errorAlerts).some(alert => *@
+@*             alert.closest('form') && alert.closest('form').id === 'addTaskForm'); // Проверяем, что ошибка именно в нашей форме *@
+@* *@
+@*         if (hasError) { *@
+@*             const addTaskModal = document.getElementById('addTaskModal'); *@
+@*             if (addTaskModal) { *@
+@*                 const modal = new bootstrap.Modal(addTaskModal); *@
+@*                 modal.show(); *@
+@*             } *@
+@*         } *@
+@* *@
+@*         // Инициализация всплывающих подсказок (если они есть) *@
+@*         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')); *@
+@*         const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) { *@
+@*             return new bootstrap.Tooltip(tooltipTriggerEl); *@
+@*         }); *@
+@* *@
+@*         // Обновление счетчиков задач *@
+@*         function updateTaskStats() { *@
+@*             const inProgressCount = document.querySelectorAll('.task-column-inprogress .task-card').length; *@
+@*             const inReviewCount = document.querySelectorAll('.task-column-review .task-card').length; *@
+@*             const completedCount = document.querySelectorAll('.task-column-completed .task-card').length; *@
+@* *@
+@*             const inProgressBadge = document.querySelector('.task-column-inprogress h4 .badge'); *@
+@*             const inReviewBadge = document.querySelector('.task-column-review h4 .badge'); *@
+@*             const completedBadge = document.querySelector('.task-column-completed h4 .badge'); *@
+@* *@
+@*             if (inProgressBadge) inProgressBadge.textContent = inProgressCount; *@
+@*             if (inReviewBadge) inReviewBadge.textContent = inReviewCount; *@
+@*             if (completedBadge) completedBadge.textContent = completedCount; *@
+@*         } *@
+@*         updateTaskStats(); *@
+@* *@
+@*         // Автоматическое закрытие уведомлений *@
+@*         setTimeout(function () { *@
+@*             const alerts = document.querySelectorAll('.alert:not(.alert-permanent)'); *@
+@*             alerts.forEach(alert => { *@
+@*                 try { *@
+@*                     const bsAlert = new bootstrap.Alert(alert); *@
+@*                     bsAlert.close(); *@
+@*                 } catch (e) { *@
+@*                     // Игнорируем ошибки, если alert уже был закрыт *@
+@*                 } *@
+@*             }); *@
+@*         }, 5000); *@
+@* *@
+@*     }); *@
+@* </script> *@
 
-        if (!titleInput.value.trim()) {
-            alert('Введите название задачи!');
-            return;
-        }
+@* <div class="modal fade" id="addTaskModal" tabindex="-1"> *@
+@*     <div class="modal-dialog"> *@
+@*         <div class="modal-content"> *@
+@*             <div class="modal-header"> *@
+@*                 <h5 class="modal-title">Добавить задачу</h5> *@
+@*                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button> *@
+@*             </div> *@
+@*             <form> *@
+@*                 <div class="modal-body"> *@
+@*                     <div class="mb-3"> *@
+@*                         <label class="form-label">Название задачи *</label> *@
+@*                         <input type="text" class="form-control" placeholder="Например: Подготовить контент-план" *@
+@*                                required> *@
+@*                     </div> *@
+@*                     <div class="mb-3"> *@
+@*                         <label class="form-label">Описание</label> *@
+@*                         <textarea class="form-control" rows="3" placeholder="Опишите детали задачи..."></textarea> *@
+@*                     </div> *@
+@*                     <div class="mb-3"> *@
+@*                         <label class="form-label">Исполнитель</label> *@
+@*                         <input type="text" class="form-control" placeholder="На кого назначить задачу"> *@
+@*                         <div class="form-text">Если не указано, задача будет назначена на вас</div> *@
+@*                     </div> *@
+@*                 </div> *@
+@*                 <div class="modal-footer"> *@
+@*                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button> *@
+@*                     <button type="button" class="btn btn-success" id="dummyAddTaskBtn">Добавить задачу</button> *@
+@*                 </div> *@
+@*             </form> *@
+@*         </div> *@
+@*     </div> *@
+@* </div> *@
+@* *@
+@* <script> *@
+@*     document.getElementById('dummyAddTaskBtn').addEventListener('click', function () { *@
+@*         const titleInput = document.querySelector('#addTaskModal input[placeholder*="Например"]'); *@
+@*         const descInput = document.querySelector('#addTaskModal textarea'); *@
+@*         const assigneeInput = document.querySelector('#addTaskModal input[placeholder*="На кого"]'); *@
+@* *@
+@*         if (!titleInput.value.trim()) { *@
+@*             alert('Введите название задачи!'); *@
+@*             return; *@
+@*         } *@
+@* *@
+@*         const taskCard = document.createElement('div'); *@
+@*         taskCard.className = 'task-card'; *@
+@*         taskCard.innerHTML = ` *@
+@*         <div class="d-flex justify-content-between align-items-start mb-2"> *@
+@*             <h6 class="mb-0">${titleInput.value}</h6> *@
+@*             <span class="status-badge bg-primary text-white">В работе</span> *@
+@*         </div> *@
+@*         <p class="small text-muted mb-2">${descInput.value}</p> *@
+@*         <div class="d-flex justify-content-between align-items-center mb-3"> *@
+@*             <small class="text-muted"><i class="bi bi-person me-1"></i>${assigneeInput.value || 'Вы'}</small> *@
+@*             <small class="text-muted"><i class="bi bi-calendar me-1"></i>${new Date().toLocaleDateString()}</small> *@
+@*         </div> *@
+@*     `; *@
+@* *@
+@*         const inProgressColumn = document.querySelector('.task-column-inprogress'); *@
+@*         inProgressColumn.appendChild(taskCard); *@
+@* *@
+@*         const modalEl = document.getElementById('addTaskModal'); *@
+@*         const bsModal = bootstrap.Modal.getInstance(modalEl); *@
+@*         bsModal.hide(); *@
+@* *@
+@*         titleInput.value = ''; *@
+@*         descInput.value = ''; *@
+@*         assigneeInput.value = ''; *@
+@*     }); *@
+@* </script> *@
+@* *@
+@* <script> *@
+@*     document.addEventListener('DOMContentLoaded', function () { *@
+@*         const errorAlerts = document.querySelectorAll('.alert-danger'); *@
+@*         const hasError = errorAlerts.length > 0; *@
+@* *@
+@*         if (hasError) { *@
+@*             const addTaskModal = document.getElementById('addTaskModal'); *@
+@*             if (addTaskModal) { *@
+@*                 const modal = new bootstrap.Modal(addTaskModal); *@
+@*                 modal.show(); *@
+@*             } *@
+@*         } *@
+@* *@
+@*         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')); *@
+@*         const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) { *@
+@*             return new bootstrap.Tooltip(tooltipTriggerEl); *@
+@*         }); *@
+@* *@
+@*         const taskCards = document.querySelectorAll('.task-card'); *@
+@*         taskCards.forEach(card => { *@
+@*             card.addEventListener('mouseenter', function () { *@
+@*                 this.style.cursor = 'grab'; *@
+@*             }); *@
+@* *@
+@*             card.addEventListener('mouseleave', function () { *@
+@*                 this.style.cursor = 'default'; *@
+@*             }); *@
+@*         }); *@
+@* *@
+@*         function updateTaskStats() { *@
+@*             const inProgressCount = document.querySelectorAll('.task-column-inprogress .task-card').length; *@
+@*             const inReviewCount = document.querySelectorAll('.task-column-review .task-card').length; *@
+@*             const completedCount = document.querySelectorAll('.task-column-completed .task-card').length; *@
+@* *@
+@*             const inProgressBadge = document.querySelector('.task-column-inprogress h4 .badge'); *@
+@*             const inReviewBadge = document.querySelector('.task-column-review h4 .badge'); *@
+@*             const completedBadge = document.querySelector('.task-column-completed h4 .badge'); *@
+@* *@
+@*             if (inProgressBadge) inProgressBadge.textContent = inProgressCount; *@
+@*             if (inReviewBadge) inReviewBadge.textContent = inReviewCount; *@
+@*             if (completedBadge) completedBadge.textContent = completedCount; *@
+@*         } *@
+@* *@
+@*         updateTaskStats(); *@
+@* *@
+@*         function setupConfirmations() { *@
+@*             const rejectButtons = document.querySelectorAll('form[asp-page-handler="RejectTask"] button[type="submit"]'); *@
+@*             const deleteButtons = document.querySelectorAll('form[asp-page-handler="DeleteTask"] button[type="submit"]'); *@
+@* *@
+@*             const allButtons = [...rejectButtons, ...deleteButtons]; *@
+@* *@
+@*             allButtons.forEach(button => { *@
+@*                 const originalClick = button.onclick; *@
+@*                 button.onclick = function (e) { *@
+@*                     const message = this.getAttribute('data-confirm-message') || *@
+@*                         'Вы уверены, что хотите выполнить это действие?'; *@
+@* *@
+@*                     if (!confirm(message)) { *@
+@*                         e.preventDefault(); *@
+@*                         return false; *@
+@*                     } *@
+@* *@
+@*                     if (originalClick) { *@
+@*                         return originalClick.call(this, e); *@
+@*                     } *@
+@*                 }; *@
+@*             }); *@
+@*         } *@
+@* *@
+@*         setupConfirmations(); *@
+@* *@
+@*         setTimeout(function () { *@
+@*             const alerts = document.querySelectorAll('.alert:not(.alert-permanent)'); *@
+@*             alerts.forEach(alert => { *@
+@*                 const bsAlert = new bootstrap.Alert(alert); *@
+@*                 bsAlert.close(); *@
+@*             }); *@
+@*         }, 5000); *@
+@* *@
+@*         document.querySelectorAll('.task-card h6').forEach(title => { *@
+@*             title.addEventListener('dblclick', function () { *@
+@*                 if (!confirm('Хотите редактировать задачу?')) return; *@
+@* *@
+@*                 const currentText = this.textContent; *@
+@*                 const input = document.createElement('input'); *@
+@*                 input.type = 'text'; *@
+@*                 input.value = currentText; *@
+@*                 input.className = 'form-control form-control-sm'; *@
+@* *@
+@*                 this.textContent = ''; *@
+@*                 this.appendChild(input); *@
+@*                 input.focus(); *@
+@* *@
+@*                 input.addEventListener('blur', function () { *@
+@*                     if (this.value.trim() !== '' && this.value !== currentText) { *@
+@*                         title.textContent = this.value; *@
+@*                         showToast('Название задачи обновлено'); *@
+@*                     } else { *@
+@*                         title.textContent = currentText; *@
+@*                     } *@
+@*                 }); *@
+@* *@
+@*                 input.addEventListener('keypress', function (e) { *@
+@*                     if (e.key === 'Enter') { *@
+@*                         this.blur(); *@
+@*                     } *@
+@*                 }); *@
+@*             }); *@
+@*         }); *@
+@* *@
+@*         window.showToast = function (message, type = 'success') { *@
+@*             const toast = document.createElement('div'); *@
+@*             toast.className = `toast align-items-center text-white bg-${type} border-0`; *@
+@*             toast.setAttribute('role', 'alert'); *@
+@*             toast.setAttribute('aria-live', 'assertive'); *@
+@*             toast.setAttribute('aria-atomic', 'true'); *@
+@* *@
+@*             const icon = type === 'success' ? 'check-circle' : *@
+@*                 type === 'warning' ? 'exclamation-triangle' : *@
+@*                     type === 'error' ? 'x-circle' : 'info-circle'; *@
+@* *@
+@*             toast.innerHTML = ` *@
+@*                 <div class="d-flex"> *@
+@*                     <div class="toast-body"> *@
+@*                         <i class="bi bi-${icon} me-2"></i>${message} *@
+@*                     </div> *@
+@*                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button> *@
+@*                 </div> *@
+@*             `; *@
+@* *@
+@*             const toastContainer = document.createElement('div'); *@
+@*             toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3'; *@
+@*             toastContainer.appendChild(toast); *@
+@*             document.body.appendChild(toastContainer); *@
+@* *@
+@*             const bsToast = new bootstrap.Toast(toast); *@
+@*             bsToast.show(); *@
+@* *@
+@*             toast.addEventListener('hidden.bs.toast', function () { *@
+@*                 toastContainer.remove(); *@
+@*             }); *@
+@*         }; *@
+@*     }); *@
+@* </script> *@
 
-        const taskCard = document.createElement('div');
-        taskCard.className = 'task-card';
-        taskCard.innerHTML = `
-        <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="mb-0">${titleInput.value}</h6>
-            <span class="status-badge bg-primary text-white">В работе</span>
-        </div>
-        <p class="small text-muted mb-2">${descInput.value}</p>
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <small class="text-muted"><i class="bi bi-person me-1"></i>${assigneeInput.value || 'Вы'}</small>
-            <small class="text-muted"><i class="bi bi-calendar me-1"></i>${new Date().toLocaleDateString()}</small>
-        </div>
-    `;
-
-        const inProgressColumn = document.querySelector('.task-column-inprogress');
-        inProgressColumn.appendChild(taskCard);
-
-        const modalEl = document.getElementById('addTaskModal');
-        const bsModal = bootstrap.Modal.getInstance(modalEl);
-        bsModal.hide();
-        
-        titleInput.value = '';
-        descInput.value = '';
-        assigneeInput.value = '';
-    });
-</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        
         const errorAlerts = document.querySelectorAll('.alert-danger');
-        const hasError = errorAlerts.length > 0;
+        const hasError = Array.from(errorAlerts).some(alert => 
+            alert.closest('form') && alert.closest('form').id === 'addTaskForm'); 
 
         if (hasError) {
             const addTaskModal = document.getElementById('addTaskModal');
@@ -425,17 +661,6 @@
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-
-        const taskCards = document.querySelectorAll('.task-card');
-        taskCards.forEach(card => {
-            card.addEventListener('mouseenter', function () {
-                this.style.cursor = 'grab';
-            });
-
-            card.addEventListener('mouseleave', function () {
-                this.style.cursor = 'default';
-            });
         });
 
         function updateTaskStats() {
@@ -451,105 +676,18 @@
             if (inReviewBadge) inReviewBadge.textContent = inReviewCount;
             if (completedBadge) completedBadge.textContent = completedCount;
         }
-
         updateTaskStats();
-
-        function setupConfirmations() {
-            const rejectButtons = document.querySelectorAll('form[asp-page-handler="RejectTask"] button[type="submit"]');
-            const deleteButtons = document.querySelectorAll('form[asp-page-handler="DeleteTask"] button[type="submit"]');
-
-            const allButtons = [...rejectButtons, ...deleteButtons];
-
-            allButtons.forEach(button => {
-                const originalClick = button.onclick;
-                button.onclick = function (e) {
-                    const message = this.getAttribute('data-confirm-message') ||
-                        'Вы уверены, что хотите выполнить это действие?';
-
-                    if (!confirm(message)) {
-                        e.preventDefault();
-                        return false;
-                    }
-
-                    if (originalClick) {
-                        return originalClick.call(this, e);
-                    }
-                };
-            });
-        }
-
-        setupConfirmations();
 
         setTimeout(function () {
             const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
             alerts.forEach(alert => {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
+                try {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                } catch (e) {
+                }
             });
         }, 5000);
 
-        document.querySelectorAll('.task-card h6').forEach(title => {
-            title.addEventListener('dblclick', function () {
-                if (!confirm('Хотите редактировать задачу?')) return;
-
-                const currentText = this.textContent;
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.value = currentText;
-                input.className = 'form-control form-control-sm';
-
-                this.textContent = '';
-                this.appendChild(input);
-                input.focus();
-
-                input.addEventListener('blur', function () {
-                    if (this.value.trim() !== '' && this.value !== currentText) {
-                        title.textContent = this.value;
-                        showToast('Название задачи обновлено');
-                    } else {
-                        title.textContent = currentText;
-                    }
-                });
-
-                input.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') {
-                        this.blur();
-                    }
-                });
-            });
-        });
-
-        window.showToast = function (message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast align-items-center text-white bg-${type} border-0`;
-            toast.setAttribute('role', 'alert');
-            toast.setAttribute('aria-live', 'assertive');
-            toast.setAttribute('aria-atomic', 'true');
-
-            const icon = type === 'success' ? 'check-circle' :
-                type === 'warning' ? 'exclamation-triangle' :
-                    type === 'error' ? 'x-circle' : 'info-circle';
-
-            toast.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="bi bi-${icon} me-2"></i>${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            `;
-
-            const toastContainer = document.createElement('div');
-            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-            toastContainer.appendChild(toast);
-            document.body.appendChild(toastContainer);
-
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-
-            toast.addEventListener('hidden.bs.toast', function () {
-                toastContainer.remove();
-            });
-        };
     });
 </script>

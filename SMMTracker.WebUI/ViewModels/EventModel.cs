@@ -3,26 +3,25 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
+using TaskStatus = SMMTracker.Domain.Enums.TaskStatus;
 
 namespace SMMTracker.WebUI.ViewModels;
 
 public class EventModel : PageModel
 {
-    public List<TeamMemberViewModel> TeamMembers { get; set; } = new();
-
-    public EventViewModel Event { get; set; } = new();
     [BindProperty] public NewEventViewModel NewEvent { get; set; }
-    public TeamViewModel Team { get; set; } = new();
-
     [BindProperty] public NewTaskViewModel NewTask { get; set; } = new();
 
     [BindProperty] public string CommentText { get; set; } = "";
+    public TeamViewModel Team { get; set; } = new();
+    public List<TeamMemberViewModel> TeamMembers { get; set; } = new();
+    public EventViewModel Event { get; set; } = new();
+    public bool IsOwner { get; set; }
+    public bool IsTeamMember { get; set; }
 
     public List<EventTaskViewModel> Tasks { get; set; } = new();
     public List<EventCommentViewModel> Comments { get; set; } = new();
 
-    public bool IsOwner { get; set; }
-    public bool IsTeamMember { get; set; }
     private readonly IEventService _eventService;
     private readonly ITaskService _taskService;
     private readonly ITeamService _teamService;
@@ -34,7 +33,7 @@ public class EventModel : PageModel
         _teamService = teamService;
     }
 
-    public async Task<IActionResult> OnGetAsync(int calendarId, int eventId)
+    public async Task<IActionResult> OnGetAsync(int eventId)
     {
         var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!int.TryParse(userIdString, out var userId))
@@ -71,22 +70,18 @@ public class EventModel : PageModel
         {
             Id = t.Id,
             Title = t.Name,
-            Status = t.Status,
+            Status = (TaskStatus)t.Status,
         }).ToList();
 
         return Page();
     }
 
-
-    public async Task<IActionResult> OnPostAddTaskAsync(int calendarId, int eventId)
+    public async Task<IActionResult> OnPostAddTaskAsync(int eventId)
     {
-        ModelState.Remove(nameof(NewEvent.Title));
-        ModelState.Remove(nameof(NewEvent.Description));
-        ModelState.Remove(nameof(NewEvent.EventDate));
-        ModelState.Remove(nameof(CommentText));
-        if (!ModelState.IsValid)
+        if (string.IsNullOrWhiteSpace(NewTask.Title))
         {
-            return await OnGetAsync(calendarId, eventId);
+            TempData["ErrorMessage"] = "Название задачи не может быть пустым.";
+            return await OnGetAsync(eventId);
         }
 
         var eventDetails = await _eventService.GetEventDetailsAsync(eventId);
@@ -97,14 +92,11 @@ public class EventModel : PageModel
             Name = NewTask.Title,
             Description = NewTask.Description,
             EventId = eventId,
-            CalendarId = calendarId,
-            AssignedUserId = NewTask.Assignee
         };
 
         await _taskService.CreateTaskAsync(createTaskDto);
 
-        TempData["SuccessMessage"] = $"Задача '{NewTask.Title}' добавлена";
-        return RedirectToPage("/Event", new { calendarId, eventId });
+        return RedirectToPage(new { eventId });
     }
 
     public async Task<IActionResult> OnPostMoveToReviewAsync(int eventId, int taskId)
@@ -148,7 +140,7 @@ public class EventModel : PageModel
         if (string.IsNullOrWhiteSpace(CommentText))
         {
             TempData["ErrorMessage"] = "Введите текст комментария";
-            return await OnGetAsync(calendarId, eventId);
+            return await OnGetAsync(eventId);
         }
 
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -174,7 +166,7 @@ public class EventTaskViewModel
     public int Id { get; set; }
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
-    public string Status { get; set; }
+    public TaskStatus Status { get; set; }
     public string CreatedBy { get; set; } = "";
     public DateTime CreatedAt { get; set; }
     public string Assignee { get; set; } = "";
@@ -195,13 +187,6 @@ public class NewTaskViewModel
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
     public int Assignee { get; set; }
-}
-
-public enum TaskStatus
-{
-    InProgress,
-    InReview,
-    Completed
 }
 
 public enum EventStatus
