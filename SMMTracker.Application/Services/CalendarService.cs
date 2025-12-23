@@ -31,12 +31,12 @@ public class CalendarService : ICalendarService
     public async Task<int> CreateCalendarAsync(CreateCalendarDto dto,
         CancellationToken cancellationToken = default)
     {
-        var teamExists = await _teamRepository.ExistsAsync(dto.TeamId, cancellationToken);
+        var teamExists = await _teamRepository.ExistsAsync(dto.TeamId);
         if (!teamExists)
             throw new Exception($"Команда с Id={dto.TeamId} не найдена.");
 
         var calendar = new Calendar(dto.TeamId);
-        await _calendarRepository.AddAsync(calendar, cancellationToken);
+        await _calendarRepository.AddAsync(calendar);
         return calendar.Id;
     }
 }

@@ -22,7 +22,7 @@ public class EventService : IEventService
     public async Task<int> CreateEventAsync(CreateEventDto dto,
         CancellationToken cancellationToken = default)
     {
-        var calendar = await _calendarRepository.GetByTeamIdAsync(dto.TeamId, cancellationToken);
+        var calendar = await _calendarRepository.GetByTeamIdAsync(dto.TeamId);
         if (calendar == null)
             throw new InvalidOperationException($"Не найден календарь для команды с Id={dto.TeamId}");
 
@@ -34,7 +34,7 @@ public class EventService : IEventService
             dto.CreatedBy,
             calendar.TeamId
         );
-        await _eventRepository.AddAsync(eventAs, cancellationToken);
+        await _eventRepository.AddAsync(eventAs);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return eventAs.Id;
     }
@@ -42,7 +42,7 @@ public class EventService : IEventService
     public async Task<List<EventSummaryDto>> GetEventsForMonthAsync(int calendarId, int month, int year,
         CancellationToken cancellationToken = default)
     {
-        var events = await _eventRepository.GetEventsForMonthAsync(calendarId, month, year, cancellationToken);
+        var events = await _eventRepository.GetEventsForMonthAsync(calendarId, month, year);
 
         return events
             .Select(e => new EventSummaryDto
@@ -57,7 +57,7 @@ public class EventService : IEventService
 
     public async Task<EventDetailsDto?> GetEventDetailsAsync(int eventId, CancellationToken cancellationToken = default)
     {
-        var eventEntity = await _eventRepository.GetByIdAsync(eventId, cancellationToken);
+        var eventEntity = await _eventRepository.GetByIdAsync(eventId);
 
         if (eventEntity == null)
             return null;

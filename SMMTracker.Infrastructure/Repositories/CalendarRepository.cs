@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Domain.IRepositories;
 using SMMTracker.Infrastructure.Data.DataContext;

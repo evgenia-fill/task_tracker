@@ -8,7 +8,7 @@ public class TeamMemberViewModel
     public string LastName { get; set; } = "";
     public string TelegramUsername { get; set; } = "";
     public string Role { get; set; } = "";
-    public DateTime JoinedAt { get; set; }
+    public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
 }
 
 

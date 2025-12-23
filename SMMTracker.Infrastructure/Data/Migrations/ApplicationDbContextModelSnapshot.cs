@@ -34,7 +34,7 @@ namespace SMMTracker.Infrastructure.Migrations
                     b.HasIndex("TeamId")
                         .IsUnique();
 
-                    b.ToTable("Calendars");
+                    b.ToTable("Calendars", (string)null);
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.Event", b =>
@@ -49,8 +49,9 @@ namespace SMMTracker.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("TEXT");
@@ -70,7 +71,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("Events");
+                    b.ToTable("Events", (string)null);
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.Invitation", b =>
@@ -94,7 +95,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Invitations");
+                    b.ToTable("Invitations", (string)null);
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.Task", b =>
@@ -131,7 +132,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("Tasks", (string)null);
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.Team", b =>
@@ -152,7 +153,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Teams");
+                    b.ToTable("Teams", (string)null);
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.User", b =>
@@ -185,7 +186,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.UserTask", b =>
@@ -209,7 +210,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserTasks");
+                    b.ToTable("UserTasks", (string)null);
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.UserTeam", b =>
@@ -233,7 +234,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserTeams");
+                    b.ToTable("UserTeams", (string)null);
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.Calendar", b =>
