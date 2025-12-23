@@ -2,8 +2,6 @@ using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Domain.IRepositories;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SMMTracker.Application.Services;
 
@@ -21,7 +19,6 @@ public class CalendarService : ICalendarService
     public async Task<int> GetCalendarIdByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
         var calendar = await _calendarRepository.GetByUserIdAsync(userId, cancellationToken);
-        
         return calendar?.Id ?? 0;
     }
     
@@ -34,12 +31,12 @@ public class CalendarService : ICalendarService
     public async Task<int> CreateCalendarAsync(CreateCalendarDto dto,
         CancellationToken cancellationToken = default)
     {
-        var teamExists = await _teamRepository.ExistsAsync(dto.TeamId);
+        var teamExists = await _teamRepository.ExistsAsync(dto.TeamId, cancellationToken);
         if (!teamExists)
             throw new Exception($"Команда с Id={dto.TeamId} не найдена.");
 
         var calendar = new Calendar(dto.TeamId);
-        await _calendarRepository.AddAsync(calendar);
+        await _calendarRepository.AddAsync(calendar, cancellationToken);
         return calendar.Id;
     }
 }

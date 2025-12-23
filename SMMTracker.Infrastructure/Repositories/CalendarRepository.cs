@@ -8,9 +8,9 @@ namespace SMMTracker.Infrastructure.Repositories;
 
 public class CalendarRepository : ICalendarRepository
 {
-    private readonly ApplicationDbContext _context;
-    
-    public CalendarRepository(ApplicationDbContext context)
+    private readonly IApplicationDbContext _context;
+
+    public CalendarRepository(IApplicationDbContext context)
     {
         _context = context;
     }

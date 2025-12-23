@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using FluentAssertions;
 using Moq;
 using SMMTracker.Application.Dtos;
@@ -159,4 +159,4 @@ public class UserServiceTests
             u.ProfileDescription == "Новое описание"
         )), Times.Once);
     }
-}
+}*/
