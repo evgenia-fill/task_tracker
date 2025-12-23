@@ -9,26 +9,33 @@ public class EventService : IEventService
 {
     private readonly IEventRepository _eventRepository;
     private readonly ICalendarRepository _calendarRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public EventService(IEventRepository eventRepository, ICalendarRepository calendarRepository)
+    public EventService(IEventRepository eventRepository, ICalendarRepository calendarRepository,
+        IUnitOfWork unitOfWork)
     {
         _eventRepository = eventRepository;
         _calendarRepository = calendarRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<int> CreateEventAsync(CreateEventDto dto,
         CancellationToken cancellationToken = default)
     {
-        var calendar = await _calendarRepository.GetByIdAsync(dto.CalendarId);
+        var calendar = await _calendarRepository.GetByTeamIdAsync(dto.TeamId);
+        if (calendar == null)
+            throw new InvalidOperationException($"Не найден календарь для команды с Id={dto.TeamId}");
+
         var eventAs = new Event(
             dto.Name,
             dto.Description,
             dto.Date,
-            dto.CalendarId,
+            calendar.Id,
             dto.CreatedBy,
             calendar.TeamId
         );
         await _eventRepository.AddAsync(eventAs);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return eventAs.Id;
     }
 
@@ -67,10 +74,9 @@ public class EventService : IEventService
             {
                 Id = t.Id,
                 Name = t.Name,
-                Status = t.Status.ToString(),
+                Status = t.Status
             }).ToList()
         };
-
     }
 
     public async Task<List<EventSummaryDto>> GetEventsForTeamAsync(int teamId)
@@ -92,5 +98,4 @@ public class EventService : IEventService
             CreatedBy = e.CreatedBy
         }).ToList();
     }
-    
 }

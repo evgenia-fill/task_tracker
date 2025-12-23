@@ -119,35 +119,52 @@ public class TeamModel : PageModel
 
     public async Task<IActionResult> OnPostAddEventAsync(int id)
     {
-        ModelState.Remove(nameof(NewMemberUsername));
-        ModelState.Remove(nameof(TeamName));
-        ModelState.Remove(nameof(TeamDescription));
+        // ModelState.Remove(nameof(NewMemberUsername));
+        // ModelState.Remove(nameof(TeamName));
+        // ModelState.Remove(nameof(TeamDescription));
+        // ModelState.Remove(nameof(TeamName));
+        // ModelState.Remove(nameof(TeamDescription));
+        // ModelState.Remove(nameof(TeamId));
+        // ModelState.Remove(nameof(id));
+        //
+        // if (!ModelState.IsValid)
+        // {
+        //     TempData["ErrorMessage"] = "Данные для создания мероприятия некорректны";
+        //     return await OnGetAsync(id);
+        // }
         
-        if (!ModelState.IsValid)
+        var isFormValid = true;
+        if (string.IsNullOrWhiteSpace(NewEvent.Title))
+        {
+            TempData["ErrorMessage"] = "Название мероприятия не может быть пустым";
+            isFormValid = false;
+        }
+
+        if (!isFormValid)
         {
             return await OnGetAsync(id);
         }
-
+        
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-        var calendar = await _teamService.GetCalendarForTeamAsync(id);
-        if (calendar == null)
-        {
-            TempData["ErrorMessage"] = "Календарь для команды не найден.";
-            return RedirectToPage(new { id });
-        }
+        // var calendar = await _teamService.GetCalendarForTeamAsync(id);
+        // if (calendar == null)
+        // {
+        //     TempData["ErrorMessage"] = "Календарь для команды не найден.";
+        //     return RedirectToPage(new { id });
+        // }
 
         var createDto = new CreateEventDto
         {
             Name = NewEvent.Title,
             Description = NewEvent.Description,
             Date = NewEvent.EventDate,
-            CalendarId = calendar.Id,
+            TeamId = id,
             CreatedBy = userId
         };
 
         await _eventService.CreateEventAsync(createDto);
-        TempData["SuccessMessage"] = $"Мероприятие '{NewEvent.Title}' добавлено.";
+        TempData["SuccessMessage"] = $"Мероприятие '{NewEvent.Title}' добавлено";
         return RedirectToPage(new { id });
     }
 
