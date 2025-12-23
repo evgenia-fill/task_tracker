@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using SMMTracker.Infrastructure.Data.DataContext;
 namespace SMMTracker.WebUI.API;
 
 [ApiController]
+[AllowAnonymous] //для deploy нужно, чтобы 404 не словить
 public class AuthController : ControllerBase
 {
     private readonly IUserService _userService;
