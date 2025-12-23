@@ -217,11 +217,6 @@
                         <a class="nav-link" href="#members"><i class="bi bi-people me-2"></i>Участники</a>
                         <a class="nav-link" href="#events"><i class="bi bi-calendar-event me-2"></i>Мероприятия</a>
                         <a class="nav-link" href="#calendar"><i class="bi bi-calendar-week me-2"></i>Календарь</a>
-                        @if (Model.IsOwner)
-                        {
-                            <a class="nav-link text-success" href="#settings"><i class="bi bi-gear me-2"></i>Настройки
-                                команды</a>
-                        }
                     </nav>
 
                     <div class="mt-auto">
@@ -414,16 +409,6 @@
                         </div>
                     </div>
                 </section>
-
-                @if (Model.IsOwner)
-                {
-                    <div id="settings" class="mb-5">
-                        <div class="alert alert-warning">
-                            <h4 class="alert-heading"><i class="bi bi-gear me-2"></i>Настройки команды</h4>
-                            <p>Раздел настроек находится в разработке.</p>
-                        </div>
-                    </div>
-                }
             </div>
         </div>
     </div>
