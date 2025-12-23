@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
 using SMMTracker.Domain.IRepositories;
+using SMMTracker.Infrastructure.Data.DataContext;
 using Task = System.Threading.Tasks.Task;
 
 namespace SMMTracker.Infrastructure.Repositories;
@@ -15,14 +15,15 @@ public class CalendarRepository : ICalendarRepository
         _context = context;
     }
 
-    public async Task<Calendar?> GetByIdAsync(int calendarId, CancellationToken cancellationToken = default)
+    public async Task<Calendar?> GetByIdAsync(int calendarId)
     {
         return await _context.Calendars
             .Include(c => c.Team)
             .Include(c => c.Events)
             .Include(c => c.Tasks)
-            .FirstOrDefaultAsync(c => c.Id == calendarId, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(c => c.Id == calendarId);
     }
+    
 
     public async Task<Calendar?> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
@@ -30,35 +31,35 @@ public class CalendarRepository : ICalendarRepository
             .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
     }
 
-    public async Task<Calendar?> GetByTeamIdAsync(int teamId, CancellationToken cancellationToken = default)
+    public async Task<Calendar?> GetByTeamIdAsync(int teamId)
     {
         return await _context.Calendars
             .Include(c => c.Team)
             .Include(c => c.Events)
             .Include(c => c.Tasks)
-            .FirstOrDefaultAsync(c => c.TeamId == teamId, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(c => c.TeamId == teamId);
     }
 
-    public async Task<List<Calendar>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Calendar>> GetAllAsync()
     {
         return await _context.Calendars
             .Include(c => c.Team)
-            .ToListAsync(cancellationToken: cancellationToken);
+            .ToListAsync();
     }
 
-    public async Task AddAsync(Calendar calendar, CancellationToken cancellationToken = default)
+    public async Task AddAsync(Calendar calendar)
     {
         await _context.Calendars.AddAsync(calendar);
         // await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Calendar calendar, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(Calendar calendar)
     {
         _context.Calendars.Update(calendar);
         // await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int calendarId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(int calendarId)
     {
         var calendar = await _context.Calendars.FindAsync(calendarId);
         if (calendar != null)
@@ -68,8 +69,8 @@ public class CalendarRepository : ICalendarRepository
         }
     }
 
-    public async Task<bool> ExistsAsync(int calendarId, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsAsync(int calendarId)
     {
-        return await _context.Calendars.AnyAsync(c => c.Id == calendarId, cancellationToken: cancellationToken);
+        return await _context.Calendars.AnyAsync(c => c.Id == calendarId);
     }
 }

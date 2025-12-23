@@ -5,12 +5,12 @@ namespace SMMTracker.Domain.IRepositories;
 
 public interface ITeamRepository
 {
-    Task<Team?> GetByIdAsync(int teamId, CancellationToken cancellationToken = default);
-    Task<Team?> GetByCodeAsync(string code, CancellationToken cancellationToken = default);
-    Task<bool> ExistsAsync(int teamId, CancellationToken cancellationToken = default);
-    Task<bool> ExistsByCodeAsync(string code, CancellationToken cancellationToken = default);
-    Task AddAsync(Team team, CancellationToken cancellationToken = default);
-    Task UpdateAsync(Team team, CancellationToken cancellationToken = default);
-    Task DeleteAsync(int teamId, CancellationToken cancellationToken = default);
-    Task<Team?> GetByIdWithMembersAsync(int teamId, CancellationToken cancellationToken = default);
+    Task<Team?> GetByIdAsync(int teamId);
+    Task<Team?> GetByCodeAsync(string code);
+    Task<bool> ExistsAsync(int teamId);
+    Task<bool> ExistsByCodeAsync(string code);
+    Task AddAsync(Team team);
+    Task UpdateAsync(Team team);
+    Task DeleteAsync(int teamId);
+    Task<Team?> GetByIdWithMembersAsync(int teamId);
 }
