@@ -5,7 +5,6 @@ namespace SMMTracker.Domain.IRepositories;
 
 public interface IUserTaskRepository
 {
-    Task<UserTask?> GetUserTaskAsync(int taskId, int userId);
-    Task AddAsync(UserTask userTask);
-    Task DeleteAsync(int userTaskId);
+    Task AddAsync(UserTask userTask, CancellationToken cancellationToken = default);
+    Task DeleteAsync(int userTaskId, CancellationToken cancellationToken = default);
 }
