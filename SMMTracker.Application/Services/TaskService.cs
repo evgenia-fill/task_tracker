@@ -13,25 +13,35 @@ public class TaskService : ITaskService
     private readonly ITaskRepository _taskRepository;
     private readonly IUserTeamRepository _userTeamRepository;
     private readonly IUserTaskRepository _userTaskRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IEventRepository _eventRepository;
 
     public TaskService(ITaskRepository taskRepository, IUserTeamRepository userTeamRepository,
-        IUserTaskRepository userTaskRepository)
+        IUserTaskRepository userTaskRepository, IUnitOfWork unitOfWork, IEventRepository eventRepository)
     {
         _taskRepository = taskRepository;
         _userTeamRepository = userTeamRepository;
         _userTaskRepository = userTaskRepository;
+        _unitOfWork = unitOfWork;
+        _eventRepository = eventRepository;
     }
 
     public async Task<int> CreateTaskAsync(CreateTaskDto taskDto,
         CancellationToken cancellationToken = default)
     {
+        var parentEvent = await _eventRepository.GetByIdAsync(taskDto.EventId);
+
+        if (parentEvent == null)
+            throw new InvalidOperationException($"Событие с Id={taskDto.EventId} не найдено");
+
         var task = new Task(
             taskDto.Name,
             taskDto.Description,
             taskDto.EventId,
-            taskDto.CalendarId
+            parentEvent.CalendarId
         );
         await _taskRepository.AddAsync(task);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return task.Id;
     }
 
@@ -121,20 +131,25 @@ public class TaskService : ITaskService
         };
         await _userTaskRepository.AddAsync(userTask);
     }
+
     public async Task<int> AddTaskWithAssigneeAsync(CreateTaskDto dto,
         CancellationToken cancellationToken = default)
     {
+        var parentEvent = await _eventRepository.GetByIdAsync(dto.EventId);
+        if (parentEvent == null)
+            throw new InvalidOperationException($"Событие с Id={dto.EventId} не найдено");
+
         var task = new Task(
             dto.Name,
             dto.Description,
             dto.EventId,
-            dto.CalendarId
+            parentEvent.CalendarId
         );
 
         task.Status = TaskStatus.InProgress;
 
         await _taskRepository.AddAsync(task);
-        
+
         var userTask = new UserTask
         {
             TaskId = task.Id,
@@ -146,5 +161,4 @@ public class TaskService : ITaskService
 
         return task.Id;
     }
-
 }
