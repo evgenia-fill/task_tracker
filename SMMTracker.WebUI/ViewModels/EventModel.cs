@@ -17,10 +17,8 @@ public class EventModel : PageModel
     public List<TeamMemberViewModel> TeamMembers { get; set; } = new();
     public EventViewModel Event { get; set; } = new();
     public bool IsOwner { get; set; }
-    public bool IsTeamMember { get; set; }
 
     public List<EventTaskViewModel> Tasks { get; set; } = new();
-    public List<EventCommentViewModel> Comments { get; set; } = new();
 
     private readonly IEventService _eventService;
     private readonly ITaskService _taskService;
@@ -55,7 +53,6 @@ public class EventModel : PageModel
             Title = eventDetails.Name,
             Description = eventDetails.Description,
             EventDate = eventDetails.Date,
-            // Status = (ViewModels.EventStatus)eventDetails.Status
         };
 
         TeamMembers = (await _teamService.GetTeamMembersAsync(eventDetails.TeamId))
@@ -74,6 +71,27 @@ public class EventModel : PageModel
         }).ToList();
 
         return Page();
+    }
+    
+    public async Task<IActionResult> OnPostMoveToProgressFromReviewAsync(int eventId, int taskId)
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdString, out var userId))
+        {
+            return RedirectToPage("/Login");
+        }
+
+        try
+        {
+            await _taskService.MoveTaskToProgressAsync(taskId);
+            TempData["SuccessMessage"] = "Задача возвращена в работу";
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Ошибка: {ex.Message}";
+        }
+        
+        return RedirectToPage(new { eventId });
     }
 
     public async Task<IActionResult> OnPostAddTaskAsync(int eventId)
@@ -108,8 +126,22 @@ public class EventModel : PageModel
 
     public async Task<IActionResult> OnPostMoveToDoneAsync(int eventId, int taskId)
     {
-        await _taskService.MoveTaskToDoneAsync(taskId);
-        TempData["SuccessMessage"] = "Задача выполнена";
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdString, out var userId))
+        {
+            return RedirectToPage("/Login");
+        }
+
+        try
+        {
+            await _taskService.MoveTaskToDoneAsync(taskId);
+            TempData["SuccessMessage"] = "Задача выполнена";
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Ошибка: {ex.Message}";
+        }
+        
         return RedirectToPage(new { eventId });
     }
 
