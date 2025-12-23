@@ -9,14 +9,11 @@ public class EventService : IEventService
 {
     private readonly IEventRepository _eventRepository;
     private readonly ICalendarRepository _calendarRepository;
-    private readonly IUnitOfWork _unitOfWork;
 
-    public EventService(IEventRepository eventRepository, ICalendarRepository calendarRepository,
-        IUnitOfWork unitOfWork)
+    public EventService(IEventRepository eventRepository, ICalendarRepository calendarRepository)
     {
         _eventRepository = eventRepository;
         _calendarRepository = calendarRepository;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<int> CreateEventAsync(CreateEventDto dto,
@@ -35,7 +32,6 @@ public class EventService : IEventService
             calendar.TeamId
         );
         await _eventRepository.AddAsync(eventAs, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return eventAs.Id;
     }
 
