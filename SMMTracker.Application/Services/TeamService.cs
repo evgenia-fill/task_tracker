@@ -15,7 +15,7 @@ public class TeamService : ITeamService
     private readonly IUnitOfWork _unitOfWork;
 
     public TeamService(ITeamRepository teamRepository, IUserTeamRepository userTeamRepository,
-        ICalendarRepository calendarRepository)
+        ICalendarRepository calendarRepository,  IUnitOfWork unitOfWork)
     {
         _teamRepository = teamRepository;
         _userTeamRepository = userTeamRepository;
@@ -49,6 +49,7 @@ public class TeamService : ITeamService
         team.UserTeams.Add(userTeam);
 
         await _userTeamRepository.AddAsync(userTeam);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return team.Id;
     }
@@ -79,6 +80,7 @@ public class TeamService : ITeamService
         };
 
         await _userTeamRepository.AddAsync(userTeam);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
     }
@@ -202,8 +204,8 @@ public class TeamService : ITeamService
 
     public async Task<CalendarDto?> GetCalendarForTeamAsync(int teamId)
     {
-        var calendar = await _calendarRepository.GetByIdAsync(teamId);
-
+        var calendar = await _calendarRepository.GetByTeamIdAsync(teamId);
+    
         return calendar == null ? null : new CalendarDto { Id = calendar.Id };
     }
 }
