@@ -167,6 +167,7 @@ public class TeamService : ITeamService
         {
             Id = team.Id,
             Name = team.Name,
+            Description = team.Description,
             InvitationCode = team.Code,
             Members = team.UserTeams.Select(ut => new TeamMemberDto
             {
