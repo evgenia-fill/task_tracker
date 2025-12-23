@@ -13,35 +13,37 @@ public class TaskService : ITaskService
     private readonly ITaskRepository _taskRepository;
     private readonly IUserTeamRepository _userTeamRepository;
     private readonly IUserTaskRepository _userTaskRepository;
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventRepository _eventRepository;
 
     public TaskService(ITaskRepository taskRepository, IUserTeamRepository userTeamRepository,
-        IUserTaskRepository userTaskRepository, IUnitOfWork unitOfWork, IEventRepository eventRepository)
+        IUserTaskRepository userTaskRepository, IEventRepository eventRepository)
     {
         _taskRepository = taskRepository;
         _userTeamRepository = userTeamRepository;
         _userTaskRepository = userTaskRepository;
-        _unitOfWork = unitOfWork;
         _eventRepository = eventRepository;
     }
 
-    public async Task<int> CreateTaskAsync(CreateTaskDto taskDto,
+    public async Task<int> CreateTaskAsync(CreateTaskDto dto,
         CancellationToken cancellationToken = default)
     {
-        var parentEvent = await _eventRepository.GetByIdAsync(taskDto.EventId);
+        System.Console.WriteLine("1");
 
+        var parentEvent = await _eventRepository.GetByIdAsync(dto.EventId);
         if (parentEvent == null)
-            throw new InvalidOperationException($"Событие с Id={taskDto.EventId} не найдено");
+            throw new InvalidOperationException($"Событие с Id={dto.EventId} не найдено");
 
         var task = new Task(
-            taskDto.Name,
-            taskDto.Description,
-            taskDto.EventId,
+            dto.Name,
+            dto.Description,
+            dto.EventId,
             parentEvent.CalendarId
         );
+
+        task.Status = TaskStatus.InProgress;
+
         await _taskRepository.AddAsync(task);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
         return task.Id;
     }
 
@@ -51,7 +53,7 @@ public class TaskService : ITaskService
         var task = await _taskRepository.GetByIdAsync(taskId);
         if (task == null)
             throw new Exception("Task not found");
-
+        
         await _taskRepository.UpdateStatusToReviewAsync(task);
     }
 
@@ -61,7 +63,7 @@ public class TaskService : ITaskService
         var task = await _taskRepository.GetByIdAsync(taskId);
         if (task == null)
             throw new Exception("Task not found");
-
+        
         await _taskRepository.UpdateStatusToDoneAsync(task);
     }
 
@@ -129,12 +131,16 @@ public class TaskService : ITaskService
             TaskId = task.Id,
             UserId = userIdToAssign,
         };
-        await _userTaskRepository.AddAsync(userTask);
+        System.Console.WriteLine("2");
+
+        await _userTaskRepository.AddAsync(userTask, cancellationToken);
     }
 
     public async Task<int> AddTaskWithAssigneeAsync(CreateTaskDto dto,
         CancellationToken cancellationToken = default)
     {
+        System.Console.WriteLine("1");
+
         var parentEvent = await _eventRepository.GetByIdAsync(dto.EventId);
         if (parentEvent == null)
             throw new InvalidOperationException($"Событие с Id={dto.EventId} не найдено");
