@@ -39,6 +39,9 @@ static class Program
         
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlite(connectionString));
+
+        services.AddScoped<IApplicationDbContext>(sp => 
+            sp.GetRequiredService<ApplicationDbContext>());
         
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserService, UserService>();
