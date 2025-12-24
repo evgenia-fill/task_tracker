@@ -41,7 +41,7 @@ public class TeamService : ITeamService
             TeamId = team.Id,
             UserId = creatorId,
             Role = TeamRole.Admin,
-            Team = team 
+            Team = team
         };
 
         team.UserTeams.Add(userTeam);
@@ -154,7 +154,7 @@ public class TeamService : ITeamService
     {
         var team = await _teamRepository.GetByIdWithMembersAsync(teamId);
 
-        if (team == null) 
+        if (team == null)
             return null;
 
         var teamDetailsDto = new TeamDetailsDto
@@ -174,22 +174,23 @@ public class TeamService : ITeamService
                     TeamRole.Admin => "Админ",
                     TeamRole.User => "Участник",
                     _ => "Участник"
-                }   
+                }
             }).ToList()
         };
 
         return teamDetailsDto;
     }
+
     public async Task UpdateTeamAsync(int teamId, string newName, string newDescription, int adminId,
         CancellationToken cancellationToken = default)
     {
         var team = await _teamRepository.GetByIdAsync(teamId);
         if (team == null)
             throw new Exception("Team not found");
-        
+
         if (!await _userTeamRepository.IsUserAdminAsync(teamId, adminId))
             throw new UnauthorizedAccessException("Only admins can update the team");
-        
+
         team.Name = newName;
         team.Description = newDescription;
         await _teamRepository.UpdateAsync(team);
@@ -199,7 +200,7 @@ public class TeamService : ITeamService
     public async Task<CalendarDto?> GetCalendarForTeamAsync(int teamId)
     {
         var calendar = await _calendarRepository.GetByTeamIdAsync(teamId);
-    
+
         return calendar == null ? null : new CalendarDto { Id = calendar.Id };
     }
 }

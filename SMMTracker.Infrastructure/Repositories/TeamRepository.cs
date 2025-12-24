@@ -19,7 +19,7 @@ public class TeamRepository : ITeamRepository
     {
         return await _context.Teams
             .Include(t => t.UserTeams)
-            .ThenInclude(ut => ut.User) 
+            .ThenInclude(ut => ut.User)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken: cancellationToken);
     }
 
@@ -61,7 +61,7 @@ public class TeamRepository : ITeamRepository
             await _context.SaveChangesAsync(cancellationToken);
         }
     }
-    
+
     public async Task<Team?> GetByIdWithMembersAsync(int teamId, CancellationToken cancellationToken = default)
     {
         return await _context.Teams

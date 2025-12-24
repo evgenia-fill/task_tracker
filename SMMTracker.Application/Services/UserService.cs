@@ -90,7 +90,7 @@ public class UserService : IUserService
     {
         var user = await _userRepository.GetByUsernameAsync(username);
         if (user == null) return null;
-       
+
         return new UserDto
         {
             Id = user.Id,
