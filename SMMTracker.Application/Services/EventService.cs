@@ -70,10 +70,10 @@ public class EventService : IEventService
             {
                 Id = t.Id,
                 Name = t.Name,
+                Description = t.Description ?? "", 
                 Status = t.Status
             }).ToList()
         };
-
     }
 
     public async Task<List<EventSummaryDto>> GetEventsForTeamAsync(int teamId)
