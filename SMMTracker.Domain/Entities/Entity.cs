@@ -25,7 +25,7 @@ public abstract class Entity
 
     public override string ToString()
     {
-       return $"Name: {GetType().Name} Id: {Id}";
+        return $"Name: {GetType().Name} Id: {Id}";
     }
 
     public static bool operator ==(Entity? left, Entity? right)

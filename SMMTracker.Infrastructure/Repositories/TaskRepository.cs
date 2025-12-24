@@ -14,12 +14,14 @@ public class TaskRepository : ITaskRepository
         _context = context;
     }
 
-    public async Task<SMMTracker.Domain.Entities.Task?> GetByIdAsync(int taskId, CancellationToken cancellationToken = default)
+    public async Task<SMMTracker.Domain.Entities.Task?> GetByIdAsync(int taskId,
+        CancellationToken cancellationToken = default)
     {
         return await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskId, cancellationToken: cancellationToken);
     }
-    
-    public async Task<SMMTracker.Domain.Entities.Task?> GetByIdWithEventAndTeamAsync(int taskId, CancellationToken cancellationToken = default)
+
+    public async Task<SMMTracker.Domain.Entities.Task?> GetByIdWithEventAndTeamAsync(int taskId,
+        CancellationToken cancellationToken = default)
     {
         return await _context.Tasks
             .Include(t => t.Event)
@@ -38,7 +40,8 @@ public class TaskRepository : ITaskRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateStatusToReviewAsync(Domain.Entities.Task task, CancellationToken cancellationToken = default)
+    public async Task UpdateStatusToReviewAsync(Domain.Entities.Task task,
+        CancellationToken cancellationToken = default)
     {
         task.MoveToReview();
         await _context.SaveChangesAsync(cancellationToken);
@@ -50,25 +53,29 @@ public class TaskRepository : ITaskRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateStatusToInProgressAsync(Domain.Entities.Task task, CancellationToken cancellationToken = default)
+    public async Task UpdateStatusToInProgressAsync(Domain.Entities.Task task,
+        CancellationToken cancellationToken = default)
     {
         task.MoveToInProgress();
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task ChangeTaskNameAsync(Domain.Entities.Task task, string name, CancellationToken cancellationToken = default)
+    public async Task ChangeTaskNameAsync(Domain.Entities.Task task, string name,
+        CancellationToken cancellationToken = default)
     {
         task.ChangeName(name);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task ChangeTaskDescriptionAsync(Domain.Entities.Task task, string description, CancellationToken cancellationToken = default)
+    public async Task ChangeTaskDescriptionAsync(Domain.Entities.Task task, string description,
+        CancellationToken cancellationToken = default)
     {
         task.ChangeDescription(description);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task SetTaskDeadlineAsync(Domain.Entities.Task task, DateTime deadline, CancellationToken cancellationToken = default)
+    public async Task SetTaskDeadlineAsync(Domain.Entities.Task task, DateTime deadline,
+        CancellationToken cancellationToken = default)
     {
         task.SetDeadline(deadline);
         await _context.SaveChangesAsync(cancellationToken);

@@ -15,7 +15,7 @@ using SMMTracker.Infrastructure.Data.DataContext;
 namespace SMMTracker.WebUI.API;
 
 [ApiController]
-[AllowAnonymous] //для deploy нужно, чтобы 404 не словить
+[AllowAnonymous]
 public class AuthController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -52,9 +52,9 @@ public class AuthController : ControllerBase
                 return Redirect("/Login?error=auth_failed");
             }
 
-            var isValid = ValidateTelegramData(botToken, id, first_name, last_name, 
+            var isValid = ValidateTelegramData(botToken, id, first_name, last_name,
                 username, photo_url, auth_date, hash);
-            
+
             if (!isValid)
             {
                 Console.WriteLine($"[TELEGRAM_AUTH_ERROR] Неверная подпись данных");
@@ -110,75 +110,76 @@ public class AuthController : ControllerBase
             {
                 Console.WriteLine($"[TELEGRAM_AUTH_ERROR] Внутренняя ошибка: {ex.InnerException.Message}");
             }
+
             return Redirect("/Login?error=auth_failed");
         }
     }
 
-    private bool ValidateTelegramData(string botToken, long id, string firstName, 
-    string? lastName, string? username, string? photoUrl, long authDate, string hash)
-{
-    try
+    private bool ValidateTelegramData(string botToken, long id, string firstName,
+        string? lastName, string? username, string? photoUrl, long authDate, string hash)
     {
-        Console.WriteLine($"[VALIDATE_DEBUG] Токен: {botToken[..15]}...");
-        
-        var dataCheckDict = new Dictionary<string, string>
+        try
         {
-            ["auth_date"] = authDate.ToString(),
-            ["first_name"] = firstName,
-            ["id"] = id.ToString()
-        };
-        
-        if (!string.IsNullOrEmpty(lastName))
-            dataCheckDict["last_name"] = lastName;
-            
-        if (!string.IsNullOrEmpty(photoUrl))
-            dataCheckDict["photo_url"] = photoUrl;
-            
-        if (!string.IsNullOrEmpty(username))
-            dataCheckDict["username"] = username;
-        
-        var sortedKeys = dataCheckDict.Keys.OrderBy(k => k).ToList();
-        
-        var dataCheckArray = new List<string>();
-        foreach (var key in sortedKeys)
-            dataCheckArray.Add($"{key}={dataCheckDict[key]}");
-        
-        var dataCheckString = string.Join("\n", dataCheckArray);
-        
-        Console.WriteLine($"[VALIDATE_DEBUG] Data string для хеша:");
-        Console.WriteLine($"\"{dataCheckString.Replace("\n", "\\n")}\"");
-        Console.WriteLine($"[VALIDATE_DEBUG] Ожидаемый хеш: {hash}");
-        
-        byte[] secretKey;
-        using (var sha256 = SHA256.Create())
-        {
-            secretKey = sha256.ComputeHash(Encoding.UTF8.GetBytes(botToken));
+            Console.WriteLine($"[VALIDATE_DEBUG] Токен: {botToken[..15]}...");
+
+            var dataCheckDict = new Dictionary<string, string>
+            {
+                ["auth_date"] = authDate.ToString(),
+                ["first_name"] = firstName,
+                ["id"] = id.ToString()
+            };
+
+            if (!string.IsNullOrEmpty(lastName))
+                dataCheckDict["last_name"] = lastName;
+
+            if (!string.IsNullOrEmpty(photoUrl))
+                dataCheckDict["photo_url"] = photoUrl;
+
+            if (!string.IsNullOrEmpty(username))
+                dataCheckDict["username"] = username;
+
+            var sortedKeys = dataCheckDict.Keys.OrderBy(k => k).ToList();
+
+            var dataCheckArray = new List<string>();
+            foreach (var key in sortedKeys)
+                dataCheckArray.Add($"{key}={dataCheckDict[key]}");
+
+            var dataCheckString = string.Join("\n", dataCheckArray);
+
+            Console.WriteLine($"[VALIDATE_DEBUG] Data string для хеша:");
+            Console.WriteLine($"\"{dataCheckString.Replace("\n", "\\n")}\"");
+            Console.WriteLine($"[VALIDATE_DEBUG] Ожидаемый хеш: {hash}");
+
+            byte[] secretKey;
+            using (var sha256 = SHA256.Create())
+            {
+                secretKey = sha256.ComputeHash(Encoding.UTF8.GetBytes(botToken));
+            }
+
+            using var hmac = new HMACSHA256(secretKey);
+            var computedHashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(dataCheckString));
+            var computedHashString = BitConverter.ToString(computedHashBytes)
+                .Replace("-", "")
+                .ToLower();
+
+            Console.WriteLine($"[VALIDATE_DEBUG] Вычисленный хеш: {computedHashString}");
+            Console.WriteLine($"[VALIDATE_DEBUG] Совпадают: {computedHashString == hash.ToLower()}");
+
+            Console.WriteLine($"[VALIDATE_DEBUG] Альтернативный расчет с raw токеном...");
+            using var hmac2 = new HMACSHA256(Encoding.UTF8.GetBytes(botToken));
+            var computedHash2 = BitConverter.ToString(hmac2.ComputeHash(Encoding.UTF8.GetBytes(dataCheckString)))
+                .Replace("-", "")
+                .ToLower();
+            Console.WriteLine($"[VALIDATE_DEBUG] С raw токеном: {computedHash2}");
+
+            return computedHashString == hash.ToLower() || computedHash2 == hash.ToLower();
         }
-        
-        using var hmac = new HMACSHA256(secretKey);
-        var computedHashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(dataCheckString));
-        var computedHashString = BitConverter.ToString(computedHashBytes)
-            .Replace("-", "")
-            .ToLower();
-        
-        Console.WriteLine($"[VALIDATE_DEBUG] Вычисленный хеш: {computedHashString}");
-        Console.WriteLine($"[VALIDATE_DEBUG] Совпадают: {computedHashString == hash.ToLower()}");
-        
-        Console.WriteLine($"[VALIDATE_DEBUG] Альтернативный расчет с raw токеном...");
-        using var hmac2 = new HMACSHA256(Encoding.UTF8.GetBytes(botToken));
-        var computedHash2 = BitConverter.ToString(hmac2.ComputeHash(Encoding.UTF8.GetBytes(dataCheckString)))
-            .Replace("-", "")
-            .ToLower();
-        Console.WriteLine($"[VALIDATE_DEBUG] С raw токеном: {computedHash2}");
-        
-        return computedHashString == hash.ToLower() || computedHash2 == hash.ToLower();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[VALIDATE_ERROR] {ex.Message}");
+            return false;
+        }
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"[VALIDATE_ERROR] {ex.Message}");
-        return false;
-    }
-}
 
     [HttpPost("api/auth/telegram")]
     public async Task<IActionResult> LoginWithTelegram([FromBody] TelegramLoginDto? dto)

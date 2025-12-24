@@ -70,7 +70,7 @@ public class EventService : IEventService
             {
                 Id = t.Id,
                 Name = t.Name,
-                Description = t.Description ?? "", 
+                Description = t.Description ?? "",
                 Status = t.Status
             }).ToList()
         };

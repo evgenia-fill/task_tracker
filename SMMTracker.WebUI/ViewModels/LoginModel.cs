@@ -9,7 +9,7 @@ namespace SMMTracker.WebUI.ViewModels;
 public class LoginModel : PageModel
 {
     public string BotName { get; set; } = "";
-    public string CallbackUrl { get; set; } = ""; 
+    public string CallbackUrl { get; set; } = "";
     public string ErrorMessage { get; set; } = "";
     public bool IsAuthenticated { get; set; }
 
@@ -22,13 +22,14 @@ public class LoginModel : PageModel
 
     public IActionResult OnGet(string? error = null)
     {
-        IsAuthenticated = User.Identity?.IsAuthenticated == true && 
+        IsAuthenticated = User.Identity?.IsAuthenticated == true &&
                           User.HasClaim(c => c.Type == ClaimTypes.NameIdentifier);
-        
+
         if (IsAuthenticated)
         {
             Console.WriteLine($"[LOGIN_DEBUG] Пользователь авторизован: {User.Identity?.Name}");
-            Console.WriteLine($"[LOGIN_DEBUG] Claims: {string.Join(", ", User.Claims.Select(c => $"{c.Type}:{c.Value}"))}");
+            Console.WriteLine(
+                $"[LOGIN_DEBUG] Claims: {string.Join(", ", User.Claims.Select(c => $"{c.Type}:{c.Value}"))}");
         }
         else
         {
@@ -45,14 +46,14 @@ public class LoginModel : PageModel
                 _ => "Произошла ошибка при авторизации."
             };
         }
-        
+
         BotName = _configuration["Telegram:BotName"] ?? "SmmTrackerTestBot_bot";
-        
+
         CallbackUrl = "https://smmtracker.ru//api/auth/telegram-callback";
-        
+
         return Page();
     }
-    
+
     public async Task<IActionResult> OnPostForceLogout()
     {
         await HttpContext.SignOutAsync();

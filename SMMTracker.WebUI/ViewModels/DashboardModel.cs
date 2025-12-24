@@ -39,7 +39,7 @@ public class DashboardModel : PageModel
         var userDto = await _userService.GetUserByIdAsync(userId);
         if (userDto == null)
         {
-            return RedirectToPage("/Logout"); 
+            return RedirectToPage("/Logout");
         }
 
         var teams = await _teamService.GetTeamsForUserAsync(userId);
@@ -51,12 +51,12 @@ public class DashboardModel : PageModel
             FirstName = userDto.FirstName,
             LastName = userDto.LastName,
             TelegramUsername = userDto.UserName,
-            ProfileDescription = userDto.ProfileDescription ?? "" 
+            ProfileDescription = userDto.ProfileDescription ?? ""
         };
 
         ViewModel.Teams = teams.Select(t => new TeamViewModel
         {
-            Id = t.Id, 
+            Id = t.Id,
             Name = t.Name,
             InvitationCode = t.InvitationCode,
             CreatedAt = t.CreatedAt,

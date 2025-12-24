@@ -16,45 +16,46 @@ static class Program
             .AddJsonFile("appsettings.Secrets.json", optional: false)
             .Build();
 
-        var token = configuration["Telegram:BotToken"];  
-        
+        var token = configuration["Telegram:BotToken"];
+
         if (string.IsNullOrEmpty(token))
         {
             Console.WriteLine("Токен не найден в файле appsettings.Secrets.json");
             return;
         }
+
         Console.WriteLine($"Токен найден");
-        
+
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-        
+
         if (string.IsNullOrEmpty(connectionString))
         {
             Console.WriteLine("путь к бд не найден в конфиге");
             return;
         }
-        
+
         Console.WriteLine($"путь к бд {connectionString}");
-        
+
         var services = new ServiceCollection();
-        
+
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlite(connectionString));
-        
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserService, UserService>();
-        
+
         var serviceProvider = services.BuildServiceProvider();
 
         try
         {
             var userService = serviceProvider.GetRequiredService<IUserService>();
             var bot = new TelegramBotService(token, userService);
-            
+
             await bot.StartAsync(CancellationToken.None);
 
             Console.WriteLine("Бот запущен");
             Console.WriteLine("/start в @SmmTrackerTestBot_bot");
-            
+
             await Task.Delay(-1, CancellationToken.None);
         }
         catch (Exception ex)

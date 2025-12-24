@@ -1,5 +1,5 @@
 using SMMTracker.Domain.Entities;
-using Task =System.Threading.Tasks.Task;
+using Task = System.Threading.Tasks.Task;
 
 namespace SMMTracker.Domain.IRepositories;
 
