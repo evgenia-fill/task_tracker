@@ -79,7 +79,7 @@
         right: 20px;
         z-index: 1000;
     }
-    
+
     .task-description {
         color: #6c757d;
         font-size: 0.875rem;
@@ -90,40 +90,36 @@
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
     }
-    
+
     .description-modal-body {
-        max-height: 400px;
+        max-height: 1500px;
         overflow-y: auto;
-        padding-right: 5px;
+        padding-right: 10px;
     }
-    
+
     .description-text {
         white-space: pre-wrap;
         word-wrap: break-word;
         line-height: 1.5;
-        font-size: 0.95rem;
+        font-size: 1rem;
         color: #495057;
     }
-    
-    .description-text.empty {
-        color: #6c757d;
-        font-style: italic;
-    }
-    
+
     .description-modal-body::-webkit-scrollbar {
-        width: 6px;
+        width: 5px;
+        height: 6px;
     }
-    
+
     .description-modal-body::-webkit-scrollbar-track {
         background: #f1f1f1;
-        border-radius: 3px;
+        border-radius: 4px;
     }
-    
+
     .description-modal-body::-webkit-scrollbar-thumb {
         background: #888;
-        border-radius: 3px;
+        border-radius: 4px;
     }
-    
+
     .description-modal-body::-webkit-scrollbar-thumb:hover {
         background: #555;
     }
@@ -144,13 +140,6 @@
                     <h1 class="display-5 mb-2">@Model.Event.Title</h1>
                     <p class="lead mb-0">@Model.Event.Description</p>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <div class="mt-3 mt-md-0">
-                        <span class="badge bg-light text-dark fs-6 p-2">
-                            <i class="bi bi-calendar-event me-2"></i>@Model.Event.EventDate.ToString("dd.MM.yyyy HH:mm")
-                        </span>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -162,10 +151,7 @@
                     <a href="/Dashboard" class="btn btn-outline-primary me-2">
                         <i class="bi bi-house me-1"></i>В профиль
                     </a>
-                    <a href="/Team/@Model.Team.Id" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-1"></i>Назад в команду
-                    </a>
-                    <button class="btn btn-success ms-2" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">
                         <i class="bi bi-plus-circle me-1"></i>Добавить задачу
                     </button>
                 </div>
@@ -175,182 +161,171 @@
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="container">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
+    <div class="container">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    </div>
     }
 
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="container">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
+    <div class="container">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    </div>
     }
 
     <div class="container">
         <div class="row mb-5">
-            <div class="col-md-4 mb-4">
-                <div class="task-column task-column-inprogress h-100">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0">
-                            <span class="badge bg-primary me-2">@Model.Tasks.Count(t => t.Status == TaskStatus.InProgress)</span>
-                            В разработке
-                        </h4>
-                        <small class="text-muted">Добавляют все</small>
-                    </div>
+    <div class="col-md-4 mb-4">
+    <div class="task-column task-column-inprogress h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">
+                <span class="badge bg-primary me-2">@Model.Tasks.Count(t => t.Status == TaskStatus.InProgress)</span>
+                В разработке
+            </h4>
+        </div>
 
-                    @foreach (var task in Model.Tasks.Where(t => t.Status == TaskStatus.InProgress))
-                    {
-                        <div class="task-card" data-task-title="@task.Title" data-task-description="@(task.Description ?? "Нет описания")">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="mb-0">@task.Title</h6>
-                                <span class="status-badge bg-primary text-white">В работе</span>
-                            </div>
-                            <p class="task-description">@(task.Description ?? "Нет описания")</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <small class="text-muted">
-                                    <i class="bi bi-person me-1"></i>@task.Assignee
-                                </small>
-                                <small class="text-muted">
-                                    <i class="bi bi-calendar me-1"></i>@task.CreatedAt.ToString("dd.MM")
-                                </small>
-                            </div>
-                            <div class="d-grid">
-                                <form method="post" asp-page-handler="MoveToReview">
-                                    <input type="hidden" name="teamId" value="@Model.Team.Id"/>
-                                    <input type="hidden" name="eventId" value="@Model.Event.Id"/>
-                                    <input type="hidden" name="taskId" value="@task.Id"/>
-                                    <button type="submit" class="btn btn-warning btn-sm w-100">
-                                        <i class="bi bi-send me-1"></i>Отправить на ревью
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    }
-
-                    @if (Model.Tasks.All(t => t.Status is not TaskStatus.InProgress))
-                    {
-                        <div class="text-center py-4">
-                            <i class="bi bi-inbox display-4 text-muted mb-3"></i>
-                            <p class="text-muted">Нет задач в разработке</p>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="task-column task-column-review h-100">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0">
-                            <span class="badge bg-warning me-2">@Model.Tasks.Count(t => t.Status == TaskStatus.InReview)</span>
-                            На ревью
-                        </h4>
-                    </div>
-
-                    @foreach (var task in Model.Tasks.Where(t => t.Status == TaskStatus.InReview))
-                    {
-                        <div class="task-card" data-task-title="@task.Title" data-task-description="@(task.Description ?? "Нет описания")">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="mb-0">@task.Title</h6>
-                                <span class="status-badge bg-warning text-dark">На проверке</span>
-                            </div>
-                            <p class="task-description">@(task.Description ?? "Нет описания")</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <small class="text-muted">
-                                    <i class="bi bi-person me-1"></i>@task.Assignee
-                                </small>
-                                <small class="text-muted">
-                                    <i class="bi bi-clock me-1"></i>@task.MovedToReviewAt?.ToString("dd.MM HH:mm")
-                                </small>
-                            </div>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <form method="post" asp-page-handler="MoveToProgressFromReview">
-                                        <input type="hidden" name="teamId" value="@Model.Team.Id"/>
-                                        <input type="hidden" name="eventId" value="@Model.Event.Id"/>
-                                        <input type="hidden" name="taskId" value="@task.Id"/>
-                                        <button type="submit" class="btn btn-primary btn-sm w-100">
-                                            <i class="bi bi-arrow-clockwise me-1"></i>В работу
-                                        </button>
-                                    </form>
-                                </div>
-                                <div class="col-6">
-                                    <form method="post" asp-page-handler="MoveToDone">
-                                        <input type="hidden" name="teamId" value="@Model.Team.Id"/>
-                                        <input type="hidden" name="eventId" value="@Model.Event.Id"/>
-                                        <input type="hidden" name="taskId" value="@task.Id"/>
-                                        <button type="submit" class="btn btn-success btn-sm w-100">
-                                            <i class="bi bi-check-lg me-1"></i>Выполнено
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    }
-
-                    @if (Model.Tasks.All(t => t.Status != TaskStatus.InReview))
-                    {
-                        <div class="text-center py-4">
-                            <i class="bi bi-hourglass-split display-4 text-muted mb-3"></i>
-                            <p class="text-muted">Нет задач на ревью</p>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="task-column task-column-completed h-100">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0">
-                            <span class="badge bg-success me-2">@Model.Tasks.Count(t => t.Status == TaskStatus.Done)</span>
-                            Выполнено
-                        </h4>
-                        <small class="text-muted">Одобренные задачи</small>
-                    </div>
-
-                    @foreach (var task in Model.Tasks.Where(t => t.Status == TaskStatus.Done))
-                    {
-                        <div class="task-card" data-task-title="@task.Title" data-task-description="@(task.Description ?? "Нет описания")">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="mb-0">@task.Title</h6>
-                                <span class="status-badge bg-success text-white">Выполнено</span>
-                            </div>
-                            <p class="task-description">@(task.Description ?? "Нет описания")</p>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <small class="text-muted">
-                                    <i class="bi bi-person me-1"></i>@task.Assignee
-                                </small>
-                                <small class="text-muted">
-                                    <i class="bi bi-check-circle me-1"></i>@task.CompletedAt?.ToString("dd.MM HH:mm")
-                                </small>
-                            </div>
-                            <form method="post" asp-page-handler="DeleteTask" class="mt-2">
-                                <input type="hidden" name="teamId" value="@Model.Team.Id"/>
-                                <input type="hidden" name="eventId" value="@Model.Event.Id"/>
-                                <input type="hidden" name="taskId" value="@task.Id"/>
-                                <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Удалить задачу?')">
-                                    <i class="bi bi-trash me-1"></i>Удалить
-                                </button>
-                            </form>
-                        </div>
-                    }
-
-                    @if (Model.Tasks.All(t => t.Status != TaskStatus.Done))
-                    {
-                        <div class="text-center py-4">
-                            <i class="bi bi-check-circle display-4 text-muted mb-3"></i>
-                            <p class="text-muted">Нет выполненных задач</p>
-                        </div>
-                    }
-                </div>
+        @foreach (var task in Model.Tasks.Where(t => t.Status == TaskStatus.InProgress))
+        {
+    <div class="task-card" data-task-title="@task.Title" data-task-description="@(task.Description ?? "Нет описания")">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+        <h6 class="mb-0">@task.Title</h6>
+        <span class="status-badge bg-primary text-white">В работе</span>
+    </div>
+        <p class="task-description">@(task.Description ?? "Нет описания")</p>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+    <small class="text-muted">
+        <i class="bi bi-person me-1"></i>@task.Assignee
+        </small>
+    </div>
+            <div class="d-grid">
+                <form method="post" asp-page-handler="MoveToReview">
+                    <input type="hidden" name="teamId" value="@Model.Team.Id"/>
+                    <input type="hidden" name="eventId" value="@Model.Event.Id"/>
+                    <input type="hidden" name="taskId" value="@task.Id"/>
+                    <button type="submit" class="btn btn-warning btn-sm w-100">
+                        <i class="bi bi-send me-1"></i>Отправить на ревью
+                    </button>
+                </form>
             </div>
         </div>
+        }
+
+        @if (Model.Tasks.All(t => t.Status is not TaskStatus.InProgress))
+        {
+    <div class="text-center py-4">
+        <i class="bi bi-inbox display-4 text-muted mb-3"></i>
+    <p class="text-muted">Нет задач в разработке</p>
+        </div>
+        }
+    </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+    <div class="task-column task-column-review h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <span class="badge bg-warning me-2">@Model.Tasks.Count(t => t.Status == TaskStatus.InReview)</span>
+            На ревью
+        </h4>
+    </div>
+
+        @foreach (var task in Model.Tasks.Where(t => t.Status == TaskStatus.InReview))
+        {
+    <div class="task-card" data-task-title="@task.Title" data-task-description="@(task.Description ?? "Нет описания")">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+    <h6 class="mb-0">@task.Title</h6>
+        <span class="status-badge bg-warning text-dark">На проверке</span>
+    </div>
+        <p class="task-description">@(task.Description ?? "Нет описания")</p>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <small class="text-muted">
+                <i class="bi bi-person me-1"></i>@task.Assignee
+            </small>
+        </div>
+        <div class="row g-2">
+            <div class="col-6">
+                <form method="post" asp-page-handler="MoveToProgressFromReview">
+                    <input type="hidden" name="teamId" value="@Model.Team.Id"/>
+                    <input type="hidden" name="eventId" value="@Model.Event.Id"/>
+                    <input type="hidden" name="taskId" value="@task.Id"/>
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-arrow-clockwise me-1"></i>В работу
+                    </button>
+                </form>
+            </div>
+            <div class="col-6">
+                <form method="post" asp-page-handler="MoveToDone">
+                    <input type="hidden" name="teamId" value="@Model.Team.Id"/>
+                    <input type="hidden" name="eventId" value="@Model.Event.Id"/>
+                    <input type="hidden" name="taskId" value="@task.Id"/>
+                    <button type="submit" class="btn btn-success btn-sm w-100">
+                        <i class="bi bi-check-lg me-1"></i>Выполнено
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+        }
+
+        @if (Model.Tasks.All(t => t.Status != TaskStatus.InReview))
+        {
+        <div class="text-center py-4">
+            <i class="bi bi-hourglass-split display-4 text-muted mb-3"></i>
+            <p class="text-muted">Нет задач на ревью</p>
+        </div>
+        }
+    </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+    <div class="task-column task-column-completed h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">
+        <span class="badge bg-success me-2">@Model.Tasks.Count(t => t.Status == TaskStatus.Done)</span>
+        Выполнено
+    </h4>
+    </div>
+
+        @foreach (var task in Model.Tasks.Where(t => t.Status == TaskStatus.Done))
+        {
+        <div class="task-card" data-task-title="@task.Title" data-task-description="@(task.Description ?? "Нет описания")">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="mb-0">@task.Title</h6>
+    <span class="status-badge bg-success text-white">Выполнено</span>
+        </div>
+    <p class="task-description">@(task.Description ?? "Нет описания")</p>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <small class="text-muted">
+                    <i class="bi bi-person me-1"></i>@task.Assignee
+                                </small>
+            </div>
+            <form method="post" asp-page-handler="DeleteTask" class="mt-2">
+                <input type="hidden" name="teamId" value="@Model.Team.Id"/>
+                <input type="hidden" name="eventId" value="@Model.Event.Id"/>
+                <input type="hidden" name="taskId" value="@task.Id"/>
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Удалить задачу?')">
+                    <i class="bi bi-trash me-1"></i>Удалить
+                </button>
+            </form>
+        </div>
+        }
+
+        @if (Model.Tasks.All(t => t.Status != TaskStatus.Done))
+        {
+        <div class="text-center py-4">
+            <i class="bi bi-check-circle display-4 text-muted mb-3"></i>
+            <p class="text-muted">Нет выполненных задач</p>
+        </div>
+        }
+    </div>
+    </div>
+    </div>
     </div>
 
     <div class="back-to-profile">
@@ -360,7 +335,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="addTaskModal" tabindex="-1">
+    <div class="modal fade" id="addTaskModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -394,7 +369,7 @@
 </div>
 
 <div class="modal fade" id="taskDescriptionModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="taskDescriptionTitle"></h5>
@@ -413,20 +388,20 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const taskCards = document.querySelectorAll('.task-card');
-        
+
         taskCards.forEach(card => {
             card.addEventListener('click', function(e) {
                 if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.closest('form')) {
                     return;
                 }
-                
+
                 const title = this.getAttribute('data-task-title');
                 const description = this.getAttribute('data-task-description');
-                
+
                 document.getElementById('taskDescriptionTitle').textContent = title;
                 const descriptionText = document.getElementById('taskDescriptionText');
                 descriptionText.textContent = description;
-                
+
                 if (!description || description === 'Нет описания') {
                     descriptionText.classList.add('empty');
                     descriptionText.textContent = 'Описание отсутствует';
@@ -434,14 +409,14 @@
                     descriptionText.classList.remove('empty');
                     descriptionText.textContent = description;
                 }
-                
+
                 const modal = new bootstrap.Modal(document.getElementById('taskDescriptionModal'));
                 modal.show();
             });
         });
-        
+
         const errorAlerts = document.querySelectorAll('.alert-danger');
-        const hasError = Array.from(errorAlerts).some(alert => 
+        const hasError = Array.from(errorAlerts).some(alert =>
             alert.closest('form') && alert.closest('form').id === 'addTaskForm');
 
         if (hasError) {
@@ -488,14 +463,14 @@
             taskDescriptionModal.addEventListener('shown.bs.modal', function () {
                 const modalBody = this.querySelector('.description-modal-body');
                 const descriptionText = this.querySelector('#taskDescriptionText');
-                
+
                 if (descriptionText && modalBody) {
                     const textHeight = descriptionText.scrollHeight;
-                    const maxHeight = Math.min(window.innerHeight * 0.6, textHeight + 30);
-                    
+                    const maxHeight = Math.min(window.innerHeight * 0.9, textHeight + 40);
+
                     modalBody.style.maxHeight = maxHeight + 'px';
-                    
-                    if (textHeight > maxHeight - 30) {
+
+                    if (textHeight > maxHeight - 40) {
                         modalBody.classList.add('has-scroll');
                     } else {
                         modalBody.classList.remove('has-scroll');
