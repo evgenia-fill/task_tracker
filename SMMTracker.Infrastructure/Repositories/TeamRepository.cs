@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
@@ -16,58 +15,58 @@ public class TeamRepository : ITeamRepository
         _context = context;
     }
 
-    public async Task<Team?> GetByIdAsync(int id)
+    public async Task<Team?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Teams
             .Include(t => t.UserTeams)
             .ThenInclude(ut => ut.User) 
-            .FirstOrDefaultAsync(t => t.Id == id);
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken: cancellationToken);
     }
 
-    public async Task<Team?> GetByCodeAsync(string code)
+    public async Task<Team?> GetByCodeAsync(string code, CancellationToken cancellationToken = default)
     {
         return await _context.Teams
             .AsNoTracking()
-            .FirstOrDefaultAsync(team => team.Code == code);
+            .FirstOrDefaultAsync(team => team.Code == code, cancellationToken: cancellationToken);
     }
 
-    public async Task<bool> ExistsAsync(int teamId)
+    public async Task<bool> ExistsAsync(int teamId, CancellationToken cancellationToken = default)
     {
-        return await _context.Teams.AnyAsync(team => team.Id == teamId);
+        return await _context.Teams.AnyAsync(team => team.Id == teamId, cancellationToken: cancellationToken);
     }
 
-    public async Task<bool> ExistsByCodeAsync(string code)
+    public async Task<bool> ExistsByCodeAsync(string code, CancellationToken cancellationToken = default)
     {
-        return await _context.Teams.AnyAsync(team => team.Code == code);
+        return await _context.Teams.AnyAsync(team => team.Code == code, cancellationToken: cancellationToken);
     }
 
-    public async Task AddAsync(Team team)
+    public async Task AddAsync(Team team, CancellationToken cancellationToken = default)
     {
-        await _context.Teams.AddAsync(team);
-        await _context.SaveChangesAsync(default);
+        await _context.Teams.AddAsync(team, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(Team team)
+    public async Task UpdateAsync(Team team, CancellationToken cancellationToken = default)
     {
         _context.Teams.Update(team);
-        await _context.SaveChangesAsync(default);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeleteAsync(int teamId)
+    public async Task DeleteAsync(int teamId, CancellationToken cancellationToken = default)
     {
         var team = await _context.Teams.FindAsync(teamId);
         if (team != null)
         {
             _context.Teams.Remove(team);
-            await _context.SaveChangesAsync(default);
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
-
-    public async Task<Team?> GetByIdWithMembersAsync(int teamId)
+    
+    public async Task<Team?> GetByIdWithMembersAsync(int teamId, CancellationToken cancellationToken = default)
     {
         return await _context.Teams
             .Include(t => t.UserTeams)
             .ThenInclude(ut => ut.User)
-            .FirstOrDefaultAsync(t => t.Id == teamId);
+            .FirstOrDefaultAsync(t => t.Id == teamId, cancellationToken: cancellationToken);
     }
 }

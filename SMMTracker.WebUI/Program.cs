@@ -6,7 +6,6 @@ using SMMTracker.Infrastructure.Data.DataContext;
 using SMMTracker.Application.Services;
 using SMMTracker.Domain.IRepositories;
 using SMMTracker.Infrastructure.Repositories;
-using SMMTracker.Infrastructure.Services;
 
 namespace SMMTracker.WebUI;
 
@@ -58,7 +57,6 @@ public static class Program
         services.AddScoped<ITeamService, TeamService>();
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<IEventService, EventService>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         services.AddScoped<HttpClient>(_ => 
             new HttpClient { BaseAddress = new Uri("https://smmtracker.ru/") }); 

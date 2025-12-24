@@ -9,18 +9,14 @@ namespace SMMTracker.WebUI.ViewModels;
 
 public class EventModel : PageModel
 {
-    [BindProperty] public NewEventViewModel NewEvent { get; set; }
     [BindProperty] public NewTaskViewModel NewTask { get; set; } = new();
 
     [BindProperty] public string CommentText { get; set; } = "";
     public TeamViewModel Team { get; set; } = new();
     public List<TeamMemberViewModel> TeamMembers { get; set; } = new();
     public EventViewModel Event { get; set; } = new();
-    public bool IsOwner { get; set; }
-    public bool IsTeamMember { get; set; }
 
     public List<EventTaskViewModel> Tasks { get; set; } = new();
-    public List<EventCommentViewModel> Comments { get; set; } = new();
 
     private readonly IEventService _eventService;
     private readonly ITaskService _taskService;
@@ -47,15 +43,12 @@ public class EventModel : PageModel
             return NotFound("Событие не найдено");
         }
 
-        IsOwner = await _teamService.IsUserAdminAsync(eventDetails.TeamId, userId);
-
         Event = new EventViewModel
         {
             Id = eventDetails.Id,
             Title = eventDetails.Name,
-            Description = eventDetails.Description,
+            Description = eventDetails.Description ?? "",
             EventDate = eventDetails.Date,
-            // Status = (ViewModels.EventStatus)eventDetails.Status
         };
 
         TeamMembers = (await _teamService.GetTeamMembersAsync(eventDetails.TeamId))
@@ -70,10 +63,32 @@ public class EventModel : PageModel
         {
             Id = t.Id,
             Title = t.Name,
+            Description = t.Description,
             Status = (TaskStatus)t.Status,
         }).ToList();
 
         return Page();
+    }
+
+    public async Task<IActionResult> OnPostMoveToProgressFromReviewAsync(int eventId, int taskId)
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdString, out var userId))
+        {
+            return RedirectToPage("/Login");
+        }
+
+        try
+        {
+            await _taskService.MoveTaskToProgressAsync(taskId);
+            TempData["SuccessMessage"] = "Задача возвращена в работу";
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Ошибка: {ex.Message}";
+        }
+
+        return RedirectToPage(new { eventId });
     }
 
     public async Task<IActionResult> OnPostAddTaskAsync(int eventId)
@@ -108,8 +123,22 @@ public class EventModel : PageModel
 
     public async Task<IActionResult> OnPostMoveToDoneAsync(int eventId, int taskId)
     {
-        await _taskService.MoveTaskToDoneAsync(taskId);
-        TempData["SuccessMessage"] = "Задача выполнена";
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdString, out var userId))
+        {
+            return RedirectToPage("/Login");
+        }
+
+        try
+        {
+            await _taskService.MoveTaskToDoneAsync(taskId);
+            TempData["SuccessMessage"] = "Задача выполнена";
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Ошибка: {ex.Message}";
+        }
+
         return RedirectToPage(new { eventId });
     }
 
@@ -143,8 +172,6 @@ public class EventModel : PageModel
             return await OnGetAsync(eventId);
         }
 
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
         TempData["SuccessMessage"] = "Комментарий добавлен.";
         return RedirectToPage(new { eventId });
     }
@@ -156,9 +183,6 @@ public class EventViewModel
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
     public DateTime EventDate { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public string CreatedBy { get; set; } = "";
-    public EventStatus Status { get; set; }
 }
 
 public class EventTaskViewModel
@@ -174,25 +198,9 @@ public class EventTaskViewModel
     public DateTime? CompletedAt { get; set; }
 }
 
-public class EventCommentViewModel
-{
-    public Guid Id { get; set; }
-    public string Text { get; set; } = "";
-    public string CreatedBy { get; set; } = "";
-    public DateTime CreatedAt { get; set; }
-}
-
 public class NewTaskViewModel
 {
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
     public int Assignee { get; set; }
-}
-
-public enum EventStatus
-{
-    Planned,
-    InProgress,
-    Completed,
-    Cancelled
 }
