@@ -17,7 +17,7 @@ public class Event : Entity
     public int TeamId { get; private set; }
     public Team? Team { get; set; } = null!;
 
-    public Event(string? name, string? description, 
+    public Event(string? name, string? description,
         DateTime date, int calendarId, int createdBy, int teamId)
     {
         Name = name;

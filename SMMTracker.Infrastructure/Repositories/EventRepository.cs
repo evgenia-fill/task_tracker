@@ -24,7 +24,8 @@ public class EventRepository : IEventRepository
             .FirstOrDefaultAsync(e => e.Id == eventId, cancellationToken: cancellationToken);
     }
 
-    public async Task<List<Event>> GetEventsForCalendarAsync(int calendarId, CancellationToken cancellationToken = default)
+    public async Task<List<Event>> GetEventsForCalendarAsync(int calendarId,
+        CancellationToken cancellationToken = default)
     {
         return await _context.Events
             .Where(e => e.CalendarId == calendarId)
@@ -32,21 +33,24 @@ public class EventRepository : IEventRepository
             .ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task<List<Event>> GetEventsForMonthAsync(int calendarId, int month, int year, CancellationToken cancellationToken = default)
+    public async Task<List<Event>> GetEventsForMonthAsync(int calendarId, int month, int year,
+        CancellationToken cancellationToken = default)
     {
         return await _context.Events
             .Where(e => e.CalendarId == calendarId && e.Date.Year == year && e.Date.Month == month)
             .ToListAsync(cancellationToken: cancellationToken);
     }
+
     public async Task<List<Event>> GetEventsForTeamAsync(int teamId, CancellationToken cancellationToken = default)
     {
         return await _context.Events
-            .Where(e => e.Calendar.TeamId == teamId) 
-            .Include(e => e.Tasks)                   
-            .Include(e => e.Calendar)                 
-            .AsSplitQuery()                           
+            .Where(e => e.Calendar.TeamId == teamId)
+            .Include(e => e.Tasks)
+            .Include(e => e.Calendar)
+            .AsSplitQuery()
             .ToListAsync(cancellationToken: cancellationToken);
     }
+
     public async Task AddAsync(Event eventEntity, CancellationToken cancellationToken = default)
     {
         await _context.Events.AddAsync(eventEntity, cancellationToken);

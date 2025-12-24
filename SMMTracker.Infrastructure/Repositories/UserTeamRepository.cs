@@ -18,12 +18,14 @@ public class UserTeamRepository : IUserTeamRepository
 
     public async Task<UserTeam?> GetUserTeamAsync(int teamId, int userId, CancellationToken cancellationToken = default)
     {
-        return await _context.UserTeams.FirstOrDefaultAsync(ut => ut.TeamId == teamId && ut.UserId == userId, cancellationToken: cancellationToken);
+        return await _context.UserTeams.FirstOrDefaultAsync(ut => ut.TeamId == teamId && ut.UserId == userId,
+            cancellationToken: cancellationToken);
     }
 
     public async Task<bool> ExistsAsync(int userTeamId, CancellationToken cancellationToken = default)
     {
-        return await _context.UserTeams.AnyAsync(userTeam => userTeam.Id == userTeamId, cancellationToken: cancellationToken);
+        return await _context.UserTeams.AnyAsync(userTeam => userTeam.Id == userTeamId,
+            cancellationToken: cancellationToken);
     }
 
     public async Task AddAsync(UserTeam userTeam, CancellationToken cancellationToken = default)
@@ -45,7 +47,8 @@ public class UserTeamRepository : IUserTeamRepository
     public async Task<bool> IsUserAdminAsync(int teamId, int userId, CancellationToken cancellationToken = default)
     {
         return await _context.UserTeams
-            .AnyAsync(ut => ut.TeamId == teamId && ut.UserId == userId && ut.Role == TeamRole.Admin, cancellationToken: cancellationToken);
+            .AnyAsync(ut => ut.TeamId == teamId && ut.UserId == userId && ut.Role == TeamRole.Admin,
+                cancellationToken: cancellationToken);
     }
 
     public async Task<List<UserTeam>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default)

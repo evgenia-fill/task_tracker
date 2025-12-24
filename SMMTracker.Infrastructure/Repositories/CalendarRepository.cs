@@ -26,7 +26,7 @@ public class CalendarRepository : ICalendarRepository
 
     public async Task<Calendar?> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
-        return await _context.Calendars 
+        return await _context.Calendars
             .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
     }
 

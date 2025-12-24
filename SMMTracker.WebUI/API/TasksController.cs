@@ -50,7 +50,7 @@ public class TasksController : ControllerBase
             return NotFound(new { message = ex.Message });
         }
     }
-    
+
     [HttpPost("{taskId}/move-to-progress")]
     public async Task<IActionResult> MoveTaskToProgress(int taskId)
     {
@@ -138,6 +138,4 @@ public class TasksController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    
-    
 }

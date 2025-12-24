@@ -17,7 +17,8 @@ public class UserTaskRepository : IUserTaskRepository
 
     public async Task<UserTask?> GetUserTaskAsync(int taskId, int userId, CancellationToken cancellationToken = default)
     {
-        return await _context.UserTasks.FirstOrDefaultAsync(ut => ut.TaskId == taskId && ut.UserId == userId, cancellationToken: cancellationToken);
+        return await _context.UserTasks.FirstOrDefaultAsync(ut => ut.TaskId == taskId && ut.UserId == userId,
+            cancellationToken: cancellationToken);
     }
 
     public async Task AddAsync(UserTask userTask, CancellationToken cancellationToken = default)

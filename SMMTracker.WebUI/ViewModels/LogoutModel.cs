@@ -11,7 +11,7 @@ public class LogoutModel : PageModel
         await HttpContext.SignOutAsync();
         return RedirectToPage("/Login");
     }
-    
+
     public async Task<IActionResult> OnPostAsync()
     {
         await HttpContext.SignOutAsync();

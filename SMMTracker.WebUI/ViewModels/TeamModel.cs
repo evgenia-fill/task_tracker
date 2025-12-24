@@ -120,20 +120,6 @@ public class TeamModel : PageModel
 
     public async Task<IActionResult> OnPostAddEventAsync(int id)
     {
-        // ModelState.Remove(nameof(NewMemberUsername));
-        // ModelState.Remove(nameof(TeamName));
-        // ModelState.Remove(nameof(TeamDescription));
-        // ModelState.Remove(nameof(TeamName));
-        // ModelState.Remove(nameof(TeamDescription));
-        // ModelState.Remove(nameof(TeamId));
-        // ModelState.Remove(nameof(id));
-        //
-        // if (!ModelState.IsValid)
-        // {
-        //     TempData["ErrorMessage"] = "Данные для создания мероприятия некорректны";
-        //     return await OnGetAsync(id);
-        // }
-        
         var isFormValid = true;
         if (string.IsNullOrWhiteSpace(NewEvent.Title))
         {
@@ -145,7 +131,7 @@ public class TeamModel : PageModel
         {
             return await OnGetAsync(id);
         }
-        
+
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         // var calendar = await _teamService.GetCalendarForTeamAsync(id);

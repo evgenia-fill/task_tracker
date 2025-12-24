@@ -8,9 +8,10 @@ public class User : Entity
     public string UserName { get; set; }
     public string? ProfileDescription { get; set; }
     public string Hash { get; set; }
-    
 
-    public User() {}
+    public User()
+    {
+    }
 
     public static User Create(User otherUser)
     {
@@ -24,7 +25,7 @@ public class User : Entity
             LastName = otherUser.LastName.Trim(),
             Hash = Guid.NewGuid().ToString(),
             ProfileDescription = "",
-            UserName = otherUser.UserName 
+            UserName = otherUser.UserName
         };
         return user;
     }
@@ -35,7 +36,7 @@ public class User : Entity
             throw new Exception();
         if (string.IsNullOrWhiteSpace(lastName))
             throw new Exception();
-        
+
         FirstName = firstName.Trim();
         LastName = lastName.Trim();
         ProfileDescription = description.Trim();

@@ -33,7 +33,7 @@ public class TaskService : ITaskService
 
         var task = new Task(
             dto.Name,
-            dto.Description, 
+            dto.Description,
             dto.EventId,
             parentEvent.CalendarId
         )
