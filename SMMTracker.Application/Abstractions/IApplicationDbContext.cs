@@ -10,6 +10,7 @@ public interface IApplicationDbContext
     DbSet<Task> Tasks { get; set; }
     DbSet<Team> Teams { get; set; }
     DbSet<Calendar> Calendars { get; set; }
+    
     DbSet<Event> Events { get; set; }
     DbSet<UserTeam> UserTeams { get; set; }
     DbSet<UserTask> UserTasks { get; set; }
