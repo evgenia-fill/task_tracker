@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Application.Dtos;
-using SMMTracker.Application.Services;
 
 namespace SMMTracker.WebUI.API;
 
@@ -14,6 +13,21 @@ public class EventsController : ControllerBase
     public EventsController(IEventService eventService)
     {
         _eventService = eventService;
+    }
+    
+    // --- ИСПРАВЛЕННЫЙ МЕТОД ---
+    [HttpGet("calendar")]
+    public async Task<IActionResult> GetCalendarEvents([FromQuery] DateTime start, [FromQuery] DateTime end)
+    {
+        var events = await _eventService.GetEventsForCalendarAsync(start, end);
+    
+        // Преобразуем данные в формат, понятный календарю на JS
+        // Обычно JS календари (FullCalendar) ждут поля: id, title, start
+        return Ok(events.Select(e => new {
+            id = e.Id,
+            title = e.Name, // Берем из Name
+            start = e.Date.ToString("yyyy-MM-ddTHH:mm:ss") // Берем из Date
+        }));
     }
 
     [HttpPost]

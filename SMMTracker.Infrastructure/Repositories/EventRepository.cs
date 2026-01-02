@@ -15,7 +15,9 @@ public class EventRepository : IEventRepository
         _context = context;
     }
 
-    public async Task<Event?> GetByIdAsync(int eventId, CancellationToken cancellationToken = default)
+    // ... (ваши существующие методы GetByIdAsync, GetEventsForCalendarAsync и т.д. остаются без изменений) ...
+
+    public async Task<Event?> GetByIdAsync(int eventId)
     {
         return await _context.Events
             .Include(e => e.Tasks)
@@ -41,7 +43,7 @@ public class EventRepository : IEventRepository
             .ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task<List<Event>> GetEventsForTeamAsync(int teamId, CancellationToken cancellationToken = default)
+    public async Task<List<Event>> GetEventsForTeamAsync(int teamId)
     {
         return await _context.Events
             .Where(e => e.Calendar.TeamId == teamId)
@@ -51,7 +53,7 @@ public class EventRepository : IEventRepository
             .ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task AddAsync(Event eventEntity, CancellationToken cancellationToken = default)
+    public async Task AddAsync(Event eventEntity)
     {
         await _context.Events.AddAsync(eventEntity, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
@@ -71,5 +73,21 @@ public class EventRepository : IEventRepository
             _context.Events.Remove(eventEntity);
             await _context.SaveChangesAsync(cancellationToken);
         }
+    }
+
+    // --- ВОТ НОВЫЙ МЕТОД ---
+    public async Task<List<Event>> GetEventsByDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
+        return await _context.Events
+            .Where(e => e.Date >= startDate && e.Date <= endDate)
+            .ToListAsync();
+    }
+
+    // --- ВОТ НОВЫЙ МЕТОД ---
+    public async Task<List<Event>> GetEventsByDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
+        return await _context.Events
+            .Where(e => e.Date >= startDate && e.Date <= endDate)
+            .ToListAsync();
     }
 }

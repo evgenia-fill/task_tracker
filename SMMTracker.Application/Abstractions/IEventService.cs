@@ -11,4 +11,5 @@ public interface IEventService
 
     Task<EventDetailsDto?> GetEventDetailsAsync(int eventId, CancellationToken cancellationToken = default);
     Task<List<EventSummaryDto>> GetEventsForTeamAsync(int teamId);
+    Task<IEnumerable<EventSummaryDto>> GetEventsForCalendarAsync(DateTime start, DateTime end);
 }

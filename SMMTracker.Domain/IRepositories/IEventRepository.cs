@@ -5,13 +5,11 @@ namespace SMMTracker.Domain.IRepositories;
 
 public interface IEventRepository
 {
-    Task<Event?> GetByIdAsync(int eventId, CancellationToken cancellationToken = default);
-    Task<List<Event>> GetEventsForCalendarAsync(int calendarId, CancellationToken cancellationToken = default);
-
-    Task<List<Event>> GetEventsForMonthAsync(int calendarId, int month, int year,
-        CancellationToken cancellationToken = default);
-
-    Task AddAsync(Event eventEntity, CancellationToken cancellationToken = default);
-    Task UpdateAsync(Event eventEntity, CancellationToken cancellationToken = default);
-    Task DeleteAsync(int eventId, CancellationToken cancellationToken = default);
+    Task<Event?> GetByIdAsync(int eventId);
+    Task<List<Event>> GetEventsForCalendarAsync(int calendarId);
+    Task<List<Event>> GetEventsForMonthAsync(int calendarId, int month, int year);
+    Task AddAsync(Event eventEntity);
+    Task UpdateAsync(Event eventEntity);
+    Task DeleteAsync(int eventId);
+    Task<List<Event>> GetEventsByDateRangeAsync(DateTime startDate, DateTime endDate);
 }

@@ -481,9 +481,9 @@
 <script>
     let currentWeekStart = new Date();
     let loadedEvents = [];
+    const teamId = "@Model.Team.Id";
 
-    const calendarId = "@Model.CalendarId";
-
+    // Функция копирования кода приглашения
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(function () {
             showToast('Скопировано в буфер обмена!');
@@ -496,26 +496,13 @@
             toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
             document.body.appendChild(toastContainer);
         }
-
         const toast = document.createElement('div');
         toast.className = 'toast align-items-center text-white bg-success border-0';
         toast.setAttribute('role', 'alert');
-        toast.setAttribute('aria-live', 'assertive');
-        toast.setAttribute('aria-atomic', 'true');
         toast.innerHTML = `<div class="d-flex"><div class="toast-body"><i class="bi bi-check-circle me-2"></i>${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-
         toastContainer.appendChild(toast);
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
-
-        toast.addEventListener('hidden.bs.toast', function () {
-            toast.remove();
-            if (!toastContainer.hasChildNodes()) {
-                toastContainer.remove();
-            }
-        });
+        new bootstrap.Toast(toast).show();
     }
-
 
     function alignToMonday(date) {
         const day = date.getDay();
@@ -535,42 +522,27 @@
             d1.getDate() === d2.getDate();
     }
 
-    let loadedMonths = new Set();
-
-    async function fetchAndCache(month, year) {
-        const key = `${year}-${month}`;
-        if (loadedMonths.has(key) || !calendarId || calendarId === "0") return;
+    // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ ДЛЯ ТЕКУЩЕЙ НЕДЕЛИ ---
+    async function fetchEventsForRange(startDate, endDate) {
+        const startStr = startDate.toISOString().split('T')[0];
+        const endStr = endDate.toISOString().split('T')[0];
 
         try {
-            const response = await fetch(`/api/calendars/${calendarId}/events?month=${month}&year=${year}`);
+            // Запрос к EventsController
+            const response = await fetch(`/api/events/calendar?start=${startStr}&end=${endStr}`);
             if (response.ok) {
-                const events = await response.json();
-                events.forEach(evt => {
-                    if (!loadedEvents.some(e => e.id === evt.id)) {
-                        loadedEvents.push(evt);
-                    }
-                });
-                loadedMonths.add(key);
+                const data = await response.json();
+                // Приводим данные к формату календаря (title -> name, start -> date)
+                return data.map(e => ({
+                    id: e.id,
+                    name: e.title,
+                    date: new Date(e.start)
+                }));
             }
         } catch (error) {
-            console.error(`Ошибка загрузки событий за ${key}:`, error);
+            console.error("Ошибка загрузки событий команды:", error);
         }
-    }
-
-    async function ensureEventsLoadedForWeek(startDate) {
-        const startMonth = startDate.getMonth() + 1;
-        const startYear = startDate.getFullYear();
-
-        const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-        const endMonth = endDate.getMonth() + 1;
-        const endYear = endDate.getFullYear();
-
-        await fetchAndCache(startMonth, startYear);
-
-        if (startMonth !== endMonth || startYear !== endYear) {
-            await fetchAndCache(endMonth, endYear);
-        }
+        return [];
     }
 
     async function renderCalendar() {
@@ -585,41 +557,41 @@
 
         const middleOfWeek = new Date(currentWeekStart);
         middleOfWeek.setDate(currentWeekStart.getDate() + 3);
+        display.innerText = `${middleOfWeek.toLocaleString('ru-RU', {month: 'long'})} ${middleOfWeek.getFullYear()}`;
 
-        const monthName = middleOfWeek.toLocaleString('ru-RU', {month: 'long'});
-        const year = middleOfWeek.getFullYear();
-        display.innerText = `${monthName} ${year}`;
+        const currentWeekEnd = new Date(currentWeekStart);
+        currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
 
-        await ensureEventsLoadedForWeek(currentWeekStart);
+        // Получаем реальные события из БД
+        const weekEvents = await fetchEventsForRange(currentWeekStart, currentWeekEnd);
 
         for (let i = 0; i < 7; i++) {
             const currentDayDate = new Date(currentWeekStart);
             currentDayDate.setDate(currentWeekStart.getDate() + i);
 
             const headerCell = document.createElement('div');
-            headerCell.className = 'day-header' + (isSameDate(currentDayDate, new Date()) ? ' bg-primary text-white' : '');
+            const isToday = isSameDate(currentDayDate, new Date());
+            headerCell.className = 'day-header' + (isToday ? ' bg-primary text-white' : '');
             headerCell.innerText = `${currentDayDate.toLocaleString('ru-RU', {weekday: 'short'})}, ${currentDayDate.getDate()}`;
             headerGrid.appendChild(headerCell);
 
             const bodyCell = document.createElement('div');
             bodyCell.className = 'calendar-day';
+            if (isToday) bodyCell.classList.add('current-day');
             bodyCell.style.minHeight = "150px";
 
-            const dayEvents = loadedEvents.filter(e => {
-                const dateStr = e.date;
-                return isSameDate(new Date(dateStr), currentDayDate);
-            });
-
-            dayEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+            // Фильтруем события для конкретной ячейки дня
+            const dayEvents = weekEvents.filter(e => isSameDate(e.date, currentDayDate));
+            dayEvents.sort((a, b) => a.date - b.date);
 
             dayEvents.forEach(evt => {
                 const evtDiv = document.createElement('div');
-                evtDiv.className = 'event-item evt-purple';
-                evtDiv.style.cursor = 'pointer';
+                evtDiv.className = 'event-item evt-blue'; // Используем ваш CSS стиль
                 evtDiv.innerHTML = `<strong>${evt.name}</strong>`;
+                evtDiv.title = evt.name;
 
                 evtDiv.onclick = () => {
-                    window.location.href = `/Event/@Model.Team.Id/${evt.id}`;
+                    window.location.href = `/Event/${teamId}/${evt.id}`;
                 };
                 bodyCell.appendChild(evtDiv);
             });
@@ -627,17 +599,19 @@
         }
     }
 
-
     document.addEventListener('DOMContentLoaded', async () => {
+        // Логика переключения табов (Информация, Участники и т.д.)
         document.querySelectorAll('.sidebar .nav-link').forEach(link => {
             link.addEventListener('click', function (e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href').substring(1);
-                const targetElement = document.getElementById(targetId);
-                if (targetElement) {
-                    document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
-                    targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+                if (this.getAttribute('href').startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+                    }
                 }
             });
         });

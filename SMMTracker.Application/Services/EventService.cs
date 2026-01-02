@@ -1,6 +1,6 @@
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
-using SMMTracker.Application.Dtos;
+using SMMTracker.Application.Dtos; // Убедитесь, что EventSummaryDto здесь
 using SMMTracker.Domain.IRepositories;
 
 namespace SMMTracker.Application.Services;
@@ -16,8 +16,9 @@ public class EventService : IEventService
         _calendarRepository = calendarRepository;
     }
 
-    public async Task<int> CreateEventAsync(CreateEventDto dto,
-        CancellationToken cancellationToken = default)
+    // ... (ваши существующие методы CreateEventAsync, GetEventsForMonthAsync и т.д.) ...
+    
+    public async Task<int> CreateEventAsync(CreateEventDto dto, CancellationToken cancellationToken = default)
     {
         var calendar = await _calendarRepository.GetByTeamIdAsync(dto.TeamId, cancellationToken);
         if (calendar == null)
@@ -40,8 +41,7 @@ public class EventService : IEventService
     {
         var events = await _eventRepository.GetEventsForMonthAsync(calendarId, month, year, cancellationToken);
 
-        return events
-            .Select(e => new EventSummaryDto
+        return events.Select(e => new EventSummaryDto
             {
                 Id = e.Id,
                 Name = e.Name,
@@ -53,10 +53,8 @@ public class EventService : IEventService
 
     public async Task<EventDetailsDto?> GetEventDetailsAsync(int eventId, CancellationToken cancellationToken = default)
     {
-        var eventEntity = await _eventRepository.GetByIdAsync(eventId, cancellationToken);
-
-        if (eventEntity == null)
-            return null;
+        var eventEntity = await _eventRepository.GetByIdAsync(eventId);
+        if (eventEntity == null) return null;
 
         return new EventDetailsDto
         {
@@ -79,10 +77,7 @@ public class EventService : IEventService
     public async Task<List<EventSummaryDto>> GetEventsForTeamAsync(int teamId)
     {
         var calendar = await _calendarRepository.GetByTeamIdAsync(teamId);
-        if (calendar == null)
-        {
-            return [];
-        }
+        if (calendar == null) return new List<EventSummaryDto>();
 
         var events = await _eventRepository.GetEventsForCalendarAsync(calendar.Id);
         return events.Select(e => new EventSummaryDto
@@ -94,5 +89,21 @@ public class EventService : IEventService
             CreatedAt = e.CreatedAt,
             CreatedBy = e.CreatedBy
         }).ToList();
+    }
+
+    // --- ИСПРАВЛЕННЫЙ МЕТОД ---
+    public async Task<IEnumerable<EventSummaryDto>> GetEventsForCalendarAsync(DateTime start, DateTime end)
+    {
+        // Вызываем новый метод репозитория
+        var events = await _eventRepository.GetEventsByDateRangeAsync(start, end);
+
+        // Маппим сущности в DTO, используя правильные имена свойств
+        return events.Select(e => new EventSummaryDto 
+        {
+            Id = e.Id,
+            Name = e.Name,     // Было Title, исправлено на Name
+            Date = e.Date,     // Было EventDate, исправлено на Date
+            // Остальные поля по необходимости
+        });
     }
 }
