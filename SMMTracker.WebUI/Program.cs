@@ -6,6 +6,7 @@ using SMMTracker.Infrastructure.Data.DataContext;
 using SMMTracker.Application.Services;
 using SMMTracker.Domain.IRepositories;
 using SMMTracker.Infrastructure.Repositories;
+using SMMTracker.Application.Services;
 
 namespace SMMTracker.WebUI;
 
@@ -39,11 +40,12 @@ public static class Program
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
         
         services.AddRazorPages();
-        services.AddControllers();
+        services.AddControllers(); // Это у тебя уже есть
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddHttpClient();
         
+        // Репозитории
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITeamRepository, TeamRepository>();
         services.AddScoped<ITaskRepository, TaskRepository>();
@@ -52,11 +54,16 @@ public static class Program
         services.AddScoped<IUserTeamRepository, UserTeamRepository>();
         services.AddScoped<IUserTaskRepository, UserTaskRepository>();
         
+        // Сервисы
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<ITeamService, TeamService>();
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<IEventService, EventService>();
+        
+        // --- ВОТ ТА САМАЯ СТРОКА РЕГИСТРАЦИИ АЧИВОК ---
+        services.AddScoped<IAchievementService, AchievementService>();
+        // ----------------------------------------------
         
         services.AddScoped<HttpClient>(_ => 
             new HttpClient { BaseAddress = new Uri("https://smmtracker.ru/") }); 

@@ -110,6 +110,43 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-page="/Dashboard">Дашборд</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/Achievements">
+                            <i class="bi bi-trophy"></i> Достижения
+                        </a>
+                    </li>
+
+                    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                    </div>
+
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function() {
+                            // Простая проверка новых ачивок при каждой загрузке страницы
+                            fetch('/api/check-achievements') // Мы создадим этот мини-endpoint ниже
+                                .then(response => response.json())
+                                .then(achievements => {
+                                    if (achievements && achievements.length > 0) {
+                                        const container = document.querySelector('.toast-container');
+                                        achievements.forEach(ach => {
+                                            const html = `
+                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                          <div class="toast-header bg-success text-white">
+                            <i class="bi ${ach.iconClass} me-2"></i>
+                            <strong class="me-auto">Новое достижение!</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                          </div>
+                          <div class="toast-body">
+                            <strong>${ach.title}</strong><br>
+                            ${ach.description}
+                          </div>
+                        </div>`;
+                                            container.insertAdjacentHTML('beforeend', html);
+                                        });
+                                    }
+                                })
+                                .catch(err => console.log('No achievements check', err));
+                        });
+                    </script>
                 </ul>
             </div>
         </div>

@@ -17,6 +17,82 @@ namespace SMMTracker.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
 
+            modelBuilder.Entity("SMMTracker.Domain.Entities.Achievement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IconClass")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TasksThreshold")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Achievements");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Выполните свою первую задачу",
+                            IconClass = "bi-check-circle",
+                            TasksThreshold = 1,
+                            Title = "Первые шаги"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Выполните 10 задач",
+                            IconClass = "bi-star",
+                            TasksThreshold = 10,
+                            Title = "На опыте"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Выполните 50 задач",
+                            IconClass = "bi-gem",
+                            TasksThreshold = 50,
+                            Title = "Трудяга"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Выполните 100 задач",
+                            IconClass = "bi-trophy",
+                            TasksThreshold = 100,
+                            Title = "Мастер"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "Выполните 200 задач",
+                            IconClass = "bi-crown",
+                            TasksThreshold = 200,
+                            Title = "Элита"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Description = "Выполните 300 задач",
+                            IconClass = "bi-rocket-takeoff",
+                            TasksThreshold = 300,
+                            Title = "Легенда"
+                        });
+                });
+
             modelBuilder.Entity("SMMTracker.Domain.Entities.Calendar", b =>
                 {
                     b.Property<int>("Id")
@@ -34,7 +110,7 @@ namespace SMMTracker.Infrastructure.Migrations
                     b.HasIndex("TeamId")
                         .IsUnique();
 
-                    b.ToTable("Calendars", (string)null);
+                    b.ToTable("Calendars");
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.Event", b =>
@@ -49,9 +125,8 @@ namespace SMMTracker.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("TEXT");
@@ -71,31 +146,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("Events", (string)null);
-                });
-
-            modelBuilder.Entity("SMMTracker.Domain.Entities.Invitation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TeamId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TeamId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Invitations", (string)null);
+                    b.ToTable("Events");
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.Task", b =>
@@ -132,7 +183,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("Tasks", (string)null);
+                    b.ToTable("Tasks");
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.Team", b =>
@@ -153,7 +204,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Teams", (string)null);
+                    b.ToTable("Teams");
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.User", b =>
@@ -186,7 +237,34 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("SMMTracker.Domain.Entities.UserAchievement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AchievementId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateReceived")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsViewed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AchievementId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserAchievements");
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.UserTask", b =>
@@ -210,7 +288,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserTasks", (string)null);
+                    b.ToTable("UserTasks");
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.UserTeam", b =>
@@ -234,7 +312,7 @@ namespace SMMTracker.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserTeams", (string)null);
+                    b.ToTable("UserTeams");
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.Calendar", b =>
@@ -267,25 +345,6 @@ namespace SMMTracker.Infrastructure.Migrations
                     b.Navigation("Team");
                 });
 
-            modelBuilder.Entity("SMMTracker.Domain.Entities.Invitation", b =>
-                {
-                    b.HasOne("SMMTracker.Domain.Entities.Team", "Team")
-                        .WithMany()
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SMMTracker.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Team");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("SMMTracker.Domain.Entities.Task", b =>
                 {
                     b.HasOne("SMMTracker.Domain.Entities.Calendar", "Calendar")
@@ -301,6 +360,25 @@ namespace SMMTracker.Infrastructure.Migrations
                     b.Navigation("Calendar");
 
                     b.Navigation("Event");
+                });
+
+            modelBuilder.Entity("SMMTracker.Domain.Entities.UserAchievement", b =>
+                {
+                    b.HasOne("SMMTracker.Domain.Entities.Achievement", "Achievement")
+                        .WithMany()
+                        .HasForeignKey("AchievementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SMMTracker.Domain.Entities.User", "User")
+                        .WithMany("UserAchievements")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Achievement");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SMMTracker.Domain.Entities.UserTask", b =>
@@ -363,6 +441,11 @@ namespace SMMTracker.Infrastructure.Migrations
                     b.Navigation("Calendar");
 
                     b.Navigation("UserTeams");
+                });
+
+            modelBuilder.Entity("SMMTracker.Domain.Entities.User", b =>
+                {
+                    b.Navigation("UserAchievements");
                 });
 #pragma warning restore 612, 618
         }

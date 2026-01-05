@@ -10,9 +10,14 @@ public interface IApplicationDbContext
     DbSet<Task> Tasks { get; set; }
     DbSet<Team> Teams { get; set; }
     DbSet<Calendar> Calendars { get; set; }
-
     DbSet<Event> Events { get; set; }
     DbSet<UserTeam> UserTeams { get; set; }
     DbSet<UserTask> UserTasks { get; set; }
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+
+    // ДОБАВЬ ЭТИ ДВЕ СТРОЧКИ:
+    DbSet<Achievement> Achievements { get; set; }
+    DbSet<UserAchievement> UserAchievements { get; set; }
+
+    // Обнови метод (добавь = default), чтобы не было ошибок в других местах
+    System.Threading.Tasks.Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
