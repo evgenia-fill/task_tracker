@@ -38,7 +38,7 @@
     <script>
         let state = {
             year: new Date().getFullYear(),
-            month: new Date().getMonth(), // 0 = Январь
+            month: new Date().getMonth(),
             calendarId: 0,
             teamId: 0
         };
@@ -46,7 +46,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             const container = document.getElementById('calendar-container');
             if (container) {
-                // Если атрибутов нет, ставим 0
                 state.calendarId = parseInt(container.dataset.calendarid) || 0;
                 state.teamId = parseInt(container.dataset.teamid) || 0;
             }
@@ -65,39 +64,27 @@
             renderCalendar();
         }
 
-        // --- ОБНОВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ ---
         async function fetchEvents(year, month) {
-            // month приходит сюда от 1 до 12
+            const mockEvents = [
+                {id: 101, name: "Пост в тг канал", date: new Date(year, month - 1, 10)},
+                {id: 102, name: "Организация сбора денег", date: new Date(year, month - 1, 15)},
+                {id: 103, name: "Отчет за неделю", date: new Date(year, month - 1, 20)}
+            ];
 
-            // 1. Формируем даты начала и конца месяца для API
-            // Формат YYYY-MM-DD
-            const startStr = `${year}-${String(month).padStart(2, '0')}-01`;
-            
-            // Вычисляем последний день месяца
-            const lastDayDate = new Date(year, month, 0).getDate();
-            const endStr = `${year}-${String(month).padStart(2, '0')}-${lastDayDate}`;
+            if (state.calendarId === 0) return mockEvents;
 
             try {
-                // 2. Обращаемся к новому EventsController
-                // URL: /api/events/calendar?start=...&end=...
-                const response = await fetch(`/api/events/calendar?start=${startStr}&end=${endStr}`);
-                
+                const response = await fetch(`/api/calendars/${state.calendarId}/events?month=${month}&year=${year}`);
                 if (response.ok) {
                     const data = await response.json();
-                    
-                    // 3. Маппинг данных
-                    // API возвращает: { id, title, start }
-                    // Рендер ждет:    { id, name, date }
-                    return data.map(e => ({
-                        id: e.id,
-                        name: e.title,         // Берем title из API и кладем в name
-                        date: new Date(e.start) // Превращаем строку ISO в объект Date
-                    }));
+                    return data.length > 0
+                        ? data.map(e => ({...e, date: new Date(e.date)}))
+                        : mockEvents;
                 }
             } catch (error) {
                 console.error("Ошибка загрузки событий:", error);
             }
-            return []; 
+            return mockEvents;
         }
 
         async function renderCalendar() {
@@ -107,30 +94,24 @@
 
             const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
             display.innerText = `${monthNames[state.month]} ${state.year}`;
-            
-            // Очистка старых ячеек (кроме заголовков дней недели)
-            // Ищем элементы с классом .calendar-day и удаляем их
+
             const oldDays = grid.querySelectorAll('.calendar-day');
             oldDays.forEach(d => d.remove());
 
             const firstDay = new Date(state.year, state.month, 1);
             const lastDay = new Date(state.year, state.month + 1, 0);
-            
-            // Сдвиг дней недели (пн = 0 в верстке, но getDay() вс = 0)
+
             let startOffset = firstDay.getDay() - 1;
             if (startOffset === -1) startOffset = 6;
 
-            // Загружаем события (передаем month + 1, т.к. API удобнее работать с 1-12)
             const events = await fetchEvents(state.year, state.month + 1);
-            
-            // Пустые ячейки до начала месяца
+
             for (let i = 0; i < startOffset; i++) {
                 const empty = document.createElement('div');
                 empty.className = 'calendar-day empty';
                 grid.appendChild(empty);
             }
-            
-            // Ячейки с датами
+
             for (let d = 1; d <= lastDay.getDate(); d++) {
                 const cell = document.createElement('div');
                 cell.className = 'calendar-day';
@@ -139,13 +120,12 @@
                 num.className = 'date-number';
                 num.innerText = d;
                 cell.appendChild(num);
-                
+
                 const today = new Date();
                 if (d === today.getDate() && state.month === today.getMonth() && state.year === today.getFullYear()) {
                     cell.classList.add('today');
                 }
-                
-                // Фильтрация событий для текущего дня 'd'
+
                 const dayEvents = events.filter(e =>
                     e.date.getDate() === d &&
                     e.date.getMonth() === state.month &&
@@ -156,12 +136,8 @@
                     const evDiv = document.createElement('div');
                     evDiv.className = 'event-item';
                     evDiv.innerText = evt.name || "Событие";
-                    
-                    // Клик по событию - переход на детали
-                    // Используем evt.id, который пришел с бэкенда
                     evDiv.onclick = (e) => {
                         e.stopPropagation();
-                        // Если teamId нужен в URL, берем из state
                         window.location.href = `/Event/${state.teamId}/${evt.id}`;
                     };
                     cell.appendChild(evDiv);

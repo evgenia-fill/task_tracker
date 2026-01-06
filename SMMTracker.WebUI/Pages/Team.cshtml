@@ -1,25 +1,5 @@
 @page "/Team/{id}"
 @model SMMTracker.WebUI.ViewModels.TeamModel
-@using SMMTracker.Application.Abstractions
-@inject IAchievementService AchievementService
-
-@{
-    ViewData["Title"] = Model.Team.Name;
-    Layout = "_Layout";
-
-    // Логика проверки ачивок
-    var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-    if (int.TryParse(userIdClaim, out var userId))
-    {
-        // Используем .GetAwaiter().GetResult(), так как мы находимся внутри синхронного блока Razor
-        var newAchievements = AchievementService.CheckAchievementsAsync(userId).GetAwaiter().GetResult();
-        
-        if (newAchievements != null && newAchievements.Any())
-        {
-            TempData["NewAchievement"] = newAchievements.First().Title;
-        }
-    }
-}
 @{
     ViewData["Title"] = Model.Team.Name;
     Layout = "_Layout";

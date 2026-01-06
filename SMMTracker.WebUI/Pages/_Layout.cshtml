@@ -125,43 +125,6 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-page="/Dashboard">Дашборд</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-page="/Achievements">
-                            <i class="bi bi-trophy"></i> Достижения
-                        </a>
-                    </li>
-
-                    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-                    </div>
-
-                    <script>
-                        document.addEventListener("DOMContentLoaded", function() {
-                            // Простая проверка новых ачивок при каждой загрузке страницы
-                            fetch('/api/check-achievements') // Мы создадим этот мини-endpoint ниже
-                                .then(response => response.json())
-                                .then(achievements => {
-                                    if (achievements && achievements.length > 0) {
-                                        const container = document.querySelector('.toast-container');
-                                        achievements.forEach(ach => {
-                                            const html = `
-                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                          <div class="toast-header bg-success text-white">
-                            <i class="bi ${ach.iconClass} me-2"></i>
-                            <strong class="me-auto">Новое достижение!</strong>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                          </div>
-                          <div class="toast-body">
-                            <strong>${ach.title}</strong><br>
-                            ${ach.description}
-                          </div>
-                        </div>`;
-                                            container.insertAdjacentHTML('beforeend', html);
-                                        });
-                                    }
-                                })
-                                .catch(err => console.log('No achievements check', err));
-                        });
-                    </script>
                 </ul>
             </div>
         </div>
@@ -176,25 +139,5 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 @await RenderSectionAsync("Scripts", required: false)
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Проверяем, есть ли в TempData сообщение о новой ачивке
-        const newAchievement = '@(TempData["NewAchievement"])';
-
-        if (newAchievement && newAchievement !== '') {
-            Swal.fire({
-                title: '🎉 Новое достижение!',
-                text: 'Вы получили награду: ' + newAchievement,
-                icon: 'success',
-                confirmButtonText: 'Круто!',
-                background: '#fff',
-                backdrop: `rgba(0,0,123,0.4) url("https://sweetalert2.github.io/images/nyan-cat.gif") left center no-repeat`
-            });
-        }
-    });
-</script>
 </body>
 </html>

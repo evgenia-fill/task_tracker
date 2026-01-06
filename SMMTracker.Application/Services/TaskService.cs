@@ -5,8 +5,6 @@ using SMMTracker.Domain.Enums;
 using SMMTracker.Domain.IRepositories;
 using Task = SMMTracker.Domain.Entities.Task;
 using TaskStatus = SMMTracker.Domain.Enums.TaskStatus;
-using Microsoft.EntityFrameworkCore;
-using SMMTracker.Application.Abstractions;
 
 namespace SMMTracker.Application.Services;
 
@@ -16,21 +14,14 @@ public class TaskService : ITaskService
     private readonly IUserTeamRepository _userTeamRepository;
     private readonly IUserTaskRepository _userTaskRepository;
     private readonly IEventRepository _eventRepository;
-    private readonly IApplicationDbContext _context; // Нужен для быстрого поиска исполнителей
 
-    public TaskService(
-        ITaskRepository taskRepository, 
-        IUserTeamRepository userTeamRepository,
-        IUserTaskRepository userTaskRepository, 
-        IEventRepository eventRepository,
-        IAchievementService achievementService, // Должно быть здесь
-        IApplicationDbContext context)           // Должно быть здесь
+    public TaskService(ITaskRepository taskRepository, IUserTeamRepository userTeamRepository,
+        IUserTaskRepository userTaskRepository, IEventRepository eventRepository)
     {
         _taskRepository = taskRepository;
         _userTeamRepository = userTeamRepository;
         _userTaskRepository = userTaskRepository;
         _eventRepository = eventRepository;
-        _context = context;
     }
 
     public async Task<int> CreateTaskAsync(CreateTaskDto dto,
@@ -73,7 +64,6 @@ public class TaskService : ITaskService
             throw new Exception("Task not found");
 
         await _taskRepository.UpdateStatusToDoneAsync(task, cancellationToken);
-        
     }
 
     public async System.Threading.Tasks.Task MoveTaskToProgressAsync(int taskId,

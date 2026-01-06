@@ -12,18 +12,13 @@ public class TeamService : ITeamService
     private readonly ITeamRepository _teamRepository;
     private readonly IUserTeamRepository _userTeamRepository;
     private readonly ICalendarRepository _calendarRepository;
-    private readonly SMMTracker.Application.Abstractions.IAchievementService _achievementService;
 
-    public TeamService(
-        ITeamRepository teamRepository, 
-        IUserTeamRepository userTeamRepository,
-        ICalendarRepository calendarRepository, 
-        SMMTracker.Application.Abstractions.IAchievementService achievementService) // Укажи полный путь здесь
+    public TeamService(ITeamRepository teamRepository, IUserTeamRepository userTeamRepository,
+        ICalendarRepository calendarRepository)
     {
         _teamRepository = teamRepository;
         _userTeamRepository = userTeamRepository;
         _calendarRepository = calendarRepository;
-        _achievementService = achievementService;
     }
 
     public async Task<int> CreateTeamAsync(CreateTeamDto dto, int creatorId,
@@ -52,7 +47,6 @@ public class TeamService : ITeamService
         team.UserTeams.Add(userTeam);
 
         await _userTeamRepository.AddAsync(userTeam);
-        await _achievementService.CheckAchievementsAsync(creatorId);
 
         return team.Id;
     }
@@ -83,8 +77,6 @@ public class TeamService : ITeamService
         };
 
         await _userTeamRepository.AddAsync(userTeam);
-        
-        await _achievementService.CheckAchievementsAsync(dto.UserId);
 
         return true;
     }
