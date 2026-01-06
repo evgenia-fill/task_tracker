@@ -16,7 +16,6 @@ public class TaskService : ITaskService
     private readonly IUserTeamRepository _userTeamRepository;
     private readonly IUserTaskRepository _userTaskRepository;
     private readonly IEventRepository _eventRepository;
-    private readonly IAchievementService _achievementService;
     private readonly IApplicationDbContext _context; // Нужен для быстрого поиска исполнителей
 
     public TaskService(
@@ -31,7 +30,6 @@ public class TaskService : ITaskService
         _userTeamRepository = userTeamRepository;
         _userTaskRepository = userTaskRepository;
         _eventRepository = eventRepository;
-        _achievementService = achievementService;
         _context = context;
     }
 
@@ -75,19 +73,7 @@ public class TaskService : ITaskService
             throw new Exception("Task not found");
 
         await _taskRepository.UpdateStatusToDoneAsync(task, cancellationToken);
-
-        // --- НОВАЯ ЛОГИКА АЧИВОК ---
-        // Находим всех пользователей, назначенных на эту задачу
-        var assignedUserIds = await _context.UserTasks
-            .Where(ut => ut.TaskId == taskId)
-            .Select(ut => ut.UserId)
-            .ToListAsync(cancellationToken);
-
-        foreach (var userId in assignedUserIds)
-        {
-            await _achievementService.CheckAchievementsAsync(userId);
-        }
-        // ---------------------------
+        
     }
 
     public async System.Threading.Tasks.Task MoveTaskToProgressAsync(int taskId,

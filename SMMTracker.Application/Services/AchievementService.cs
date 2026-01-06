@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SMMTracker.Application.Abstractions;
 using SMMTracker.Domain.Entities;
-using SMMTracker.Domain.Enums;
 
 namespace SMMTracker.Application.Services;
 
@@ -14,14 +13,35 @@ public class AchievementService : IAchievementService
         _context = context;
     }
 
-    public async System.Threading.Tasks.Task CheckAchievementsAsync(int userId)
+    // ТЕПЕРЬ ВОЗВРАЩАЕТ СПИСОК ПОЛУЧЕННЫХ АЧИВОК
+    public async System.Threading.Tasks.Task<List<Achievement>> CheckAchievementsAsync(int userId)
     {
-        var completedTasksCount = await _context.UserTasks
-            .Include(ut => ut.Task)
-            .Where(ut => ut.UserId == userId && ut.Task.Status == SMMTracker.Domain.Enums.TaskStatus.Done)
-            .CountAsync();
-            
-        // Логика будет позже
+        var teamsCount = await _context.UserTeams.Where(ut => ut.UserId == userId).CountAsync();
+        var allAchievements = await _context.Achievements.ToListAsync();
+        var userAchievementIds = await _context.UserAchievements
+            .Where(ua => ua.UserId == userId)
+            .Select(ua => ua.AchievementId)
+            .ToListAsync();
+
+        var newAchievements = allAchievements
+            .Where(a => !userAchievementIds.Contains(a.Id) && teamsCount >= a.TasksThreshold)
+            .ToList();
+
+        if (newAchievements.Any())
+        {
+            foreach (var achievement in newAchievements)
+            {
+                _context.UserAchievements.Add(new UserAchievement
+                {
+                    UserId = userId,
+                    AchievementId = achievement.Id,
+                    DateReceived = DateTime.Now
+                });
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        return newAchievements; // Возвращаем список для анимации
     }
 
     public async System.Threading.Tasks.Task<List<SMMTracker.Domain.Entities.Achievement>> GetAllAchievementsAsync()
@@ -36,13 +56,11 @@ public class AchievementService : IAchievementService
             .Select(ua => ua.AchievementId)
             .ToListAsync();
 
-        return await _context.Achievements
-            .Where(a => achievementIds.Contains(a.Id))
-            .ToListAsync();
+        return await _context.Achievements.Where(a => achievementIds.Contains(a.Id)).ToListAsync();
     }
 
-    public async System.Threading.Tasks.Task<List<Achievement>> GetUserNewAchievementsAsync(int userId)
+    public async System.Threading.Tasks.Task<List<SMMTracker.Domain.Entities.Achievement>> GetUserNewAchievementsAsync(int userId)
     {
-        return new List<Achievement>();
+        return new List<SMMTracker.Domain.Entities.Achievement>();
     }
 }

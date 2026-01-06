@@ -40,12 +40,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
         // Начальные данные (Seeding) - ОБЯЗАТЕЛЬНО, чтобы ачивки существовали в БД
         modelBuilder.Entity<Achievement>().HasData(
-            new Achievement("Первые шаги", "Выполните свою первую задачу", "bi-check-circle", 1) { Id = 1 },
-            new Achievement("На опыте", "Выполните 10 задач", "bi-star", 10) { Id = 2 },
-            new Achievement("Трудяга", "Выполните 50 задач", "bi-gem", 50) { Id = 3 },
-            new Achievement("Мастер", "Выполните 100 задач", "bi-trophy", 100) { Id = 4 },
-            new Achievement("Элита", "Выполните 200 задач", "bi-crown", 200) { Id = 5 },
-            new Achievement("Легенда", "Выполните 300 задач", "bi-rocket-takeoff", 300) { Id = 6 }
-        );
+                new Achievement("Новичок", "Вступите в свою первую команду", "bi-people", 1) { Id = 1 },
+                new Achievement("Командный игрок", "Вступите в 5 команд", "bi-people-fill", 5) { Id = 2 },
+                new Achievement("Трудяга", "Вступите в 10 команд", "bi-person-check", 10) { Id = 3 },
+                new Achievement("Душа компании", "Вступите в 20 команд", "bi-person-hearts", 20) { Id = 4 },
+                new Achievement("Легенда сообщества", "Вступите в 50 команд", "bi-megaphone", 50) { Id = 5 },
+                new Achievement("Друг Пьянзиной", "Вступите в 100 команд", "bi-award", 100) { Id = 6 }
+            );
     }
 }

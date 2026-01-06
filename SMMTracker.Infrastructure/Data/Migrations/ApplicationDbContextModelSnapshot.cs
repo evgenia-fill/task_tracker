@@ -46,50 +46,50 @@ namespace SMMTracker.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            Description = "Выполните свою первую задачу",
-                            IconClass = "bi-check-circle",
+                            Description = "Вступите в свою первую команду",
+                            IconClass = "bi-people",
                             TasksThreshold = 1,
-                            Title = "Первые шаги"
+                            Title = "Новичок"
                         },
                         new
                         {
                             Id = 2,
-                            Description = "Выполните 10 задач",
-                            IconClass = "bi-star",
-                            TasksThreshold = 10,
-                            Title = "На опыте"
+                            Description = "Вступите в 5 команд",
+                            IconClass = "bi-people-fill",
+                            TasksThreshold = 5,
+                            Title = "Командный игрок"
                         },
                         new
                         {
                             Id = 3,
-                            Description = "Выполните 50 задач",
-                            IconClass = "bi-gem",
-                            TasksThreshold = 50,
+                            Description = "Вступите в 10 команд",
+                            IconClass = "bi-person-check",
+                            TasksThreshold = 10,
                             Title = "Трудяга"
                         },
                         new
                         {
                             Id = 4,
-                            Description = "Выполните 100 задач",
-                            IconClass = "bi-trophy",
-                            TasksThreshold = 100,
-                            Title = "Мастер"
+                            Description = "Вступите в 20 команд",
+                            IconClass = "bi-person-hearts",
+                            TasksThreshold = 20,
+                            Title = "Душа компании"
                         },
                         new
                         {
                             Id = 5,
-                            Description = "Выполните 200 задач",
-                            IconClass = "bi-crown",
-                            TasksThreshold = 200,
-                            Title = "Элита"
+                            Description = "Вступите в 50 команд",
+                            IconClass = "bi-megaphone",
+                            TasksThreshold = 50,
+                            Title = "Легенда сообщества"
                         },
                         new
                         {
                             Id = 6,
-                            Description = "Выполните 300 задач",
-                            IconClass = "bi-rocket-takeoff",
-                            TasksThreshold = 300,
-                            Title = "Легенда"
+                            Description = "Вступите в 100 команд",
+                            IconClass = "bi-award",
+                            TasksThreshold = 100,
+                            Title = "Друг Пьянзиной"
                         });
                 });
 
