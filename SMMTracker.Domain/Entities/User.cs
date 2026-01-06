@@ -8,6 +8,8 @@ public class User : Entity
     public string UserName { get; set; }
     public string? ProfileDescription { get; set; }
     public string Hash { get; set; }
+    
+    public ICollection<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
 
     public User()
     {

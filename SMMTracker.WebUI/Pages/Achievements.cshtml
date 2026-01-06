@@ -1,0 +1,46 @@
+﻿@page
+@model SMMTracker.WebUI.Pages.AchievementsModel
+@{
+    ViewData["Title"] = "Достижения";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 fw-bold text-white"><i class="bi bi-trophy-fill text-warning"></i> Достижения</h2>
+    
+    <div class="row g-4">
+        @foreach (var ach in Model.AllAchievements)
+        {
+            var isUnlocked = Model.UserAchievements.Any(ua => ua.Id == ach.Id);
+            var dateUnlocked = isUnlocked ? "Получено" : null;
+            var cardClass = isUnlocked ? "glass-card border-warning border-2" : "glass-card opacity-75";
+            var textClass = isUnlocked ? "text-dark" : "text-muted";
+            var iconColor = isUnlocked ? "text-warning" : "text-secondary";
+
+            <div class="col-md-6 col-lg-4">
+                <div class="@cardClass h-100 position-relative">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="display-5 me-3 @iconColor">
+                            <i class="bi @ach.IconClass"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1 @textClass">@ach.Title</h5>
+                            <small class="@textClass">@ach.Description</small>
+                        </div>
+                    </div>
+                    @if (isUnlocked)
+                    {
+                        <div class="badge bg-success position-absolute top-0 end-0 m-3">
+                            Получено
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="badge bg-secondary position-absolute top-0 end-0 m-3">
+                            <i class="bi bi-lock-fill"></i> @ach.TasksThreshold команд
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
