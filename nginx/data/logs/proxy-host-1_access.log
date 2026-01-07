@@ -301,3 +301,7 @@
 [07/Jan/2026:10:06:22 +0000] - 404 404 - GET https smmtracker.ru "/wordpress/wp-admin/setup-config.php" [Client 172.70.251.185] [Length 0] [Gzip -] [Sent-to webui] "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" "-"
 [07/Jan/2026:10:08:01 +0000] - 404 404 - GET https smmtracker.ru "/wp-admin/setup-config.php" [Client 104.23.223.49] [Length 0] [Gzip -] [Sent-to webui] "https://smmtracker.ru/wp-admin/setup-config.php" "-"
 [07/Jan/2026:10:09:09 +0000] - 404 404 - GET https smmtracker.ru "/wordpress/wp-admin/setup-config.php" [Client 162.158.182.150] [Length 0] [Gzip -] [Sent-to webui] "https://smmtracker.ru/wordpress/wp-admin/setup-config.php" "-"
+[07/Jan/2026:11:13:27 +0000] - 200 200 - GET https smmtracker.ru "/" [Client 104.199.46.221] [Length 1668] [Gzip 2.73] [Sent-to webui] "python-requests/2.32.5" "-"
+[07/Jan/2026:11:32:08 +0000] - 200 200 - GET https smmtracker.ru "/" [Client 212.33.255.53] [Length 1668] [Gzip 2.73] [Sent-to webui] "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:109.0) Gecko/20100101 Firefox/113.0" "https://yapl.ru/ru/smmtracker.ru/"
+[07/Jan/2026:12:30:58 +0000] - 404 404 - GET https smmtracker.ru "/robots.txt" [Client 85.208.96.199] [Length 0] [Gzip -] [Sent-to webui] "Mozilla/5.0 (compatible; SemrushBot/7~bl; +http://www.semrush.com/bot.html)" "-"
+[07/Jan/2026:12:30:59 +0000] - 200 200 - GET https smmtracker.ru "/Login" [Client 185.191.171.15] [Length 2066] [Gzip 2.87] [Sent-to webui] "Mozilla/5.0 (compatible; SemrushBot/7~bl; +http://www.semrush.com/bot.html)" "-"
