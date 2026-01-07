@@ -18,6 +18,7 @@
 *.rider.project.model.nuget.info
 *.sln.iml
 rider.module.iml
+*.log
 
 *.cache
 *.info
